@@ -1,5 +1,6 @@
 #Directories 
-Learn 
+Learn/*.pdf 
+Learn/csc343
 
 # Logs
 logs
