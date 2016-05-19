@@ -278,7 +278,7 @@ _In the context of bags, consider m,n as number of duplicate tuple t in table R 
 | R - S | max(m - n, 0) |
 
 
-_Controling duplicate elimination with `SELECT DISTINCT ...`_
+_Controlling duplicate elimination with `SELECT DISTINCT ...`_
 
 
 ```sql
