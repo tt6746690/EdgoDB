@@ -295,3 +295,96 @@ create schema University;
 create table University.Student (...);  
   select * from University.Student;
 ```
+
+If the dot notation is not used. Any new tables created with `CREATE TABLE blah` go in the schema called `public`. Therefore table blah is equivalent to `public.blah`  
+
+A search path is defined when referring to a table name. The default search path is `$user`, `public`, where `$user` is created for you.
+
+```sql
+-- see search path
+show search_path
+
+-- set serach path
+set search_path to University, public
+```
+
+_Remove Schema_
+
+```sql
+DROP SCHEMA University CASCADE;
+-- cascade means everything inside it is dropped too.
+```
+
+Often times, schemas are removed at the top of every DDL file. So that schema will be udpated when changed.
+
+```sql
+DROP SCHEMA IF EXISTS University cascade;  
+CREATE SCHEMA University;
+SET search_path to University;
+```
+
+_Workflow_
++ create a DDL file with schema
++ create a file with inserts to put content in the database
++ import these files in shell
++ run queries directly in shell or by importing queries
+
+__Reaction policies__
+
+There should be policies set in place to restrict events on relations but allow regular inserts, updates, deletes.
+
+_Cascade_ propagate the change to the referring table
+_set null_ set the referring attributes to null
+The default is to forbid the change in the referred-to table
+
+_Asymmetry_  
+Suppose table R (Took) refers to table S (Student) (there is a foreign key set in R to S). we can define 'fixes' in R that propagate changes backward from S to R. We can not define these 'fixes' in S. Deletion in S will cascade to R and remove corresponding tuples in R; However, deletion in R will only affect R.
+
+Add reaction policy where you specify foreign key constraint
+
+```sql
+CREATE TABLE Took (
+  ...
+  FOREIGN KEY (sID) REFERENCES Student
+          ON DELETE CASCADE
+  ...  
+);
+```
+
+_React to_  
++ `ON DELETE` when a deletion creates a dangling reference
++ `ON UPDATE` when an update creates a dangling reference
++ `ON DELETE RESTRICT ON UPDATE CASCADE` when both happens
+
+
+_Types of reactions_  
++ `RESTRICT` -> don't allow the deletion/update  
++ `CASCADE` -> Make the same deletion/update in the referring tuple   
++ `SET NULL` -> Set corresponding value in the referring tuple to null
+
+_Deletion semantics_
+
+Deletion proceeds in two stages:
+1. Make all tuples for which the `WHERE` condition is satisfied.
+2. Go back and delete the marked tuples
+
+
+__Updating schema__
+
+_Alter a domain or table_
+
+```sql
+ALTER TABLE Course
+  ADD COLUMN numSections INTEGER;
+ALTER TABLE Course
+  DROP COLUMN breadth;
+```
+
+_DROP_
+Dropping a table must satisfy cascade and constraints referenced by another table
+
+```sql
+DROP TABLE Course;
+```
+
+__Defining indices to make search faster__ 

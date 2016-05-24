@@ -25,5 +25,3 @@ _specific types of query_
   + every: make all combinations, subtract those that did occur to find those that didn't always occur, then subtract from all.
 
 _FAQ_
-
-[_What self joining accomplish_](http://www.programmerinterview.com/index.php/database-sql/what-is-a-self-join/)
