@@ -109,4 +109,5 @@
 [_The small tools manifesto for Bioinformatics_](https://github.com/pjotrp/bioinformatics)  
 [_What are dbSNP rs accession number_](http://www.ncbi.nlm.nih.gov/SNP/get_html.cgi?whichHtml=how_to_submit#REFSNP)  
 [_How to insert into multiple tables with foreign keys_](http://www.rndblog.com/insert-into-multiple-mysql-tables-linked-by-a-foreign-key/)  
-[_What is the purpose of python with statement_](http://effbot.org/zone/python-with-statement.htm)
+[_What is the purpose of python with statement_](http://effbot.org/zone/python-with-statement.htm)  
+[_How to create a python dictionary with list as defaults?_](http://stackoverflow.com/questions/28194184/how-do-i-create-a-dictionary-with-keys-from-a-list-and-values-separate-empty-lis)  
