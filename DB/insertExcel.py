@@ -1,41 +1,45 @@
 import MySQLdb
+import Config
+import csv
+from collections import defaultdict
+
+header = []
+dic = defaultdict(list)
+
+with open("./origExcel/csvMutCollection.csv", 'r') as csvfile:
+    data = csv.reader(csvfile)
+    for index,row in enumerate(data):
+        if index == 0:  # first row
+            header = row
+        else:            # other rows
+            for i,v in enumerate(header):
+                dic[v].append(row[i])
+
+def subsetCols(colList):
+    """
+    subset the columns of imported csv data
+
+    @param colList list: list containing column name specified in header
+    @return list(tuple): returns a unique subset of table
+    """
+    sort = [int(v) - 1 for v in dic["Sort"]]
+    subset =  [tuple([dic[colname][i] for colname in colList]) for i in sort]
+    return list(set(subset))
+
+
 
 # Returns Connection object
-db = MySQLdb.connect("localhost","markwang","1122","EdgoDB" )
-
+db = MySQLdb.connect(Config.DB_HOST, Config.DB_USER, Config.DB_PASS, Config.DB_NAME)
 # A Cursor object execute queries
 cursor = db.cursor()
-# execute SQL query using execute() method.
-cursor.execute("SELECT VERSION()")
-# Fetch a single row using fetchone() method.
-data = cursor.fetchone()
 
 
-print "Database version : %s " % data
+try:
+    cursor.executemany("""INSERT INTO Gene (ENTREZ_GENE_ID, HUGO_GENE_SYMBOL)
+                        VALUES (%s, %s)""", subsetCols(['Entrez_Gene_ID', 'Symbol']))
+    db.commit()
+except:
+    db.rollback()
 
-
-db.close()
-
-import _mysql
-
-# Open database connection
-db = _mysql.connect("localhost","markwang","1122","testdb" )
-
-# prepare a cursor object using cursor() method
-cursor = db.cursor()
-
-# Drop table if it already exist using execute() method.
-cursor.execute("DROP TABLE IF EXISTS EMPLOYEE")
-
-# Create table as per requirement
-sql = """CREATE TABLE EMPLOYEE (
-         FIRST_NAME  CHAR(20) NOT NULL,
-         LAST_NAME  CHAR(20),
-         AGE INT,
-         SEX CHAR(1),
-         INCOME FLOAT )"""
-
-cursor.execute(sql)
-
-# disconnect from server
+# close db connection
 db.close()

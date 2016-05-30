@@ -26,7 +26,7 @@
 
 #### EXPLORE and NON-MINIMAL GOALS
 
-- [ ] Explore [GEMINI](http://gemini.readthedocs.io/en/latest/) in pulling data from [OMIM](http://www.omim.org/) [dbSNP](http://www.ncbi.nlm.nih.gov/SNP/) and [ExAC Browser](http://exac.broadinstitute.org/). possible follow up include:  
+- [ ] Explore [GEMINI](http://gemini.readthedocs.io/en/latest/) in pulling data from [OMIM](http://www.omim.org/) [dbSNP](http://www.ncbi.nlm.nih.gov/SNP/) and [ExAC Browser](http://exac.broadinstitute.org/). possible follow up include:   
   - [ ] extraction of relevant attributes and update/replace existing data
 - [ ] Explore the use of [GATK](https://www.broadinstitute.org/gatk/)
 - [ ] Try to implement server load balancing...
@@ -37,8 +37,8 @@
 
 #### LEARN
 
-[_Stanford DB mini courses_](https://lagunita.stanford.edu/courses/DB/2014/SelfPaced/about)  
-[_WIKIbooks: Data Management in Bioinformatics/Data Querying_](https://en.wikibooks.org/wiki/Data_Management_in_Bioinformatics/Data_Querying)
+[_Stanford DB mini courses_](https://lagunita.stanford.edu/courses/DB/2014/SelfPaced/about)   
+[_WIKIbooks: Data Management in Bioinformatics/Data Querying_](https://en.wikibooks.org/wiki/Data_Management_in_Bioinformatics/Data_Querying)   
 [_CSC343: INTRO to database_](http://www.cdf.toronto.edu/~csc343h/winter/)  
 
 ---
@@ -46,8 +46,8 @@
 
 #### DBs
 
-[_CCSB: ORFeome_](http://horfdb.dfci.harvard.edu/index.php?page=orfsearch)  
-  + data in compressed fasta downloadable    
+[_CCSB: ORFeome_](http://horfdb.dfci.harvard.edu/index.php?page=orfsearch)   
+  + data in compressed fasta downloadable     
 
 [_HGMD: The Human Gene Mutation Database_](http://www.hgmd.cf.ac.uk/ac/index.php)         
   + cant bulk download data pw: HGMD364869   
@@ -73,12 +73,12 @@
 [_Suspect_](http://www.sbg.bio.ic.ac.uk/~suspect/)    
 [_MySQL DOCs_](https://dev.mysql.com/doc/)  
 [_MySQLdb_](http://mysql-python.sourceforge.net/MySQLdb-1.2.2/), [_brief summary_](http://mysql-python.sourceforge.net/MySQLdb.html) and [_short tutorial_](http://www.tutorialspoint.com/python/python_database_access.htm)  
-[_Google Fonts_](https://www.google.com/fonts)
-[_Stylus Docs_](http://stylus-lang.com/try.html#?code=body%20%7B%0A%20%20font%3A%2014px%2F1.5%20Helvetica%2C%20arial%2C%20sans-serif%3B%0A%20%20%23logo%20%7B%0A%20%20%20%20border-radius%3A%205px%3B%0A%20%20%7D%0A%7D)  
-[_Jade/Pug Docs_](http://jade-lang.com/reference/) and [_cheatsheet_](https://naltatis.github.io/jade-syntax-docs/)
+[_Google Fonts_](https://www.google.com/fonts)   
+[_Stylus Docs_](http://stylus-lang.com/try.html#?code=body%20%7B%0A%20%20font%3A%2014px%2F1.5%20Helvetica%2C%20arial%2C%20sans-serif%3B%0A%20%20%23logo%20%7B%0A%20%20%20%20border-radius%3A%205px%3B%0A%20%20%7D%0A%7D)    
+[_Jade/Pug Docs_](http://jade-lang.com/reference/) and [_cheatsheet_](https://naltatis.github.io/jade-syntax-docs/)  
 
 
-
+1
 -----
 
 #### FAQ
@@ -108,3 +108,5 @@
 [_How is javascript asynchronous and single-threaded_](http://www.sohamkamani.com/blog/2016/03/14/wrapping-your-head-around-async-programming/)  
 [_The small tools manifesto for Bioinformatics_](https://github.com/pjotrp/bioinformatics)  
 [_What are dbSNP rs accession number_](http://www.ncbi.nlm.nih.gov/SNP/get_html.cgi?whichHtml=how_to_submit#REFSNP)  
+[_How to insert into multiple tables with foreign keys_](http://www.rndblog.com/insert-into-multiple-mysql-tables-linked-by-a-foreign-key/)  
+[_What is the purpose of python with statement_](http://effbot.org/zone/python-with-statement.htm)
