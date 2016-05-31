@@ -23,5 +23,3 @@ _specific types of query_
   + k or more: make all combinations of k different tuples that satisfy the condition
   + exactly k: k or more - k+1 or more
   + every: make all combinations, subtract those that did occur to find those that didn't always occur, then subtract from all.
-
-_FAQ_
