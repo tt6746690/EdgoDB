@@ -3,6 +3,14 @@ import csv
 from collections import defaultdict
 from Config import DB_HOST, DB_USER, DB_PASS, DB_NAME
 
+REFSEQ_ID = "Mutation_RefSeq_NT"
+HUGO_GENE_SYMBOL = "Symbol"
+ENTREZ_GENE_ID = "Entrez_Gene_ID"
+CCSB_ORF_ID = "CCSB_ORF_ID"
+ORF_LENGTH = "ORF_length"
+CDS_ORFEOME_SEQ = "CDS_HORFeome_8.1"
+
+
 
 class LoadData:
     """
@@ -32,22 +40,6 @@ class LoadData:
                 else:            # other rows
                     for i,v in enumerate(header):
                         self.data[v].append(row[i])
-    def deleteAllEntries(self):
-        try:
-            self.c.execute("""DELETE FROM Gene;
-                            DELETE FROM Transcript;
-                            DELETE FROM Variant;
-                            DELETE FROM Disease;
-                            DELETE FROM ORFeome;
-                            DELETE FROM VariantProperty;
-                            DELETE FROM HGMDMapping;
-                            DELETE FROM LocalCollection;
-                            DELETE FROM Measurement;
-                            DELETE FROM SummaryStatistics;""")
-            self.db.commit()
-        except:
-            print 'delete all entry from all tables failed'
-            self.db.rollback()
 
 
     def subsetCols(self, colList):
@@ -66,38 +58,57 @@ class LoadData:
         """
         master function which controls individual insertion
         """
-        self.deleteAllEntries()
         self.loadGeneTable()
         self.loadTranscriptTable()
         self.db.close()
 
     def loadGeneTable(self):
-        inserts = self.subsetCols(['Entrez_Gene_ID', 'Symbol'])
-        print inserts
+        inserts = self.subsetCols([ENTREZ_GENE_ID, HUGO_GENE_SYMBOL])
+        sql = """INSERT INTO Gene (ENTREZ_GENE_ID, HUGO_GENE_SYMBOL)
+                VALUES (%s, %s)"""
+        print(inserts)
         try:
-            sql = """INSERT INTO Gene (ENTREZ_GENE_ID, HUGO_GENE_SYMBOL)
-                    VALUES (%s, %s)"""
             self.c.executemany(sql, inserts)
             self.db.commit()
-        except:
+        except MySQLdb.Error, e:
             print 'insert to gene table failed'
+            raise e
             self.db.rollback()
 
 
     def loadTranscriptTable(self):
-        subset = self.subsetCols(['Mutation_RefSeq_NT', 'Entrez_Gene_ID'])
-        inserts = [(t[0].split(':')[0], t[1]) for t in subset]
+        subset = self.subsetCols([REFSEQ_ID, ENTREZ_GENE_ID])
+        # have to remove duplicate tuples for insertion to work properly
+        inserts = list(set([(t[0].split(':')[0], t[1]) for t in subset]))
+        sql = """INSERT INTO Transcript (REFSEQ_ID, ENTREZ_GENE_ID)
+                VALUES (%s, %s)"""
         try:
-            sql = """INSERT INTO Transcript (REFSEQ_ID, ENTREZ_GENE_ID)
-                    VALUES (%s, %s)"""
             self.c.executemany(sql, inserts)
             self.db.commit()
-        except:
+        except MySQLdb.Error, e:
             print 'insert to transcript table failed'
+            raise e
             self.db.rollback()
+
+    def loadORFeomeTable(self):
+        inserts = self.subsetCols([CCSB_ORF_ID, ORF_LENGTH, CDS_ORFEOME_SEQ, ENTREZ_GENE_ID])
+        sql = """INSERT INTO ORFeome (ORFEOME_ID, CCSB_ORF_ID, ORF_LENGTH, CDS_ORFEOME_SEQ, ENTREZ_GENE_ID)
+                VALUES (0, NULLIF(%s, ''), NULLIF(%s, ''), NULLIF(%s, ''), NULLIF(%s, ''))"""
+        try:
+            self.c.executemany(sql, inserts)
+            self.db.commit()
+        except MySQLdb.Error, e:
+            print 'insert to ORFeome table failed'
+            raise e
+            self.db.rollback()
+
+    def loadVariantTable(self):
+        
 
 
 if __name__ == "__main__":
     ld = LoadData()
     ld.importCSV("./origExcel/csvMutCollection.csv")
-    ld.loadTables()
+    # ld.loadGeneTable()
+    # ld.loadTranscriptTable()
+    # ld.loadORFeomeTable()
