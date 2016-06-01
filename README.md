@@ -1,10 +1,11 @@
 
 #### DATABASE
 
-- [ ] construction of relational database
-  - [ ] set up of mysql server and initial design and creation of schemas  
-  - [ ] importing of initial data from excel to the database
-  - [ ] optimize by eliminating anomalies and reinforce constraints
+- [x] construction of relational database
+  - [x] set up of mysql server and initial design and creation of schemas  
+  - [x] importing of initial data from excel to the database
+  - [x] optimize by eliminating anomalies and reinforce constraints
+  - [ ] set up ssl login for db access
 - [ ] update attributes from [ExAC Browser](http://exac.broadinstitute.org/) to identify rare alleles
 
 ---
@@ -78,7 +79,7 @@
 [_Jade/Pug Docs_](http://jade-lang.com/reference/) and [_cheatsheet_](https://naltatis.github.io/jade-syntax-docs/)  
 
 
-1
+
 -----
 
 #### FAQ
@@ -111,3 +112,4 @@
 [_How to insert into multiple tables with foreign keys_](http://www.rndblog.com/insert-into-multiple-mysql-tables-linked-by-a-foreign-key/)  
 [_What is the purpose of python with statement_](http://effbot.org/zone/python-with-statement.htm)  
 [_How to create a python dictionary with list as defaults?_](http://stackoverflow.com/questions/28194184/how-do-i-create-a-dictionary-with-keys-from-a-list-and-values-separate-empty-lis)  
+[_Useful nodejs and mysql tutorial on connection pooling_](http://stackoverflow.com/questions/6731214/node-mysql-connection-pooling)

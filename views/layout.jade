@@ -1,0 +1,21 @@
+doctype html
+html(lang='en')
+  head
+    meta(charset="utf-8")
+    meta(http-equiv="X-UA-Compatible", content="IE=edge")
+    meta(name="viewport", content="width=device-width, initial-scale=1")
+    link(href="//maxcdn.bootstrapcdn.com/bootswatch/3.3.0/flatly/bootstrap.min.css", rel="stylesheet")
+    title EdgoDB
+    link(rel='stylesheet', href='/assets/css/main.min.css')
+  body(id='bs_overrides')
+    header
+      include ./includes/header.jade
+    #sidebar 
+      block sidebar      
+    main
+      block content 
+    footer.footer
+      include ./includes/footer.jade 
+    script(src='//ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js')
+    script(src='//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js')
+    script(src='/assets/js/main.min.js')

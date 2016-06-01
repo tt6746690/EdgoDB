@@ -1,0 +1,13 @@
+
+include mixins.jade 
+
+
++nav("EdgoDB", "dropdown_menu")
+  +nav_item( "/", "active" ) About
+  +nav_item( "#about" ) FAQ
+  +nav_item_dropdown("#")( label="Query")
+    +nav_item( "/gene" ) Gene
+    +nav_item( "#" ) Transcript
+    +nav_item( "#" ) Variant
+    +nav_divider 
+    +nav_item( "#" ) Measurements
