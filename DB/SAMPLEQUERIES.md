@@ -17,3 +17,11 @@ FROM Gene JOIN Transcript USING (ENTREZ_GENE_ID)
           JOIN Disease USING(VARIANT_ID)
 WHERE (Disease.DISEASE_NAME = "Hypospadias");
 ```
+
+__Get a list of Variant CCSB ID within a given range of interaction z score difference__
+
+```sql
+SELECT CCSB_MUTATION_ID, INTERACTION_DIFF
+FROM Measurement JOIN Variant USING (VARIANT_ID)
+WHERE INTERACTION_DIFF < 0.5 AND INTERACTION_DIFF > 0.3;
+```

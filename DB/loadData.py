@@ -4,15 +4,15 @@ from collections import defaultdict
 from Config import DB_HOST, DB_USER, DB_PASS, DB_NAME
 
 SORT = "Sort"
-
+# Gene
 REFSEQ_ID = "Mutation_RefSeq_NT"
 HUGO_GENE_SYMBOL = "Symbol"
 ENTREZ_GENE_ID = "Entrez_Gene_ID"
-
+# ORFeome
 CCSB_ORF_ID = "CCSB_ORF_ID"
 ORF_LENGTH = "ORF_length"
 CDS_ORFEOME_SEQ = "CDS_HORFeome_8.1"
-
+# Variant
 CCSB_MUTATION_ID = "Allele_ID"
 DBSNP_ID = "dbSNP_ID"
 MUT_HGVS_NT_ID = "Mutation_RefSeq_NT"
@@ -24,10 +24,10 @@ PMID = "pmid"
 HGMD_ACCESSION = "HGMD_accession"
 MUT_HGMD_AA = "Mutation_HGMD_AA"
 HGMD_VARIANT_CLASS = "HGMD_variant_class"
-
+# Disease
 DISEASE_NAME = "Disease"
 INHERITANCE_PATTERN = 'Inheritance'
-
+# VariantProperty
 DISORDER_PROBABILITY = "Disorder_probability"
 PFAM_PRESENT = "Pfam_present"
 IN_PFAM = "In_Pfam"
@@ -41,12 +41,18 @@ PROTEIN_CHEMICAL_INTERFACE = "Protein_chemical_interface"
 FOLDX_VALUE = "FoldX_value"
 CLINVAR_ID = "ClinVar_ID"
 CLINVAR_CLINICAL_SIGNIFICANCE = "ClinVar_clinical_significance"
-
+# LocalCollection
 ENTRY_CLONE_PLATE = "Ph1Mut_PLA"
 ENTRY_CLONE_WELL = "Ph1Mut_POS"
 FLAG_CLONE_ID = "3xFLAG_clone_ID"
 FLAG_CHECK = "3xFLAG_BsrGI_check"
-
+# SummaryStatistics
+WT_ELISA_AVERAGE = "Average ELISA wt"
+MUT_ELISA_AVERAGE = "Average ELISA mut"
+ELISA_RATIO_AVERAGE = "Average ELISA ratio"
+ELISA_LOG2_RATIO_AVERAGE = "Average ELISA log2 ratio"
+ELISA_LOG2_RATIO_SE = "Average ELISA log2 ratio SE"
+ELISA_LOG2_RATIO_P_VALUE = "ELISA log2 ratio p-value"
 
 class LoadData:
     """
@@ -62,7 +68,7 @@ class LoadData:
         self.c = self.db.cursor()
         self.data = defaultdict(list)
 
-
+### Importing files
     def importCSV(self, excelPath):
         """
         import CSV file and store columns as dict[list[tuple]] in self.data
@@ -105,17 +111,6 @@ class LoadData:
         return dic
 
 ### Loading methods
-
-    def loadTables(self):
-        """
-        master function which controls individual insertion
-        """
-        self.loadGeneTable()
-        self.loadTranscriptTable()
-        self.loadORFeomeTable()
-        self.loadVariantTable()
-        self.loadVariantPropertyTable()
-        self.loadLocalCollectionTable()
 
     def loadGeneTable(self):
         inserts = self.subsetCols([ENTREZ_GENE_ID, HUGO_GENE_SYMBOL])
@@ -243,12 +238,78 @@ class LoadData:
             raise e
             self.db.rollback()
 
-    def
+    def loadMeasurementTable(self):
+        """ wrapper around loadOneMeasurement"""
+        Interactors = ["HSP90AB1", "HSPA8", "BAG2", "STUB1", "PSMD2", "HSPA5", "HSP90B1"]
+        [self.loadOneMeasurement(i) for i in Interactors]
 
 
+    def loadOneMeasurement(self, interactor):
+        """helper function to load the measurement table"""
 
+        # create namespace for excel colnames
+        INTERACTOR = interactor
+        INTERACTION_WT_Z_SCORE = interactor + ' wt'
+        INTERACTION_MUT_Z_SCORE = interactor + ' mut'
+        INTERACTION_DIFF = interactor + ' diff Z'
+        INTERACTION_SIGNIFICANT = interactor + ' Significant?'
+        EXPRESSION_WT_ELISA = interactor + ' wt ELISA'
+        EXPRESSION_MUT_ELISA = interactor + ' mut ELISA'
+        EXPRESSION_RATIO = interactor + ' ratio E'
+
+        subsets = self.subsetCols([MUT_HGVS_NT_ID, INTERACTION_WT_Z_SCORE,
+        INTERACTION_MUT_Z_SCORE, INTERACTION_DIFF, INTERACTION_SIGNIFICANT,
+        EXPRESSION_WT_ELISA, EXPRESSION_MUT_ELISA, EXPRESSION_RATIO])
+        inserts = self.replaceNullwithEmptyString(subsets)
+        inserts = [(t[0], interactor, t[1], t[2], t[3], 1 if t[4]=='hit' else 0, t[5], t[6], t[7]) for t in inserts]
+        sqlstr = """INSERT INTO Measurement (VARIANT_ID, INTERACTOR, INTERACTION_WT_Z_SCORE,
+                    INTERACTION_MUT_Z_SCORE, INTERACTION_DIFF, INTERACTION_SIGNIFICANT,
+                    EXPRESSION_WT_ELISA, EXPRESSION_MUT_ELISA, EXPRESSION_RATIO)
+                    VALUES ((SELECT VARIANT_ID FROM Variant WHERE MUT_HGVS_NT_ID = %s),
+                    %s, NULLIF(%s, ''), NULLIF(%s, ''), NULLIF(%s, ''), %s,
+                    NULLIF(%s, ''), NULLIF(%s, ''), NULLIF(%s, ''))"""
+        try:
+            self.c.executemany(sqlstr, inserts)
+            self.db.commit()
+        except MySQLdb.Error, e:
+            print 'insert into LocalCollection table failed'
+            raise e
+            self.db.rollback()
+
+    def loadSummaryStatisticsTable(self):
+        subsets = self.subsetCols([MUT_HGVS_NT_ID, WT_ELISA_AVERAGE, MUT_ELISA_AVERAGE,
+        ELISA_RATIO_AVERAGE, ELISA_LOG2_RATIO_AVERAGE, ELISA_LOG2_RATIO_SE,
+        ELISA_LOG2_RATIO_P_VALUE])
+        inserts = self.replaceNullwithEmptyString(subsets)
+        sqlstr = """INSERT INTO SummaryStatistics (VARIANT_ID, WT_ELISA_AVERAGE,
+                    MUT_ELISA_AVERAGE, ELISA_RATIO_AVERAGE, ELISA_LOG2_RATIO_AVERAGE,
+                    ELISA_LOG2_RATIO_SE,ELISA_LOG2_RATIO_P_VALUE)
+                    VALUES ((SELECT VARIANT_ID FROM Variant WHERE MUT_HGVS_NT_ID = %s),
+                    NULLIF(%s, ''), NULLIF(%s, ''), NULLIF(%s, ''), NULLIF(%s, ''),
+                    NULLIF(%s, ''), NULLIF(%s, ''))"""
+        try:
+            self.c.executemany(sqlstr, inserts)
+            self.db.commit()
+        except MySQLdb.Error, e:
+            print 'insert into LocalCollection table failed'
+            raise e
+            self.db.rollback()
+
+    def loadTables(self):
+        """
+        master function which controls individual insertion
+        """
+        self.loadGeneTable()
+        self.loadTranscriptTable()
+        self.loadORFeomeTable()
+        self.loadVariantTable()
+        self.loadVariantPropertyTable()
+        self.loadLocalCollectionTable()
+        self.loadMeasurementTable()
+        self.loadSummaryStatisticsTable()
+
+        
 if __name__ == "__main__":
     ld = LoadData()
     ld.importCSV("./origExcel/csvMutCollection.csv")
-    # ld.loadTables()
-    ld.loadLocalCollectionTable()
+    ld.loadTables()
