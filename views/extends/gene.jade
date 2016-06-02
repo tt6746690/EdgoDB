@@ -1,10 +1,29 @@
 extends ../layout
 
 block content
-  div.row
-    div.col-md-2
-    div.col-md-8
-      //- p  gene[0]['HUGO_GENE_SYMBOL']
-    div.col-md-2
-  
-  
+  h1 #{gene[0].HUGO_GENE_SYMBOL} | #{gene[0].ENTREZ_GENE_ID}
+  each item in gene
+    div.row 
+      div.col-md-1
+      div.col-md-10
+        div.panel.panel-default
+          div.panel-heading.text-left  
+            a(href = '/variant/' + item.MUT_HGVS_NT_ID) #{item.MUT_HGVS_NT_ID} 
+          //- div.panel-body 
+          table.table.table-hover
+            thread
+              tr
+                th.text-center Transcript 
+                th.text-center Chromosomal location
+                th.text-center Pubmed 
+            tbody.text-center
+              tr 
+                //- td
+                  //- a(href = '/gene/' + row["ENTREZ_GENE_ID"]) #{row["HUGO_GENE_SYMBOL"]}
+                td= item.REFSEQ_ID
+                td= item.CHR_COORDINATE_HG18
+                td 
+                  a(href="http://www.ncbi.nlm.nih.gov/pubmed/" + item.PMID) #{item.PMID}
+                
+              
+          

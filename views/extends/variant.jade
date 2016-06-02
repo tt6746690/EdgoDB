@@ -1,0 +1,18 @@
+extends ../layout
+
+block content
+  h1 #{variant[0].MUT_HGVS_NT_ID}
+  div.row 
+    div.col-md-2
+    div.col-md-8
+      table.table
+        thread
+          tr
+            th.text-center key
+            th.text-center value
+        tbody.text-center
+          each value,key in variant[0]
+            tr 
+              td #{key}
+              td #{value}
+    div.col-md-2

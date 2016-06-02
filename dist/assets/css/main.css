@@ -13,6 +13,8 @@ html {
   font-smoothing: antialiased;
   max-width: 100%;
   overflow-x: hidden;
+  position: relative;
+  height: 100%;
 }
 .container {
   padding-left: 0;
@@ -21,21 +23,52 @@ html {
 body {
   margin: 0;
   text-align: center;
-  color: #1d1d1d;
+  color: #111;
   background-color: #fff;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: scroll;
 }
-body header {
+header {
   font: 14px "Open Sans", sans-serif;
+  color: #3e3e3e;
 }
-body footer .footer_layout {
-  height: 300px;
-  padding: 20px;
-  font-size: 15px;
-  line-height: 5px;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  font-family: "Tangerine", serif;
-  background-color: #fff;
+#bs_overrides > main {
+  padding-top: 20px;
+  min-height: 100%;
+  padding-bottom: 30px;
+}
+#bs_overrides > header > nav {
+  height: 62px;
+  margin: 0;
+  background-color: #ececec;
+  border-width: 1px;
+  border-bottom-color: #cfcfcf;
+}
+#bs_overrides > footer > div {
+  position: relative;
+  height: 60px;
+  margin-top: -footer_height;
+  background-color: #ececec;
+  border-width: 1px;
+  border-top-color: #cfcfcf;
+}
+.navbar-default .navbar-nav>.active>a,
+.navbar-default .navbar-nav>.active>a:hover,
+.navbar-default .navbar-nav>.active>a:focus {
+  background-color: #ececec;
+}
+.navbar-default .navbar-nav>.open>a,
+.navbar-default .navbar-nav>.open>a:hover,
+.navbar-default .navbar-nav>.open>a:focus {
+  background-color: #ececec;
+}
+.dropdown-menu>li>a:hover,
+.dropdown-menu>li>a:focus {
+  background-color: #ececec;
+}
+#bs_overrides > main > h1 {
+  padding-bottom: 20px;
 }
 
 #bs_overrides img,
@@ -44,7 +77,11 @@ body footer .footer_layout {
 #bs_overrides audio {
   border: 0;
 }
+#bs_overrides th {
+  text-align: center;
+}
 #bs_overrides a {
+  text-decoration: none;
   color: inherit;
   transition: 0.3s;
 }
@@ -62,26 +99,5 @@ body footer .footer_layout {
 }
 #bs_overrides button:active {
   color: #ff7300;
-}
-.navbar-default .navbar-nav>.active>a,
-.navbar-default .navbar-nav>.active>a:hover,
-.navbar-default .navbar-nav>.active>a:focus {
-  background-color: #ececec;
-}
-.navbar-default .navbar-nav>.open>a,
-.navbar-default .navbar-nav>.open>a:hover,
-.navbar-default .navbar-nav>.open>a:focus {
-  background-color: #ececec;
-}
-.dropdown-menu>li>a:hover,
-.dropdown-menu>li>a:focus {
-  background-color: #ececec;
-}
-.navbar {
-  border-width: 1px;
-  border-bottom-color: #cfcfcf;
-}
-.navbar-default {
-  background-color: #ececec;
 }
 

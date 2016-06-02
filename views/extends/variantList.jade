@@ -1,0 +1,27 @@
+extends ../layout
+  
+block content
+  div.row
+    div.col-md-1
+    div.col-md-10
+      table.table.table-hover
+        thread
+          tr
+            th.text-center Gene
+            th.text-center RefSeq c.
+            th.text-center RefSeq p.
+            th.text-center ORF c.
+            th.text-center ORF p.
+            th.text-center Chr Location
+        tbody.text-center
+          each item in variant 
+            tr 
+              td
+                a(href="/gene/"+ item.ENTREZ_GENE_ID) #{item.HUGO_GENE_SYMBOL}
+              td
+                a(href="/variant/" + item.MUT_HGVS_NT_ID) #{item.MUT_HGVS_NT_ID}
+              td= item.MUT_HGVS_AA_ID
+              td= item.MUT_ORFEOME_NT
+              td= item.MUT_ORFEOME_AA
+              td= item.CHR_COORDINATE_HG18
+      div.col-md-1

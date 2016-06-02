@@ -14,7 +14,8 @@ block content
           tr 
             td
               a(href = '/gene/' + row["ENTREZ_GENE_ID"]) #{row["HUGO_GENE_SYMBOL"]}
-            td= row["ENTREZ_GENE_ID"]
+            td
+              a(href = 'http://www.ncbi.nlm.nih.gov/gene/' + row["ENTREZ_GENE_ID"]) #{row["ENTREZ_GENE_ID"]}
     div.col-md-2
   
   

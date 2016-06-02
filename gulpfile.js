@@ -2,7 +2,7 @@
 var gulp = require('gulp');
 var nodemon = require('gulp-nodemon');
 var notify = require('gulp-notify');
-var liveReload = require('gulp-livereload');
+var livereload = require('gulp-livereload');
 var stylus = require('gulp-stylus');
 var rename = require('gulp-rename');
 var cssnano = require('gulp-cssnano');
@@ -55,63 +55,65 @@ gulp.task('build', ['clean'], function() {
     gulp.start('styles', 'scripts', 'images');
 });
 
-var BROWSER_SYNC_RELOAD_DELAY = 500;
 
-gulp.task('nodemon', function (cb) {
- var called = false;
- return nodemon({
-   script: 'app.js',
-   ext: 'html js jade styl'
-    })
-   .on('start', function onStart() {
-     if (!called) {
-       called = true;
-       cb();
-     }
-   })
-   .on('restart', function onRestart() {
-     setTimeout(function reload() {
-       browserSync.reload({
-         stream: false   //
-       });
-     }, BROWSER_SYNC_RELOAD_DELAY);
-   });
+
+gulp.task('default', ['clean'], function() {
+    gulp.start('styles', 'scripts', 'images');
 });
 
-gulp.task('bs', ['nodemon'], function () {
-  browserSync.init({
-    files: ['dist/**/*.*'],
-    proxy: 'http://localhost:3000',
-    port: 5000,
-    browser: ['google chrome']
-  });
+
+gulp.task('watch', function() {
+  // Watch .scss files
+  gulp.watch('src/styles/**/*.styl', ['styles']);
+  // Watch .js files
+  gulp.watch('src/scripts/**/*.js', ['scripts']);
+  // Watch image files
+  gulp.watch('src/images/**/*', ['images']);
+  // Create LiveReload server
+  livereload.listen();
+  // Watch any files in dist/, reload on change
+  gulp.watch(['dist/**']).on('change', livereload.changed);
+
 });
 
-// gulp.task('nodemon', ['build'], function () {
-//     var called = false;
-//     return nodemon({ script: 'app.js',
-//                     ext: 'html js jade styl',
-//                     ignore: [
-//                       'node_modules/'
-//                     ]})
-//     .on('change', ['build'])
-//     .on('restart', function () {
-//       console.log('restarted!')
+
+//
+//
+// var BROWSER_SYNC_RELOAD_DELAY = 500;
+//
+// gulp.task('nodemon', function (cb) {
+//  var called = false;
+//  return nodemon({
+//    script: 'app.js'
+//    ext: 'html js jade styl'
 //     })
-// })
-
-// gulp.task('bs', ['nodemon'], function(){
-//   browserSync.init(null, {
-// 		    proxy: "http://localhost:3001",
-//         files: ["dist/**/*.*"],
-//         browser: "google chrome",
-//         port: 3000,
-// 	});
-// })
-
-gulp.task('default', ['bs'], function () {
-    gulp.watch('./views/**/*.jade', browserSync.reload);
-    gulp.watch('./dist/**/*.js', browserSync.reload);
-    gulp.watch('./dist/**/*.css', browserSync.reload);
-    gulp.watch(['./routes/**/*.js', './app.js']);
-});
+//    .on('start', function onStart() {
+//      if (!called) {
+//        called = true;
+//        cb();
+//      }
+//    })
+//    .on('restart', function onRestart() {
+//      setTimeout(function reload() {
+//        browserSync.reload({
+//          stream: false   //
+//        });
+//      }, BROWSER_SYNC_RELOAD_DELAY);
+//    });
+// });
+//
+// gulp.task('bs', ['build', 'nodemon'], function () {
+//   browserSync.init({
+//     files: ['dist/**/*.*'],
+//     proxy: 'http://localhost:3000',
+//     port: 5000,
+//     browser: ['google chrome']
+//   });
+// });
+//
+// gulp.task('default', ['bs'], function () {
+//     gulp.watch('./views/**/*.jade', ['build']);
+//     gulp.watch('./src/**/*.js', ['build']);
+//     gulp.watch('./src/**/*.styl', ['build']);
+//     gulp.watch(['./routes/**/*.js', './app.js']);
+// });

@@ -38,9 +38,11 @@ app.use(express.static(path.join(__dirname, 'dist')));
 var routes = require('./routes/index');
 var users = require('./routes/users');
 var gene = require('./routes/gene')
+var variant = require('./routes/variant')
 app.use('/', routes);
 app.use('/users', users);
 app.use('/gene', gene)
+app.use('/variant', variant)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
