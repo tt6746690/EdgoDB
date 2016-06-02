@@ -13,7 +13,7 @@ var app = express();
 var pool  = mysql.createPool({
   connectionLimit : 10,
   host     : 'localhost',
-  user     : 'markwang',
+  user     : 'public',
   password : '1122',
   database : 'EdgoDB',
   port     : 3306
