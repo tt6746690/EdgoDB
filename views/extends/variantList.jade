@@ -17,7 +17,7 @@ block content
           each item in variant 
             tr 
               td
-                a(href="/gene/"+ item.ENTREZ_GENE_ID) #{item.HUGO_GENE_SYMBOL}
+                a(href="/gene/"+ item.HUGO_GENE_SYMBOL) #{item.HUGO_GENE_SYMBOL}
               td
                 a(href="/variant/" + item.MUT_HGVS_NT_ID) #{item.MUT_HGVS_NT_ID}
               td= item.MUT_HGVS_AA_ID

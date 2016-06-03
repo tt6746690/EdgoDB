@@ -29,7 +29,7 @@ gulp.task('styles', function () {
 })
 
 gulp.task('scripts', function() {
-  return gulp.src('src/javascripts/**/*.js')
+  return gulp.src('src/scripts/**/*.js')
     .pipe(jshint('.jshintrc'))
     .pipe(jshint.reporter('default'))
     .pipe(concat('main.js'))
@@ -64,56 +64,14 @@ gulp.task('default', ['clean'], function() {
 
 gulp.task('watch', function() {
   // Watch .scss files
-  gulp.watch('src/styles/**/*.styl', ['styles']);
+  gulp.watch('src/styles/**/*.styl', ['build']);
   // Watch .js files
-  gulp.watch('src/scripts/**/*.js', ['scripts']);
+  gulp.watch('src/scripts/**/*.js', ['build']);
   // Watch image files
-  gulp.watch('src/images/**/*', ['images']);
+  gulp.watch('src/images/**/*', ['build']);
   // Create LiveReload server
   livereload.listen();
   // Watch any files in dist/, reload on change
   gulp.watch(['dist/**']).on('change', livereload.changed);
 
 });
-
-
-//
-//
-// var BROWSER_SYNC_RELOAD_DELAY = 500;
-//
-// gulp.task('nodemon', function (cb) {
-//  var called = false;
-//  return nodemon({
-//    script: 'app.js'
-//    ext: 'html js jade styl'
-//     })
-//    .on('start', function onStart() {
-//      if (!called) {
-//        called = true;
-//        cb();
-//      }
-//    })
-//    .on('restart', function onRestart() {
-//      setTimeout(function reload() {
-//        browserSync.reload({
-//          stream: false   //
-//        });
-//      }, BROWSER_SYNC_RELOAD_DELAY);
-//    });
-// });
-//
-// gulp.task('bs', ['build', 'nodemon'], function () {
-//   browserSync.init({
-//     files: ['dist/**/*.*'],
-//     proxy: 'http://localhost:3000',
-//     port: 5000,
-//     browser: ['google chrome']
-//   });
-// });
-//
-// gulp.task('default', ['bs'], function () {
-//     gulp.watch('./views/**/*.jade', ['build']);
-//     gulp.watch('./src/**/*.js', ['build']);
-//     gulp.watch('./src/**/*.styl', ['build']);
-//     gulp.watch(['./routes/**/*.js', './app.js']);
-// });

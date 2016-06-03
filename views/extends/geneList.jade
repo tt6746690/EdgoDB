@@ -13,7 +13,7 @@ block content
         - each row in rows
           tr 
             td
-              a(href = '/gene/' + row["ENTREZ_GENE_ID"]) #{row["HUGO_GENE_SYMBOL"]}
+              a(href = '/gene/' + row["HUGO_GENE_SYMBOL"]) #{row["HUGO_GENE_SYMBOL"]}
             td
               a(href = 'http://www.ncbi.nlm.nih.gov/gene/' + row["ENTREZ_GENE_ID"]) #{row["ENTREZ_GENE_ID"]}
     div.col-md-2

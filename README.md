@@ -21,7 +21,7 @@
 
 #### FRONTEND
 
-- [ ]
+- [ ] implement typeahead bloodhound search bar
 
 -----
 
@@ -77,8 +77,7 @@
 [_Google Fonts_](https://www.google.com/fonts)   
 [_Stylus Docs_](http://stylus-lang.com/try.html#?code=body%20%7B%0A%20%20font%3A%2014px%2F1.5%20Helvetica%2C%20arial%2C%20sans-serif%3B%0A%20%20%23logo%20%7B%0A%20%20%20%20border-radius%3A%205px%3B%0A%20%20%7D%0A%7D)    
 [_Jade/Pug Docs_](http://jade-lang.com/reference/) and [_cheatsheet_](https://naltatis.github.io/jade-syntax-docs/)  
-
-
+[_TypeAhead + Bloodhound_](https://twitter.github.io/typeahead.js/examples/) and [_Typeahead Doc_](https://github.com/twitter/typeahead.js/blob/master/doc/jquery_typeahead.md)  
 
 -----
 
@@ -112,4 +111,5 @@
 [_How to insert into multiple tables with foreign keys_](http://www.rndblog.com/insert-into-multiple-mysql-tables-linked-by-a-foreign-key/)  
 [_What is the purpose of python with statement_](http://effbot.org/zone/python-with-statement.htm)  
 [_How to create a python dictionary with list as defaults?_](http://stackoverflow.com/questions/28194184/how-do-i-create-a-dictionary-with-keys-from-a-list-and-values-separate-empty-lis)  
-[_Useful nodejs and mysql tutorial on connection pooling_](http://stackoverflow.com/questions/6731214/node-mysql-connection-pooling)
+[_Useful nodejs and mysql tutorial on connection pooling_](http://stackoverflow.com/questions/6731214/node-mysql-connection-pooling)  
+[_Good intro to RegExp_](http://www.w3schools.com/jsref/jsref_obj_regexp.asp)  

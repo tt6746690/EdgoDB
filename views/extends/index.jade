@@ -7,16 +7,6 @@ block content
   div.container 
     div.row 
       div.col-md-1
-      div.input-group.col-md-10 
-        input(text='text', class='form-control', placeholder='Search Gene or Variant' aria-label='...')
+      div.col-md-10.input-group
+        input.typeahead.form-control(text='text', placeholder='Search Gene or Variant' aria-label='...')
       div.col-md-1
-  div.container 
-    p search bar not working yet... but these links work:
-    div 
-      a(href="./gene") gene listing
-    div
-      a(href="./gene/2") gene A2M
-    div
-      a(href="./variant") variant listing (takes too long)
-    div
-      a(href="./variant/NM_000014:c.2915G%3EA") variant NM_000014:c.2915G>A

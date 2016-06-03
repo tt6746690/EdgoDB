@@ -5,6 +5,7 @@ var pool = require('../app.js')
 router.get('/', function(req, res, next){
   pool.getConnection(function(err, connection) {
     connection.query( 'SELECT * FROM Gene;', function(err, rows) {
+      if (err) throw err;
       res.render('geneList', { rows: rows });
       connection.release();
     });
@@ -14,7 +15,8 @@ router.get('/', function(req, res, next){
 
 router.get('/:geneid', function(req, res, next){
   pool.getConnection(function(err, connection) {
-    sqlstr = "SELECT * FROM Gene JOIN Transcript USING (ENTREZ_GENE_ID) JOIN Variant USING (REFSEQ_ID) WHERE ENTREZ_GENE_ID = ?;"
+    if (err) throw err;
+    sqlstr = "SELECT * FROM Gene JOIN Transcript USING (ENTREZ_GENE_ID) JOIN Variant USING (REFSEQ_ID) WHERE HUGO_GENE_SYMBOL = ?;"
     connection.query(sqlstr, [req.params.geneid], function(err, rows) {
       var result = []
       for (var i = 0; i < rows.length; i++){

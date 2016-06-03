@@ -2,6 +2,9 @@ import MySQLdb
 import csv
 from collections import defaultdict
 from Config import DB_HOST, DB_USER, DB_PASS, DB_NAME
+import json
+
+
 
 SORT = "Sort"
 # Gene
@@ -109,6 +112,12 @@ class LoadData:
                 if v == '':
                     dic[str(i)] += 1
         return dic
+
+    def exportToJSON(self, colName):
+        """exporting specific columns to json format"""
+        data = self.data[colName]
+        with open(colName +'.txt', 'w') as outfile:
+            json.dump(data, outfile)
 
 ### Loading methods
 
@@ -308,7 +317,7 @@ class LoadData:
         self.loadMeasurementTable()
         self.loadSummaryStatisticsTable()
 
-        
+
 if __name__ == "__main__":
     ld = LoadData()
     ld.importCSV("./origExcel/csvMutCollection.csv")
