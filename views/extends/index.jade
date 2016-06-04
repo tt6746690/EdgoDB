@@ -1,12 +1,13 @@
 extends ../layout
   
 block content
-  h1.display-1 EdgoDB
-  p.lead An interaction and localization database for rare disease variants
+  div.container
+    h1.display-1 EdgoDB
+    p.lead An interaction and localization database for rare disease variants
   div.stuffing
   div.container 
     div.row 
-      div.col-md-1
-      div.col-md-10.input-group
+      div.col-md-2.col-xs-1
+      div.col-md-8.col-xs-10.input-group
         input.typeahead.form-control(text='text', placeholder='Search Gene or Variant' aria-label='...')
-      div.col-md-1
+      div.col-md-2.col-xs-1
