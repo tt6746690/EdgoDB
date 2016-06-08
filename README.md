@@ -12,16 +12,17 @@
 
 #### BACKEND
 
-- [ ] deploy using [nginx](http://nginx.org/en/)
+- [x] deploy using [nginx](http://nginx.org/en/)
   - [ ] set up CA-SSL and nginx configs as well as server to allow for https
-  - [ ] allow for static file serving for compressed data files
-  - [ ] use [PM2](http://pm2.keymetrics.io/) for persisting node processes
+  - [x] allow for static file serving for compressed data files
+  - [x] use [PM2](http://pm2.keymetrics.io/) for persisting node processes (used forever instead)
 
 ---
 
 #### FRONTEND
 
-- [ ] implement typeahead bloodhound search bar
+- [x] implement typeahead bloodhound search bar
+- [ ] implement external links to OMIM(gene + disease?), ENTREZ, DBSNP, MUT_HGVS_NT (gene + variant), PMID (variant), HGMD (variant), EXACBROWSER (variant)
 
 -----
 
@@ -112,4 +113,5 @@
 [_What is the purpose of python with statement_](http://effbot.org/zone/python-with-statement.htm)  
 [_How to create a python dictionary with list as defaults?_](http://stackoverflow.com/questions/28194184/how-do-i-create-a-dictionary-with-keys-from-a-list-and-values-separate-empty-lis)  
 [_Useful nodejs and mysql tutorial on connection pooling_](http://stackoverflow.com/questions/6731214/node-mysql-connection-pooling)  
-[_Good intro to RegExp_](http://www.w3schools.com/jsref/jsref_obj_regexp.asp)  
+[_Good intro to RegExp_](http://www.w3schools.com/jsref/jsref_obj_regexp.asp)   
+[_Is it possible to do client side scraping: NO > same origin policy_](http://stackoverflow.com/questions/9149672/is-there-any-javascript-and-client-side-wget-implementation)

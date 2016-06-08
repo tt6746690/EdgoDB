@@ -248,49 +248,73 @@ class LoadData:
             self.db.rollback()
 
     def loadMeasurementTable(self):
-        """ wrapper around loadOneMeasurement"""
+        """ wrapper around loadLUMIERMeasurement(WT|MUT)Table"""
         Interactors = ["HSP90AB1", "HSPA8", "BAG2", "STUB1", "PSMD2", "HSPA5", "HSP90B1"]
-        [self.loadOneMeasurement(i) for i in Interactors]
+        [self.loadLUMIERMeasurementWTTable(i) for i in Interactors]
+        [self.loadLUMIERMeasurementMUTTable(i) for i in Interactors]
 
 
-    def loadOneMeasurement(self, interactor):
+    def loadLUMIERMeasurementWTTable(self, interactor):
         """helper function to load the measurement table"""
 
         # create namespace for excel colnames
         INTERACTOR = interactor
-        INTERACTION_WT_Z_SCORE = interactor + ' wt'
-        INTERACTION_MUT_Z_SCORE = interactor + ' mut'
-        INTERACTION_DIFF = interactor + ' diff Z'
-        INTERACTION_SIGNIFICANT = interactor + ' Significant?'
-        EXPRESSION_WT_ELISA = interactor + ' wt ELISA'
-        EXPRESSION_MUT_ELISA = interactor + ' mut ELISA'
-        EXPRESSION_RATIO = interactor + ' ratio E'
+        INTERACTION_Z_SCORE = interactor + ' wt'
+        EXPRESSION_ELISA = interactor + ' wt ELISA'
 
-        subsets = self.subsetCols([MUT_HGVS_NT_ID, INTERACTION_WT_Z_SCORE,
-        INTERACTION_MUT_Z_SCORE, INTERACTION_DIFF, INTERACTION_SIGNIFICANT,
-        EXPRESSION_WT_ELISA, EXPRESSION_MUT_ELISA, EXPRESSION_RATIO])
+        subsets = self.subsetCols([REFSEQ_ID, INTERACTION_Z_SCORE, EXPRESSION_ELISA])
         inserts = self.replaceNullwithEmptyString(subsets)
-        inserts = [(t[0], interactor, t[1], t[2], t[3], 1 if t[4]=='hit' else 0, t[5], t[6], t[7]) for t in inserts]
-        sqlstr = """INSERT INTO Measurement (VARIANT_ID, INTERACTOR, INTERACTION_WT_Z_SCORE,
-                    INTERACTION_MUT_Z_SCORE, INTERACTION_DIFF, INTERACTION_SIGNIFICANT,
-                    EXPRESSION_WT_ELISA, EXPRESSION_MUT_ELISA, EXPRESSION_RATIO)
-                    VALUES ((SELECT VARIANT_ID FROM Variant WHERE MUT_HGVS_NT_ID = %s),
-                    %s, NULLIF(%s, ''), NULLIF(%s, ''), NULLIF(%s, ''), %s,
-                    NULLIF(%s, ''), NULLIF(%s, ''), NULLIF(%s, ''))"""
+        # remove rows that does not contain the required data
+        inserts = [t for t in inserts if t[1] and t[2] is not '']
+        # remove duplicate element as there are redundant data for variants sharing same REFSEQ_ID
+        inserts = list(set([(t[0].split(':')[0], interactor, t[1], t[2]) for t in inserts]))
+        sqlstr = """INSERT INTO LUMIERMeasurementWT (REFSEQ_ID, INTERACTOR,
+                    INTERACTION_Z_SCORE, EXPRESSION_ELISA)
+                    VALUES (%s, %s, %s, %s)"""
         try:
             self.c.executemany(sqlstr, inserts)
             self.db.commit()
         except MySQLdb.Error, e:
-            print 'insert into LocalCollection table failed'
+            print 'insert into LUMIERMeasurementWT table failed'
             raise e
             self.db.rollback()
 
-    def loadSummaryStatisticsTable(self):
+    def loadLUMIERMeasurementMUTTable(self, interactor):
+        """helper function to load the measurement table"""
+
+        # create namespace for excel colnames
+        INTERACTOR = interactor
+        INTERACTION_Z_SCORE = interactor + ' mut'
+        INTERACTION_DIFFERENCE = interactor + ' diff Z'
+        INTERACTION_SIGNIFICANT = interactor + ' Significant?'
+        EXPRESSION_ELISA = interactor + ' mut ELISA'
+        EXPRESSION_RATIO = interactor + ' ratio E'
+
+        subsets = self.subsetCols([MUT_HGVS_NT_ID, INTERACTION_Z_SCORE,
+        INTERACTION_DIFFERENCE, INTERACTION_SIGNIFICANT, EXPRESSION_ELISA, EXPRESSION_RATIO])
+        inserts = self.replaceNullwithEmptyString(subsets)
+        # remove rows that does not contain the required data
+        inserts = [t for t in inserts if t[1] and t[2] and t[4] and t[5] is not '']
+        inserts = [(t[0], interactor, t[1], t[2], 1 if t[3]=='hit' else 0, t[4], t[5]) for t in inserts]
+        sqlstr = """INSERT INTO LUMIERMeasurementMUT (VARIANT_ID, INTERACTOR,
+                    INTERACTION_Z_SCORE, INTERACTION_DIFFERENCE,
+                    INTERACTION_SIGNIFICANT, EXPRESSION_ELISA, EXPRESSION_RATIO)
+                    VALUES ((SELECT VARIANT_ID FROM Variant WHERE MUT_HGVS_NT_ID = %s),
+                    %s, %s, %s, %s, %s, %s)"""
+        try:
+            self.c.executemany(sqlstr, inserts)
+            self.db.commit()
+        except MySQLdb.Error, e:
+            print 'insert into LUMIERMeasurementMUT table failed'
+            raise e
+            self.db.rollback()
+
+    def loadLUMIERSummaryTable(self):
         subsets = self.subsetCols([MUT_HGVS_NT_ID, WT_ELISA_AVERAGE, MUT_ELISA_AVERAGE,
         ELISA_RATIO_AVERAGE, ELISA_LOG2_RATIO_AVERAGE, ELISA_LOG2_RATIO_SE,
         ELISA_LOG2_RATIO_P_VALUE])
         inserts = self.replaceNullwithEmptyString(subsets)
-        sqlstr = """INSERT INTO SummaryStatistics (VARIANT_ID, WT_ELISA_AVERAGE,
+        sqlstr = """INSERT INTO LUMIERSummary (VARIANT_ID, WT_ELISA_AVERAGE,
                     MUT_ELISA_AVERAGE, ELISA_RATIO_AVERAGE, ELISA_LOG2_RATIO_AVERAGE,
                     ELISA_LOG2_RATIO_SE,ELISA_LOG2_RATIO_P_VALUE)
                     VALUES ((SELECT VARIANT_ID FROM Variant WHERE MUT_HGVS_NT_ID = %s),
@@ -300,7 +324,7 @@ class LoadData:
             self.c.executemany(sqlstr, inserts)
             self.db.commit()
         except MySQLdb.Error, e:
-            print 'insert into LocalCollection table failed'
+            print 'insert into loadLUMIERSummary table failed'
             raise e
             self.db.rollback()
 
@@ -315,7 +339,7 @@ class LoadData:
         self.loadVariantPropertyTable()
         self.loadLocalCollectionTable()
         self.loadMeasurementTable()
-        self.loadSummaryStatisticsTable()
+        self.loadLUMIERSummaryTable()
 
 
 if __name__ == "__main__":
