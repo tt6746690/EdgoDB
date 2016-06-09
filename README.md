@@ -13,7 +13,7 @@
 #### BACKEND
 
 - [x] deploy using [nginx](http://nginx.org/en/)
-  - [ ] set up CA-SSL and nginx configs as well as server to allow for https
+  - [ ] set up CA-SSL and nginx configs as well as server to allow for https using [lets encrypt](https://letsencrypt.org/)
   - [x] allow for static file serving for compressed data files
   - [x] use [PM2](http://pm2.keymetrics.io/) for persisting node processes (used forever instead)
 

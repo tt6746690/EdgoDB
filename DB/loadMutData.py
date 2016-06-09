@@ -57,6 +57,13 @@ ELISA_LOG2_RATIO_AVERAGE = "Average ELISA log2 ratio"
 ELISA_LOG2_RATIO_SE = "Average ELISA log2 ratio SE"
 ELISA_LOG2_RATIO_P_VALUE = "ELISA log2 ratio p-value"
 
+# Y2H data
+ALLELE_ID = "Allele_ID"
+INTERACTOR_ENTREZ_GENE_ID = "Interactor_Gene_ID"
+Y2H_SCORE = "Y2H_score"
+
+
+
 class LoadData:
     """
     loading data from excel to mysql using mysqldb
@@ -77,6 +84,7 @@ class LoadData:
         import CSV file and store columns as dict[list[tuple]] in self.data
         """
         header = []
+        self.data.clear()
         with open(excelPath, 'r') as csvfile:
             data = csv.reader(csvfile)
             for index,row in enumerate(data):
@@ -341,8 +349,44 @@ class LoadData:
         self.loadMeasurementTable()
         self.loadLUMIERSummaryTable()
 
+    def loadY2HWTInteractorTable(self):
+        subsets = self.subsetCols([ALLELE_ID, INTERACTOR_ENTREZ_GENE_ID, Y2H_SCORE])
+        inserts = self.replaceNullwithEmptyString(subsets)
+        inserts = [(t[0].split('_')[0], t[0].split('_')[1], t[1], t[2]) for t in inserts]
+        WTinserts = [t for t in inserts if t[1] == "0"]
+        WTinserts = [(t[2], t[3], t[0]) for t in WTinserts]
+        MUTinserts = [t for t in inserts if t[1] != "0"]
+        MUTinserts = [(t[2], t[3], t[1]) for t in MUTinserts]
+        sqlstr = """INSERT INTO Y2HWTInteractor (WT_INTERACTOR_ID,
+                    INTERACTOR_ENTREZ_GENE_ID, Y2H_SCORE, REFSEQ_ID)
+                    VALUES (0, %s, %s, (SELECT REFSEQ_ID FROM Gene JOIN
+                    Transcript USING (ENTREZ_GENE_ID) WHERE ENTREZ_GENE_ID = %s LIMIT 1))"""
+
+        try:
+            self.c.executemany(sqlstr, WTinserts)
+            self.db.commit()
+        except MySQLdb.Error, e:
+            print 'insert into WTInteractor table failed'
+            raise e
+            self.db.rollback()
+
+        sqlstr = """INSERT INTO Y2HMUTInteractor (MUT_INTERACTOR_ID,
+                    INTERACTOR_ENTREZ_GENE_ID, Y2H_SCORE, VARIANT_ID)
+                    VALUES (0, %s, %s, (SELECT VARIANT_ID FROM Variant
+                    WHERE CCSB_MUTATION_ID = %s LIMIT 1))"""
+        try:
+            self.c.executemany(sqlstr, MUTinserts)
+            self.db.commit()
+        except MySQLdb.Error, e:
+            print 'insert into MUTInteractor table failed'
+            raise e
+            self.db.rollback()
+
+
 
 if __name__ == "__main__":
     ld = LoadData()
     ld.importCSV("./origExcel/csvMutCollection.csv")
     ld.loadTables()
+    ld.importCSV("./origExcel/mmc3.csv")
+    ld.loadY2HWTInteractorTable()
