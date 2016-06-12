@@ -8,7 +8,7 @@
   - [x] set up .my.cnf for db access
 - [ ] update attributes from [ExAC Browser](http://exac.broadinstitute.org/) to identify rare alleles
 - [x] update attributes using biomaRt (For future annotation, use python scrapy instead!!)
-
+- [ ] update variant chromosome location using VEP.
 ---
 
 #### BACKEND
@@ -81,7 +81,9 @@
 [_Jade/Pug Docs_](http://jade-lang.com/reference/) and [_cheatsheet_](https://naltatis.github.io/jade-syntax-docs/)  
 [_TypeAhead + Bloodhound_](https://twitter.github.io/typeahead.js/examples/) and [_Typeahead Doc_](https://github.com/twitter/typeahead.js/blob/master/doc/jquery_typeahead.md)   
 [_Biodbnet_](https://biodbnet-abcc.ncifcrf.gov/webServices/RestWebService.php)    
-[_RMySQL_](https://cran.r-project.org/web/packages/RMySQL/RMySQL.pdf)  
+[_RMySQL_](https://cran.r-project.org/web/packages/RMySQL/RMySQL.pdf)   
+[_LiftOver Tutorial_](http://genome.sph.umich.edu/wiki/LiftOver)   
+[_pyliftover_](https://pypi.python.org/pypi/pyliftover)  
 
 -----
 
@@ -121,3 +123,8 @@
 [_A nice article on ID conversion cross biological databases_](https://humgenomics.biomedcentral.com/articles/10.1186/1479-7364-5-6-703)   
 [_a nice tutorial on how to use BioMart_](http://davetang.org/muse/2012/04/27/learning-to-use-biomart/)  
 [_How to securely store mysql password locally_](http://dev.mysql.com/doc/refman/5.7/en/password-security-user.html)  
+[_A good biostar post on genome assembly conversion_](https://www.biostars.org/p/65558/)   
+[_Nice summary from UCSC on genome assembly versions_](http://genome.ucsc.edu/FAQ/FAQreleases.html)
+
+---
+This is under an [__ODbL license__](http://opendatacommons.org/licenses/odbl/1.0/)

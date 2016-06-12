@@ -336,6 +336,41 @@ class LoadData:
             raise e
             self.db.rollback()
 
+    def updateChrFromHg18ToHg19(self):
+        # there is 78 missing chr location for variants
+        # 2 additional chr location cannot be mapped with liftover
+
+        from pyliftover import LiftOver
+        lo = LiftOver('hg18ToHg19.over.chain.gz')
+
+        def lifting(chrPosition):
+            chromosome = chrPosition.split(':')[0]
+            position = int(chrPosition.split(':')[1])
+            convert = lo.convert_coordinate(chromosome, position)
+            if len(convert) != 1:
+                print('liftover failed to convert one-to-one at {}:{}'
+                        .format(chromosome, position))
+                return ''
+            rs = ':'.join((str(convert[0][0]), str(convert[0][1])))
+            return rs
+
+
+        subsets = self.subsetCols([MUT_HGVS_NT_ID, CHR_COORDINATE_HG18])
+        inserts = self.replaceNullwithEmptyString(subsets)
+        inserts = [t for t in inserts if t[1] != '']
+        inserts = [(lifting(t[1]), t[0]) for t in inserts]
+
+        sqlstr = """UPDATE Variant
+                    SET CHR_COORDINATE_HG19 = NULLIF(%s, '')
+                    WHERE MUT_HGVS_NT_ID = %s;"""
+        try:
+            self.c.executemany(sqlstr, inserts)
+            self.db.commit()
+        except MySQLdb.Error, e:
+            print 'update hg18 to hg19 failed'
+            raise e
+            self.db.rollback()
+
     def loadTables(self):
         """
         master function which controls individual insertion
@@ -348,6 +383,7 @@ class LoadData:
         self.loadLocalCollectionTable()
         self.loadMeasurementTable()
         self.loadLUMIERSummaryTable()
+        self.updateChrFromHg18ToHg19()
 
     def loadY2HWTInteractorTable(self):
         subsets = self.subsetCols([ALLELE_ID, INTERACTOR_ENTREZ_GENE_ID, Y2H_SCORE])
@@ -381,6 +417,7 @@ class LoadData:
             print 'insert into MUTInteractor table failed'
             raise e
             self.db.rollback()
+
 
 
 
