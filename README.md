@@ -5,8 +5,9 @@
   - [x] set up of mysql server and initial design and creation of schemas  
   - [x] importing of initial data from excel to the database
   - [x] optimize by eliminating anomalies and reinforce constraints
-  - [ ] set up ssl login for db access
+  - [x] set up .my.cnf for db access
 - [ ] update attributes from [ExAC Browser](http://exac.broadinstitute.org/) to identify rare alleles
+- [x] update attributes using biomaRt (For future annotation, use python scrapy instead!!)
 
 ---
 
@@ -22,7 +23,7 @@
 #### FRONTEND
 
 - [x] implement typeahead bloodhound search bar
-- [ ] implement external links to OMIM(gene + disease?), ENTREZ, DBSNP, MUT_HGVS_NT (gene + variant), PMID (variant), HGMD (variant), EXACBROWSER (variant)
+- [ ] implement external links to OMIM(gene + disease?), ENTREZ, DBSNP, MUT_HGVS_NT (gene + variant), PMID (variant), exacbrowser (variant)
 
 -----
 
@@ -67,7 +68,7 @@
 
 #### Useful packages/libraries and resources
 
-[_BiomaRt_](https://bioconductor.org/packages/release/bioc/html/biomaRt.html)  
+[_BiomaRt_](https://bioconductor.org/packages/release/bioc/html/biomaRt.html) and [_R package doc_](https://bioconductor.org/packages/release/bioc/vignettes/biomaRt/inst/doc/biomaRt.pdf)
 [_Ensembl VEP_](http://rest.ensembl.org/#Variation)  
 [_Python: HGVS_](http://hgvs.readthedocs.io/en/0.4.x/)   
 [_Polyphen2_](http://genetics.bwh.harvard.edu/pph2/dokuwiki/faq#automated_batch_submission)  
@@ -78,7 +79,9 @@
 [_Google Fonts_](https://www.google.com/fonts)   
 [_Stylus Docs_](http://stylus-lang.com/try.html#?code=body%20%7B%0A%20%20font%3A%2014px%2F1.5%20Helvetica%2C%20arial%2C%20sans-serif%3B%0A%20%20%23logo%20%7B%0A%20%20%20%20border-radius%3A%205px%3B%0A%20%20%7D%0A%7D)    
 [_Jade/Pug Docs_](http://jade-lang.com/reference/) and [_cheatsheet_](https://naltatis.github.io/jade-syntax-docs/)  
-[_TypeAhead + Bloodhound_](https://twitter.github.io/typeahead.js/examples/) and [_Typeahead Doc_](https://github.com/twitter/typeahead.js/blob/master/doc/jquery_typeahead.md)  
+[_TypeAhead + Bloodhound_](https://twitter.github.io/typeahead.js/examples/) and [_Typeahead Doc_](https://github.com/twitter/typeahead.js/blob/master/doc/jquery_typeahead.md)   
+[_Biodbnet_](https://biodbnet-abcc.ncifcrf.gov/webServices/RestWebService.php)    
+[_RMySQL_](https://cran.r-project.org/web/packages/RMySQL/RMySQL.pdf)  
 
 -----
 
@@ -114,4 +117,7 @@
 [_How to create a python dictionary with list as defaults?_](http://stackoverflow.com/questions/28194184/how-do-i-create-a-dictionary-with-keys-from-a-list-and-values-separate-empty-lis)  
 [_Useful nodejs and mysql tutorial on connection pooling_](http://stackoverflow.com/questions/6731214/node-mysql-connection-pooling)  
 [_Good intro to RegExp_](http://www.w3schools.com/jsref/jsref_obj_regexp.asp)   
-[_Is it possible to do client side scraping: NO > same origin policy_](http://stackoverflow.com/questions/9149672/is-there-any-javascript-and-client-side-wget-implementation)
+[_Is it possible to do client side scraping: NO > same origin policy_](http://stackoverflow.com/questions/9149672/is-there-any-javascript-and-client-side-wget-implementation)  
+[_A nice article on ID conversion cross biological databases_](https://humgenomics.biomedcentral.com/articles/10.1186/1479-7364-5-6-703)   
+[_a nice tutorial on how to use BioMart_](http://davetang.org/muse/2012/04/27/learning-to-use-biomart/)  
+[_How to securely store mysql password locally_](http://dev.mysql.com/doc/refman/5.7/en/password-security-user.html)  
