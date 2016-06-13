@@ -1,16 +1,19 @@
 # -*- coding: utf-8 -*-
 import scrapy
+import MySQLdb
 from scrapy.loader import ItemLoader
 from annotatePy.items import VariantAnnotationItem
+
 
 
 class ExacSpider(scrapy.Spider):
     name = "exac"
     allowed_domains = ["http://exac.broadinstitute.org/"]
-    start_urls = (
-        'http://exac.broadinstitute.org/variant/22-46615880-T-C',           # this is in the database
-        'http://exac.broadinstitute.org/variant/15-40509781-G-C'
-    )
+
+    start_urls = []
+    with open('exacVariantUrls.txt') as f:
+        for url in f:
+            start_urls.append(url.strip())
 
     def parse(self, response):
 

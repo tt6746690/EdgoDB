@@ -14,26 +14,28 @@ class ManipulateFieldPipeline(object):
 
 
 class MySQLUpdatePipeline(object):
-    def __init__(self):
+
+    def __init__(self, settings):
+        self.settings = settings
         self.db = MySQLdb.connect(
                     host = settings['MYSQL_HOST'],
                     user = settings['MYSQL_USER'],
                     db = settings['MYSQL_DBNAME'],
-                    passwd = settings['MYSQL_PASSWD'])
+                    passwd = settings['MYSQL_PASSWD'],
+                    charset="utf8")
         self.c = self.db.cursor()
 
     @classmethod
     def from_crawler(cls, crawler):
         settings = crawler.settings
+        return cls(settings)
 
     def process_item(self, item, spider):
         try:
             self.c.execute("""UPDATE Variant SET EXAC_ALLELE_FREQUENCY = %s
-                            WHERE CHR_COORDINATE_HG19 = '%s' """,
-                            (item['alleleFrequency'], item['chrLocation']))
+                            WHERE CHR_COORDINATE_HG19 = %s AND MUT_HGVS_NT_ID LIKE %s""",
+                            (item['alleleFrequency'], item['chrLocation'], '%' + item['mutation']))
             self.db.commit()
-            spider.log("Item updated in db: %s %s" % (item['alleleFrequency'], item['chrLocation']))
         except MySQLdb.Error, e:
             spider.log("Error %d: %s" % (e.args[0], e.args[1]))
         return item
-# AND MUT_HGVS_NT LIKE '_%s'

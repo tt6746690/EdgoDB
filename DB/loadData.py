@@ -127,6 +127,20 @@ class LoadData:
         with open(colName +'.txt', 'w') as outfile:
             json.dump(data, outfile)
 
+    def generateExacVariantUrlForAnnotatePy(self):
+        """generate url for scrapy start_urls"""
+        try:
+            self.c.execute("""SELECT CHR_COORDINATE_HG19, MUT_HGVS_NT_ID
+                            FROM Variant WHERE CHR_COORDINATE_HG19 IS NOT NULL""")
+            urls = ['http://exac.broadinstitute.org/variant/' +
+                    i[0].split(':')[0].replace('chr', '') + '-' +
+                    i[0].split(':')[1] + '-' + i[1][-3:].replace('>', '-')
+                    for i in self.c.fetchall()]
+            with open('exacVariantUrls.txt', 'w') as f:
+                for url in urls:
+                    f.write(url + '\n')
+        except MySQLdb.Error, e:
+            raise e
 ### Loading methods
 
     def loadGeneTable(self):
@@ -423,7 +437,8 @@ class LoadData:
 
 if __name__ == "__main__":
     ld = LoadData()
-    ld.importCSV("./origExcel/csvMutCollection.csv")
-    ld.loadTables()
-    ld.importCSV("./origExcel/mmc3.csv")
-    ld.loadY2HWTInteractorTable()
+    # ld.importCSV("./origExcel/csvMutCollection.csv")
+    # ld.loadTables()
+    # ld.importCSV("./origExcel/mmc3.csv")
+    # ld.loadY2HWTInteractorTable()
+    ld.generateExacVariantUrlForAnnotatePy()

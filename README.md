@@ -6,7 +6,8 @@
   - [x] importing of initial data from excel to the database
   - [x] optimize by eliminating anomalies and reinforce constraints
   - [x] set up .my.cnf for db access
-- [ ] update attributes from [ExAC Browser](http://exac.broadinstitute.org/) to identify rare alleles
+- [x] update attributes from [ExAC Browser](http://exac.broadinstitute.org/) to identify rare alleles  
+  - [ ] only 682 map chrLocation-mutation directly. There seem to be quite much confusion regarding dbsnp mapping to multiple HGVS ID, take [_this_](http://exac.broadinstitute.org/variant/10-82034395-A-C) as an example  
 - [x] update attributes using biomaRt (For future annotation, use python scrapy instead!!)
 - [ ] update variant chromosome location using VEP.
 ---
@@ -124,7 +125,8 @@
 [_a nice tutorial on how to use BioMart_](http://davetang.org/muse/2012/04/27/learning-to-use-biomart/)  
 [_How to securely store mysql password locally_](http://dev.mysql.com/doc/refman/5.7/en/password-security-user.html)  
 [_A good biostar post on genome assembly conversion_](https://www.biostars.org/p/65558/)   
-[_Nice summary from UCSC on genome assembly versions_](http://genome.ucsc.edu/FAQ/FAQreleases.html)
+[_Nice summary from UCSC on genome assembly versions_](http://genome.ucsc.edu/FAQ/FAQreleases.html)  
+[_A working example of scrapy that inserts data to mysql in pipeline_](https://github.com/rolando/dirbot-mysql)
 
 ---
 This is under an [__ODbL license__](http://opendatacommons.org/licenses/odbl/1.0/)
