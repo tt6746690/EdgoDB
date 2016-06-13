@@ -45,3 +45,9 @@ $(document).ready(function(){
     }
   });
 });
+
+$(window).load(function(){
+  $('body').scrollspy({
+      target: '#sidebar'
+  });
+})

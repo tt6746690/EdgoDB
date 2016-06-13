@@ -17,9 +17,15 @@ mixin nav(name, id, style)
                 ul.nav.navbar-nav(id="nav_item_bs_overrides", )
                     block
 
+mixin sidebar()
+  ul.nav.nav-stacked.bs-docs-sidenav.fixed(id="sidebar")
+    block
 
-
-      
+mixin sub_sidebar()
+  ul.nav.nav-stacked(id="fixed")
+    block
+  
+  
 mixin nav_item_dropdown(href, active)
   //- a dropdown is a list item 
   li(class=["dropdown", active])

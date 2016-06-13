@@ -10,6 +10,7 @@
   - [ ] only 682 map chrLocation-mutation directly. There seem to be quite much confusion regarding dbsnp mapping to multiple HGVS ID, take [_this_](http://exac.broadinstitute.org/variant/10-82034395-A-C) as an example  
 - [x] update attributes using biomaRt (For future annotation, use python scrapy instead!!)
 - [ ] update variant chromosome location using VEP.
+
 ---
 
 #### BACKEND
@@ -63,13 +64,13 @@
 [_HGVS: Human Genome Variation Society_](http://www.hgvs.org/mutnomen/)           
 [_1000Genomes_](http://www.1000genomes.org/data)   
 [_OMIM_](http://www.omim.org/)  
-
+[_UCSC SQL database_](https://genome.ucsc.edu/goldenpath/help/mysql.html)  
 
 ---
 
 #### Useful packages/libraries and resources
 
-[_BiomaRt_](https://bioconductor.org/packages/release/bioc/html/biomaRt.html) and [_R package doc_](https://bioconductor.org/packages/release/bioc/vignettes/biomaRt/inst/doc/biomaRt.pdf)
+[_BiomaRt_](https://bioconductor.org/packages/release/bioc/html/biomaRt.html) and [_R package doc_](https://bioconductor.org/packages/release/bioc/vignettes/biomaRt/inst/doc/biomaRt.pdf)   
 [_Ensembl VEP_](http://rest.ensembl.org/#Variation)  
 [_Python: HGVS_](http://hgvs.readthedocs.io/en/0.4.x/)   
 [_Polyphen2_](http://genetics.bwh.harvard.edu/pph2/dokuwiki/faq#automated_batch_submission)  
@@ -126,7 +127,8 @@
 [_How to securely store mysql password locally_](http://dev.mysql.com/doc/refman/5.7/en/password-security-user.html)  
 [_A good biostar post on genome assembly conversion_](https://www.biostars.org/p/65558/)   
 [_Nice summary from UCSC on genome assembly versions_](http://genome.ucsc.edu/FAQ/FAQreleases.html)  
-[_A working example of scrapy that inserts data to mysql in pipeline_](https://github.com/rolando/dirbot-mysql)
+[_A working example of scrapy that inserts data to mysql in pipeline_](https://github.com/rolando/dirbot-mysql)  
+[_A nice working example of bootstrap doc sidebar_](http://www.java2s.com/Tutorials/HTML_CSS/Bootstrap_Example/Nav/Create_Side_Navbar.htm)  
 
 ---
 This is under an [__ODbL license__](http://opendatacommons.org/licenses/odbl/1.0/)

@@ -437,8 +437,8 @@ class LoadData:
 
 if __name__ == "__main__":
     ld = LoadData()
-    # ld.importCSV("./origExcel/csvMutCollection.csv")
-    # ld.loadTables()
-    # ld.importCSV("./origExcel/mmc3.csv")
-    # ld.loadY2HWTInteractorTable()
-    ld.generateExacVariantUrlForAnnotatePy()
+    ld.importCSV("./origExcel/csvMutCollection.csv")
+    ld.loadTables()
+    ld.importCSV("./origExcel/mmc3.csv")
+    ld.loadY2HWTInteractorTable()
+    # ld.generateExacVariantUrlForAnnotatePy()
