@@ -46,8 +46,11 @@ $(document).ready(function(){
   });
 });
 
-$(window).load(function(){
-  $('body').scrollspy({
-      target: '#sidebar'
-  });
-})
+
+
+$(document).ready(function(){
+    $("body").scrollspy({
+        target: "#target_nav",
+        offset: 50
+    })
+});

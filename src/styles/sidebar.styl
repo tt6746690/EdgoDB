@@ -1,3 +1,5 @@
+@import config
+
 .fixed {
   position: fixed;
 }
@@ -14,29 +16,30 @@
   margin-bottom: 20px;
 }
 
+
 .bs-docs-sidebar .nav>li>a {
   display: block;
   font-size: 13px;
   font-weight: 500;
-  color: #999;
+  color: inherit;
   padding: 4px 20px;
 }
 
 .bs-docs-sidebar .nav>li>a:hover, .bs-docs-sidebar .nav>li>a:focus {
   padding-left: 19px;
-  color: #563d7c;
+  color: link_color;
   text-decoration: none;
   background-color: transparent;
-  border-left: 1px solid #563d7c;
+  border-left: 1px solid link_color;
 }
 
 .bs-docs-sidebar .nav>.active>a, .bs-docs-sidebar .nav>.active:hover>a,
   .bs-docs-sidebar .nav>.active:focus>a {
   padding-left: 18px;
-  font-weight: 700;
-  color: #563d7c;
+  font-weight: 400;
+  color: link_color;
   background-color: transparent;
-  border-left: 2px solid #563d7c;
+  border-left: 2px solid link_color;
 }
 
 .bs-docs-sidebar .nav .nav {
@@ -97,3 +100,7 @@
 .bs-docs-section:last-child {
   margin-bottom: 0;
 }
+
+
+#sidebar > li
+  text-align left

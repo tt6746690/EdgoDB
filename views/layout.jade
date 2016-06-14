@@ -4,20 +4,19 @@ html(lang='en')
     meta(charset="utf-8")
     meta(http-equiv="X-UA-Compatible", content="IE=edge")
     meta(name="viewport", content="width=device-width, initial-scale=1")
-    script(type="text/javascript", src='http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js')
-    link(href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css", rel="stylesheet")
+    link(href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css", rel="stylesheet", integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous")
     link(href='/assets/css/main.min.css', rel='stylesheet')
     title EdgoDB
   body(id='bs_overrides')
     header
       include ./includes/header.jade
-    #sidebar 
-      block sidebar      
     main
       block content 
     footer
       include ./includes/footer.jade 
-    script(src='http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js', type="text/javascript")
+    script(type="text/javascript", src='http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js')
+    script(src='http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js', type="text/javascript", integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous")
     script(src='https://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.11.1/typeahead.bundle.min.js', type="text/javascript")
+    script(src="//d3js.org/d3.v3.min.js", type="text/javascript")
     script(src='/assets/js/main.min.js', type="text/javascript")
     

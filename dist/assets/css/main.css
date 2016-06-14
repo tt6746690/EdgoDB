@@ -2,12 +2,64 @@
 @import "https://fonts.googleapis.com/css?family=Tangerine";
 @import "https://fonts.googleapis.com/css?family=Open+Sans:300,400";
 @import "http://fonts.googleapis.com/css?family=Lato&subset=latin,latin-ext";
-@import "https://fonts.googleapis.com/css?family=Poiret+One";
+@import "https://fonts.googleapis.com/css?family=Ubuntu";
+
+#bs_overrides > main > div > div > div > div.row > div > dl > dd {
+  text-align: left;
+}
+#GeneInfo > dl {
+  margin-bottom: 0px;
+}
+#bs_overrides > main > div > div > div > div > dl > dd {
+  text-align: left;
+}
+#GeneInfo {
+  text-align: left;
+  padding-left: 130px;
+}
+
+#bs_overrides img,
+#bs_overrides svg,
+#bs_overrides video,
+#bs_overrides audio {
+  border: 0;
+}
+#bs_overrides th {
+  text-align: center;
+}
+#bs_overrides a {
+  text-decoration: none;
+  transition: 0.3s;
+}
+#bs_overrides a:hover {
+  color: #8acde6;
+  text-decoration: none;
+}
+#bs_overrides button {
+  color: inherit;
+  transition: 0.3s;
+  cursor: pointer;
+}
+#bs_overrides button:hover {
+  color: #8acde6;
+}
+#bs_overrides button:active {
+  color: #8acde6;
+}
+
+.node {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+.link {
+  stroke: #999;
+  stroke-opacity: 0.6;
+}
 
 @import "https://fonts.googleapis.com/css?family=Tangerine";
 @import "https://fonts.googleapis.com/css?family=Open+Sans:300,400";
 @import "http://fonts.googleapis.com/css?family=Lato&subset=latin,latin-ext";
-@import "https://fonts.googleapis.com/css?family=Poiret+One";
+@import "https://fonts.googleapis.com/css?family=Ubuntu";
 html {
   -webkit-text-size-adjust: 100%;
       -ms-text-size-adjust: 100%;
@@ -27,9 +79,9 @@ body {
   text-align: center;
   color: #111;
   background-color: #fff;
-  height: 100%;
   overflow-x: hidden;
   overflow-y: scroll;
+  position: relative;
 }
 header {
   font: 14px "Open Sans", sans-serif;
@@ -37,8 +89,11 @@ header {
 }
 #bs_overrides > main {
   padding-top: 20px;
-  min-height: 100%;
+  min-height: 600px;
   padding-bottom: 30px;
+}
+#bs_overrides > main > h1 {
+  padding-bottom: 20px;
 }
 #bs_overrides > header > nav {
   height: 52px;
@@ -55,6 +110,7 @@ header {
   border-width: 1px;
   border-top-color: #cfcfcf;
 }
+
 .navbar-default .navbar-nav>.active>a,
 .navbar-default .navbar-nav>.active>a:hover,
 .navbar-default .navbar-nav>.active>a:focus {
@@ -69,26 +125,6 @@ header {
 .dropdown-menu>li>a:focus {
   background-color: #ececec;
 }
-#bs_overrides > main > h1 {
-  padding-bottom: 20px;
-}
-#bs_overrides > main > div:nth-child(3) > div > div.col-md-8.col-xs-10.input-group > span > div {
-  width: inherit;
-}
-#bs_overrides > main > div:nth-child(3) > div > div.col-md-8.col-xs-10.input-group > span > div > div.tt-dataset.tt-dataset-genes > h3 {
-  margin: 0;
-  font: 18px 'Poiret One', cursive;
-  padding-left: 20px;
-  padding-top: 5px;
-  padding-bottom: 5px;
-}
-#bs_overrides > main > div:nth-child(3) > div > div.col-md-8.col-xs-10.input-group > span > div > div.tt-dataset.tt-dataset-variants > h3 {
-  margin: 0;
-  font: 18px 'Poiret One', cursive;
-  padding-left: 20px;
-  padding-top: 5px;
-  padding-bottom: 5px;
-}
 .dropdown-menu>li>a:focus,
 .dropdown-menu>li>a:hover,
 .navbar-default .navbar-nav>.active>a,
@@ -100,34 +136,30 @@ header {
   background-color: inherit;
 }
 
-#bs_overrides img,
-#bs_overrides svg,
-#bs_overrides video,
-#bs_overrides audio {
-  border: 0;
+@import "https://fonts.googleapis.com/css?family=Tangerine";
+@import "https://fonts.googleapis.com/css?family=Open+Sans:300,400";
+@import "http://fonts.googleapis.com/css?family=Lato&subset=latin,latin-ext";
+@import "https://fonts.googleapis.com/css?family=Ubuntu";
+#bs_overrides > main > div:nth-child(3) > div > div.col-md-8.col-xs-10.input-group > span > div {
+  width: inherit;
 }
-#bs_overrides th {
-  text-align: center;
+#bs_overrides > main > div:nth-child(3) > div > div.col-md-8.col-xs-10.input-group > span > div > div.tt-dataset.tt-dataset-genes > h3 {
+  margin: 0;
+  font: 18px "Ubuntu", sans-serif;
+  padding-left: 20px;
+  padding-top: 5px;
+  padding-bottom: 5px;
 }
-#bs_overrides a {
-  text-decoration: none;
-  color: inherit;
-  transition: 0.3s;
+#bs_overrides > main > div:nth-child(3) > div > div.col-md-8.col-xs-10.input-group > span > div > div.tt-dataset.tt-dataset-variants > h3 {
+  margin: 0;
+  font: 18px "Ubuntu", sans-serif;
+  padding-left: 20px;
+  padding-top: 5px;
+  padding-bottom: 5px;
 }
-#bs_overrides a:hover {
-  color: #ff7300;
-  text-decoration: none;
-}
-#bs_overrides button {
-  color: inherit;
-  transition: 0.3s;
-  cursor: pointer;
-}
-#bs_overrides button:hover {
-  color: #ff7300;
-}
-#bs_overrides button:active {
-  color: #ff7300;
+#bs_overrides > main > div:nth-child(3) > div > div.col-md-8.col-xs-10.input-group > span > div > div.tt-dataset.tt-dataset-genes > div:hover {
+  background-color: #8acde6;
+  opacity: 0.4;
 }
 
 .fixed {
@@ -149,25 +181,25 @@ header {
   display: block;
   font-size: 13px;
   font-weight: 500;
-  color: #999;
+  color: inherit;
   padding: 4px 20px;
 }
 .bs-docs-sidebar .nav>li>a:hover,
 .bs-docs-sidebar .nav>li>a:focus {
   padding-left: 19px;
-  color: #563d7c;
+  color: #8acde6;
   text-decoration: none;
   background-color: transparent;
-  border-left: 1px solid #563d7c;
+  border-left: 1px solid #8acde6;
 }
 .bs-docs-sidebar .nav>.active>a,
 .bs-docs-sidebar .nav>.active:hover>a,
 .bs-docs-sidebar .nav>.active:focus>a {
   padding-left: 18px;
-  font-weight: 700;
-  color: #563d7c;
+  font-weight: 400;
+  color: #8acde6;
   background-color: transparent;
-  border-left: 2px solid #563d7c;
+  border-left: 2px solid #8acde6;
 }
 .bs-docs-sidebar .nav .nav {
   display: none;
@@ -220,6 +252,9 @@ header {
 }
 .bs-docs-section:last-child {
   margin-bottom: 0;
+}
+#sidebar > li {
+  text-align: left;
 }
 
 

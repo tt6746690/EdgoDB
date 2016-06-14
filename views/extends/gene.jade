@@ -1,75 +1,63 @@
 extends ../layout
 include ../includes/mixins.jade
 
+
 block content
-  h1 #{gene[0].HUGO_GENE_SYMBOL} 
-  div.container 
+  div.container
     div.row
       div.col-md-10.col-xs-10
-        div(id="GeneInfo")
-          dl.dl-horizontal 
-            dt.col-md-3(id="Genedescription") Description
-            dd.col-md-9 #{gene[0].DESCRIPTION}
-            dt.col-md-3(id="GeneLink") OMIM 
-            dd.col-md-9 
-              a(href= 'http://www.omim.org/entry/' + gene[0].OMIM_ID) #{gene[0].OMIM_ID} 
+        h1(id="GeneInfo") #{gene[0].HUGO_GENE_SYMBOL} 
+        hr
+        div.row
+          dl.dl-horizontal.col-md--6
+            dt(id='GeneDescription') Description
+            dd #{gene[0].DESCRIPTION}
+            dt(id="EntrezLink") Entrez 
+            dd
+              a(href = 'http://www.ncbi.nlm.nih.gov/gene/' + gene[0].ENTREZ_GENE_ID) #{gene[0].ENTREZ_GENE_ID} 
+            dt(id="EnsemblLink") Ensembl 
+            dd 
+              a(href = 'http://useast.ensembl.org/Homo_sapiens/Gene/Summary?g=' + gene[0].ENSEMBL_GENE_ID) #{gene[0].ENSEMBL_GENE_ID}
+            dt(id="UniprotLink") Uniprot
+            dd
+              a(href = 'http://www.uniprot.org/uniprot/' + gene[0].UNIPROT_SWISSPROT_ID) #{gene[0].UNIPROT_SWISSPROT_ID}
+            dt(id="OmimLink") Omim
+            dd
+              a(href = 'http://www.omim.org/entry/' + gene[0].OMIM_ID) #{gene[0].OMIM_ID}
+        hr
         div(id="VariantListing")
-          each item in gene
-            div.row 
-              div.col-md-12
-                div.panel.panel-default
-                  div.panel-heading.text-left  
-                    a(href = '/variant/' + item.MUT_HGVS_NT_ID) #{item.MUT_HGVS_NT_ID} 
-                  //- div.panel-body 
-                  table.table.table-hover
-                    thread
-                      tr
-                        th.text-center Transcript 
-                        th.text-center Chromosomal location
-                        th.text-center Pubmed 
-                    tbody.text-center
-                      tr 
-                        //- td
-                          //- a(href = '/gene/' + row["ENTREZ_GENE_ID"]) #{row["HUGO_GENE_SYMBOL"]}
-                        td= item.REFSEQ_ID
-                        td= item.CHR_COORDINATE_HG18
-                        td 
-                          a(href="http://www.ncbi.nlm.nih.gov/pubmed/" + item.PMID) #{item.PMID}
-        p Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam gravida egestas justo sed semper. Phasellus volutpat risus luctus nibh cursus, eu elementum felis interdum. Aliquam ligula est, posuere quis lacus a, euismod vestibulum arcu. Proin diam diam, feugiat nec dui vitae, ultricies viverra orci. Mauris vitae semper tortor, ut pellentesque dui. Fusce non iaculis turpis, sed ultricies erat. Curabitur a efficitur lorem, vitae pharetra risus. Aenean pharetra nibh in massa volutpat, nec mollis est vehicula. Phasellus eget elementum odio. Duis quis efficitur mi. Maecenas sed est nec odio consequat cursus.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam gravida egestas justo sed semper. Phasellus volutpat risus luctus nibh cursus, eu elementum felis interdum. Aliquam ligula est, posuere quis lacus a, euismod vestibulum arcu. Proin diam diam, feugiat nec dui vitae, ultricies viverra orci. Mauris vitae semper tortor, ut pellentesque dui. Fusce non iaculis turpis, sed ultricies erat. Curabitur a efficitur lorem, vitae pharetra risus. Aenean pharetra nibh in massa volutpat, nec mollis est vehicula. Phasellus eget elementum odio. Duis quis efficitur mi. Maecenas sed est nec odio consequat cursus.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam gravida egestas justo sed semper. Phasellus volutpat risus luctus nibh cursus, eu elementum felis interdum. Aliquam ligula est, posuere quis lacus a, euismod vestibulum arcu. Proin diam diam, feugiat nec dui vitae, ultricies viverra orci. Mauris vitae semper tortor, ut pellentesque dui. Fusce non iaculis turpis, sed ultricies erat. Curabitur a efficitur lorem, vitae pharetra risus. Aenean pharetra nibh in massa volutpat, nec mollis est vehicula. Phasellus eget elementum odio. Duis quis efficitur mi. Maecenas sed est nec odio consequat cursus.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam gravida egestas justo sed semper. Phasellus volutpat risus luctus nibh cursus, eu elementum felis interdum. Aliquam ligula est, posuere quis lacus a, euismod vestibulum arcu. Proin diam diam, feugiat nec dui vitae, ultricies viverra orci. Mauris vitae semper tortor, ut pellentesque dui. Fusce non iaculis turpis, sed ultricies erat. Curabitur a efficitur lorem, vitae pharetra risus. Aenean pharetra nibh in massa volutpat, nec mollis est vehicula. Phasellus eget elementum odio. Duis quis efficitur mi. Maecenas sed est nec odio consequat cursus.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam gravida egestas justo sed semper. Phasellus volutpat risus luctus nibh cursus, eu elementum felis interdum. Aliquam ligula est, posuere quis lacus a, euismod vestibulum arcu. Proin diam diam, feugiat nec dui vitae, ultricies viverra orci. Mauris vitae semper tortor, ut pellentesque dui. Fusce non iaculis turpis, sed ultricies erat. Curabitur a efficitur lorem, vitae pharetra risus. Aenean pharetra nibh in massa volutpat, nec mollis est vehicula. Phasellus eget elementum odio. Duis quis efficitur mi. Maecenas sed est nec odio consequat cursus.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam gravida egestas justo sed semper. Phasellus volutpat risus luctus nibh cursus, eu elementum felis interdum. Aliquam ligula est, posuere quis lacus a, euismod vestibulum arcu. Proin diam diam, feugiat nec dui vitae, ultricies viverra orci. Mauris vitae semper tortor, ut pellentesque dui. Fusce non iaculis turpis, sed ultricies erat. Curabitur a efficitur lorem, vitae pharetra risus. Aenean pharetra nibh in massa volutpat, nec mollis est vehicula. Phasellus eget elementum odio. Duis quis efficitur mi. Maecenas sed est nec odio consequat cursus.
-      nav.col-md-2.bs-docs-sidebar.hidden-print(data-spy="affix", data-offset-top="200")
-        +sidebar
-          +nav_item("#GeneInfo") #{gene[0].HUGO_GENE_SYMBOL} 
-            +sub_sidebar 
-              +nav_item("#Genedescription") Gene Info
-              +nav_item("#GeneLink") Links
+          - for item in gene 
+            - var MUT_HGVS_AA = item['MUT_HGVS_AA_ID'].split('.').pop(-1)
+            div.panel.panel-default(id=item.MUT_HGVS_NT_ID) 
+              div.panel-heading.text-left  
+                a(href = '/variant/' + item.MUT_HGVS_NT_ID) #{MUT_HGVS_AA}
+              //- div.panel-body 
+              table.table.table-hover
+                thread
+                  tr
+                    th.text-center cDNA mutation
+                    th.text-center Protein mutation
+                    th.text-center Chromosome position
+                    th.text-center Allele Frequency
+                tbody.text-center
+                  tr 
+                    td= item.MUT_HGVS_NT_ID
+                    td= item.MUT_HGVS_AA_ID
+                    td= item.CHR_COORDINATE_HG19
+                    td= item.EXAC_ALLELE_FREQUENCY
+      nav.col-md-2.bs-docs-sidebar.hidden-print(id='target_nav')
+        ul.nav.nav-stacked.bs-docs-sidenav.fixed(id="sidebar")
+          +nav_item("#GeneInfo") Gene
+            ul.nav.nav-stacked(id="sidebar")
+              +nav_item("#GeneDescription") Description
+              +nav_item("#EntrezLink") Entrez
+              +nav_item("#EnsemblLink") Ensembl 
+              +nav_item("#UniprotLink") Uniprot 
+              +nav_item("#OmimLink") Omim
           +nav_item("#VariantListing") Variants 
-            each item in gene 
-              +nav_item("#"+ item.MUT_HGVS_NT_ID) #{item.MUT_HGVS_NT_ID} 
-        
-          
-      
-//- ul.nav.nav-stacked.bs-docs-sidenav.fixed(id="sidebar")
-//-   li 
-//-     a(href="#GeneInfo") #{gene[0].HUGO_GENE_SYMBOL} 
-          
+            ul.nav.nav-stacked(id="sidebar")
+              //- - each item in gene 
+              //-   +nav_item("#"+ item.MUT_HGVS_NT_ID) #{item.MUT_HGVS_NT_ID} 
+              
 
-//- 
-//- <nav class="col-xs-3 bs-docs-sidebar hidden-print">
-//-       <ul class="nav nav-stacked bs-docs-sidenav fixed" id="sidebar">
-//-         <li><a href="#Group1">Group 1</a>
-//-           <ul class="nav nav-stacked" id="sidebar">
-//-             <li><a href="#Group1Sub1">Sub-Group 1</a></li>
-//-             <li><a href="#Group1Sub2">Sub-Group 2</a></li>
-//-           </ul></li>
-//-         <li><a href="#Group2">Group 2</a>
-//-           <ul class="nav nav-stacked" id="sidebar">
-//-             <li><a href="#Group2Sub1">Sub-Group 1</a></li>
-//-             <li><a href="#Group2Sub2">Sub-Group 2</a></li>
-//-           </ul></li>
-//-         <li><a href="#Group3">Group 3</a>
-//-           <ul class="nav nav-stacked" id="sidebar">
-//-             <li><a href="#Group3Sub1">Sub-Group 1</a></li>
-//-             <li><a href="#Group3Sub2">Sub-Group 2</a></li>
-//-           </ul></li>
-//-       </ul>
-//-     </nav>
+//- , data-spy="affix", data-offset-top="200"
