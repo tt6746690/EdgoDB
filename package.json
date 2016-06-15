@@ -1,10 +1,10 @@
 {
-  "name": "Summer2016Project",
+  "name": "EdgoDB",
   "version": "0.0.0",
   "private": true,
   "scripts": {
     "start": "nodemon -e js,jade,html -w . -w dist -w views -w routes ./app.js",
-    "serve": "HTTP_PORT=8888 forever start app.js"
+    "deploy": "bash deploy.sh"
   },
   "dependencies": {
     "async": "^2.0.0-rc.6",

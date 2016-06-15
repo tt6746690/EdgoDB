@@ -60,6 +60,7 @@ ELISA_LOG2_RATIO_P_VALUE = "ELISA log2 ratio p-value"
 # Y2H data
 ALLELE_ID = "Allele_ID"
 INTERACTOR_ENTREZ_GENE_ID = "Interactor_Gene_ID"
+INTERACTOR_HUGO_GENE_SYMBOL = "Interactor_symbol"
 Y2H_SCORE = "Y2H_score"
 
 
@@ -399,7 +400,9 @@ class LoadData:
         self.loadLUMIERSummaryTable()
         self.updateChrFromHg18ToHg19()
 
-    def loadY2HWTInteractorTable(self):
+    def loadY2HInteractorTable(self):
+        """ populate Y2HWTInteractor and Y2HMUTInteractor table with data
+        contained in mmc3.csv"""
         subsets = self.subsetCols([ALLELE_ID, INTERACTOR_ENTREZ_GENE_ID, Y2H_SCORE])
         inserts = self.replaceNullwithEmptyString(subsets)
         inserts = [(t[0].split('_')[0], t[0].split('_')[1], t[1], t[2]) for t in inserts]
@@ -410,7 +413,7 @@ class LoadData:
         sqlstr = """INSERT INTO Y2HWTInteractor (WT_INTERACTOR_ID,
                     INTERACTOR_ENTREZ_GENE_ID, Y2H_SCORE, REFSEQ_ID)
                     VALUES (0, %s, %s, (SELECT REFSEQ_ID FROM Gene JOIN
-                    Transcript USING (ENTREZ_GENE_ID) WHERE ENTREZ_GENE_ID = %s LIMIT 1))"""
+                    Transcript USING (ENTREZ_GENE_ID) WHERE ENTREZ_GENE_ID = %s LIMIT 1));"""
 
         try:
             self.c.executemany(sqlstr, WTinserts)
@@ -423,7 +426,7 @@ class LoadData:
         sqlstr = """INSERT INTO Y2HMUTInteractor (MUT_INTERACTOR_ID,
                     INTERACTOR_ENTREZ_GENE_ID, Y2H_SCORE, VARIANT_ID)
                     VALUES (0, %s, %s, (SELECT VARIANT_ID FROM Variant
-                    WHERE CCSB_MUTATION_ID = %s LIMIT 1))"""
+                    WHERE CCSB_MUTATION_ID = %s LIMIT 1));"""
         try:
             self.c.executemany(sqlstr, MUTinserts)
             self.db.commit()
@@ -432,7 +435,20 @@ class LoadData:
             raise e
             self.db.rollback()
 
-
+    def addInteractorToGeneTable(self):
+        """ add target interactor in Y2HInteractor to Gene tabe using mmc3.csvv"""
+        subsets = self.subsetCols([INTERACTOR_ENTREZ_GENE_ID, INTERACTOR_HUGO_GENE_SYMBOL])
+        inserts = self.replaceNullwithEmptyString(subsets)
+        inserts = [(int(t[0]), t[1]) for t in inserts]
+        sqlstr = """INSERT IGNORE INTO Gene
+                    SET ENTREZ_GENE_ID = %s, HUGO_GENE_SYMBOL = %s;"""
+        try:
+            self.c.executemany(sqlstr, inserts)
+            self.db.commit()
+        except MySQLdb.Error, e:
+            print 'adding interactor to Gene table failed'
+            raise e
+            self.db.rollback()
 
 
 if __name__ == "__main__":
@@ -440,5 +456,6 @@ if __name__ == "__main__":
     ld.importCSV("./origExcel/csvMutCollection.csv")
     ld.loadTables()
     ld.importCSV("./origExcel/mmc3.csv")
-    ld.loadY2HWTInteractorTable()
+    ld.loadY2HInteractorTable()
+    ld.addInteractorToGeneTable()
     # ld.generateExacVariantUrlForAnnotatePy()

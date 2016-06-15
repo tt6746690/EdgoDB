@@ -19,7 +19,6 @@
 }
 
 #bs_overrides img,
-#bs_overrides svg,
 #bs_overrides video,
 #bs_overrides audio {
   border: 0;
