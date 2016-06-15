@@ -59,8 +59,8 @@ var width = 1200;
 var color = d3.scale.category20();
 
 var force = d3.layout.force()
-    .charge(-30)
-    .linkDistance(20)
+    .charge(-70)
+    .linkDistance(50)
     .size([width, height])
 
 var svg = d3.select("#interaction-graph").append("svg")

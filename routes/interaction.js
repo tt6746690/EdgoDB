@@ -8,8 +8,7 @@ router.get('/', function(req, res, next){
   pool.getConnection(function(err, connection) {
     async.parallel({
       links: function(callback){
-        // sqlstr = "SELECT CONCAT(ENTREZ_GENE_ID, '_0') AS source, CONCAT(INTERACTOR_ENTREZ_GENE_ID, '_0') AS target, Y2H_SCORE AS score FROM Gene JOIN Transcript USING(ENTREZ_GENE_ID) JOIN Y2HWTInteractor USING (REFSEQ_ID) ORDER BY source;"
-        sqlstr = "SELECT CONCAT(ENTREZ_GENE_ID, '_', CCSB_MUTATION_ID) AS source, CONCAT(INTERACTOR_ENTREZ_GENE_ID, '_0') AS target, Y2H_SCORE AS score FROM Gene JOIN Transcript USING(ENTREZ_GENE_ID) JOIN Variant USING(REFSEQ_ID) JOIN Y2HMUTInteractor USING (VARIANT_ID);"
+        sqlstr = "SELECT CONCAT(ENTREZ_GENE_ID, '_0') AS source, CONCAT(INTERACTOR_ENTREZ_GENE_ID, '_0') AS target, Y2H_SCORE AS score FROM Gene JOIN Transcript USING(ENTREZ_GENE_ID) JOIN Y2HWTInteractor USING (REFSEQ_ID) UNION SELECT CONCAT(ENTREZ_GENE_ID, '_', CCSB_MUTATION_ID) AS source, CONCAT(INTERACTOR_ENTREZ_GENE_ID, '_0') AS target, Y2H_SCORE AS score FROM Gene JOIN Transcript USING(ENTREZ_GENE_ID) JOIN Variant USING(REFSEQ_ID) JOIN Y2HMUTInteractor USING (VARIANT_ID);"
         connection.query(sqlstr, function(err, rows){
           if (err) throw err;
           var links = []
@@ -20,8 +19,7 @@ router.get('/', function(req, res, next){
         })
       },
       nodes: function(callback){
-        // sqlstr = "SELECT DISTINCT CONCAT(ENTREZ_GENE_ID, '_0') AS ID, HUGO_GENE_SYMBOL AS Name FROM Gene JOIN Transcript USING(ENTREZ_GENE_ID) JOIN Y2HWTInteractor USING(REFSEQ_ID) UNION SELECT DISTINCT CONCAT(ENTREZ_GENE_ID, '_0') AS ID, HUGO_GENE_SYMBOL AS Name FROM Gene JOIN Y2HWTInteractor on Gene.ENTREZ_GENE_ID = Y2HWTInteractor.INTERACTOR_ENTREZ_GENE_ID;"
-        sqlstr = "SELECT DISTINCT CONCAT(ENTREZ_GENE_ID, '_', CCSB_MUTATION_ID) AS ID, MUT_HGVS_NT_ID AS Name FROM Gene JOIN Transcript USING(ENTREZ_GENE_ID) JOIN Variant USING(REFSEQ_ID) JOIN Y2HMUTInteractor USING(VARIANT_ID) UNION SELECT DISTINCT CONCAT(g.ENTREZ_GENE_ID, '_0') AS ID, g.HUGO_GENE_SYMBOL AS Name FROM Gene AS g JOIN Y2HMUTInteractor as y2h ON g.ENTREZ_GENE_ID = y2h.INTERACTOR_ENTREZ_GENE_ID;"
+        sqlstr = "SELECT DISTINCT CONCAT(ENTREZ_GENE_ID, '_0') AS ID, HUGO_GENE_SYMBOL AS Name FROM Gene JOIN Transcript USING(ENTREZ_GENE_ID) JOIN Y2HWTInteractor USING(REFSEQ_ID) UNION SELECT DISTINCT CONCAT(ENTREZ_GENE_ID, '_0') AS ID, HUGO_GENE_SYMBOL AS Name FROM Gene JOIN Y2HWTInteractor on Gene.ENTREZ_GENE_ID = Y2HWTInteractor.INTERACTOR_ENTREZ_GENE_ID UNION SELECT DISTINCT CONCAT(ENTREZ_GENE_ID, '_', CCSB_MUTATION_ID) AS ID, MUT_HGVS_NT_ID AS Name FROM Gene JOIN Transcript USING(ENTREZ_GENE_ID) JOIN Variant USING(REFSEQ_ID) JOIN Y2HMUTInteractor USING(VARIANT_ID) UNION SELECT DISTINCT CONCAT(g.ENTREZ_GENE_ID, '_0') AS ID, g.HUGO_GENE_SYMBOL AS Name FROM Gene AS g JOIN Y2HMUTInteractor as y2h ON g.ENTREZ_GENE_ID = y2h.INTERACTOR_ENTREZ_GENE_ID;"
         connection.query(sqlstr, function(err, rows){
           if (err) throw err;
           var nodes = []
