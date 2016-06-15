@@ -89,8 +89,8 @@ header {
 }
 #bs_overrides > main {
   padding-top: 20px;
-  min-height: 600px;
   padding-bottom: 30px;
+  min-height: 100vh;
 }
 #bs_overrides > main > h1 {
   padding-bottom: 20px;

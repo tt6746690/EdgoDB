@@ -1,6 +1,9 @@
 #Directories
 Learn/*.pdf
 
+# python
+*.pyc 
+
 # Logs
 logs
 *.log

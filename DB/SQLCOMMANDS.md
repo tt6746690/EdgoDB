@@ -33,3 +33,14 @@ FROM table1 INNER JOIN table2 ON
      table1.primaryKey=table2.table1Id INNER JOIN --- makes a temporary table
      table3 ON table1.primaryKey=table3.table1Id
 ```
+
+
+
+_mysql does not support intersect and minus: use left join instead_
+
+```sql
+SELECT a.x, a.y
+FROM table_a a LEFT JOIN table_b b
+ON a.x = b.x AND a.y = b.y
+WHERE b.x IS NULL;
+```
