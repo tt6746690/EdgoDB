@@ -2,7 +2,6 @@
 var forceGraph = function(data, config){
   this.config = config
   this.data = data
-  // this.data = this.getData(data)                // raw data
   this.edges = this.getEdges()    // edges data
   this.nodes = this.getNodes()    // nodes data
   this.createElements()           // creates this.svg, this.force, and marker
@@ -61,12 +60,15 @@ forceGraph.prototype.getData = function(data){
 
 
 forceGraph.prototype.getEdges = function(){
+  var nodes = this.data.nodes
+  var links = this.data.links
+
   var edges = []
-  this.data.links.forEach(function(e) {
-      var sourceNode = this.data.nodes.filter(function(n) {
+  links.forEach(function(e) {
+      var sourceNode = nodes.filter(function(n) {
           return n.ID === e.source;
       })[0],
-          targetNode = this.data.nodes.filter(function(n) {
+          targetNode = nodes.filter(function(n) {
               return n.ID === e.target;
           })[0];
 

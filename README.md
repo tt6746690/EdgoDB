@@ -66,6 +66,7 @@
 [_1000Genomes_](http://www.1000genomes.org/data)   
 [_OMIM_](http://www.omim.org/)  
 [_UCSC SQL database_](https://genome.ucsc.edu/goldenpath/help/mysql.html)  
+[_pfam SQL database_](http://pfam.xfam.org/help#tabview=tab12) and a good [_wiki_](http://wiki.christophchamp.com/index.php?title=Pfam)  
 
 ---
 
@@ -87,6 +88,7 @@
 [_RMySQL_](https://cran.r-project.org/web/packages/RMySQL/RMySQL.pdf)   
 [_LiftOver Tutorial_](http://genome.sph.umich.edu/wiki/LiftOver)   
 [_pyliftover_](https://pypi.python.org/pypi/pyliftover)  
+[_Mutation needle plot_](https://github.com/bbglab/muts-needle-plot)
 
 -----
 
@@ -132,7 +134,9 @@
 [_A nice working example of bootstrap doc sidebar_](http://www.java2s.com/Tutorials/HTML_CSS/Bootstrap_Example/Nav/Create_Side_Navbar.htm)  
 [_Uncaught error cannot read length of undefined d3js_](http://stackoverflow.com/questions/17181421/uncaught-typeerror-cannot-call-method-push-of-undefined-d3-force-layout)  
 [_How to add swap space in ubuntu server_](https://www.digitalocean.com/community/tutorials/how-to-add-swap-on-ubuntu-14-04)   
-[_A biostar post on generating lolipop graph mapped to protein domains_](https://www.biostars.org/p/61049/)  
+[_A biostar post on generating lolipop graph mapped to protein domains_](https://www.biostars.org/p/61049/)   
+[_A nice gist on MakeFile_](https://gist.github.com/isaacs/62a2d1825d04437c6f08)   
+[_pfam sql database schema_](http://pfam.xfam.org/help#tabview=tab11)
 
 ---
 This is under an [__ODbL license__](http://opendatacommons.org/licenses/odbl/1.0/)
