@@ -12,4 +12,9 @@ block content
 block script 
   script(type='text/javascript').
     var data =!{JSON.stringify(data)}
-    
+    var config = {
+      "height": 1200,
+      "width": 1200,
+      "targetDOM": "#interaction-graph"
+    }
+    var fg = new forceGraph(data, config)

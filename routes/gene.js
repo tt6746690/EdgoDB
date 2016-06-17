@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var pool = require('../app.js')
+var async = require('async')
 
 router.get('/', function(req, res, next){
   pool.getConnection(function(err, connection) {
@@ -13,21 +14,58 @@ router.get('/', function(req, res, next){
   // connection.end();    maybe integrate this with user specific access
 });
 
+
 router.get('/:geneid', function(req, res, next){
   pool.getConnection(function(err, connection) {
-    if (err) throw err;
-    sqlstr = "SELECT * FROM Gene JOIN Transcript USING (ENTREZ_GENE_ID) JOIN Variant USING (REFSEQ_ID) JOIN VariantProperty USING (VARIANT_ID) WHERE HUGO_GENE_SYMBOL = ?;"
-    connection.query(sqlstr, [req.params.geneid], function(err, rows) {
-      var result = []
-      for (var i = 0; i < rows.length; i++){
-        result.push(JSON.parse(JSON.stringify(rows))[i])
+    async.parallel({
+      links: function(callback){
+        sqlstr1 = "SELECT CONCAT(ENTREZ_GENE_ID, '_0') AS source, CONCAT(INTERACTOR_ENTREZ_GENE_ID, '_0') AS target, Y2H_SCORE AS score FROM Gene JOIN Transcript USING(ENTREZ_GENE_ID) JOIN Y2HWTInteractor USING (REFSEQ_ID) WHERE HUGO_GENE_SYMBOL = ? UNION SELECT CONCAT(ENTREZ_GENE_ID, '_', CCSB_MUTATION_ID) AS source, CONCAT(INTERACTOR_ENTREZ_GENE_ID, '_0') AS target, Y2H_SCORE AS score FROM Gene JOIN Transcript USING(ENTREZ_GENE_ID) JOIN Variant USING(REFSEQ_ID) JOIN Y2HMUTInteractor USING (VARIANT_ID) WHERE HUGO_GENE_SYMBOL = ?;"
+        connection.query(sqlstr1, [req.params.geneid, req.params.geneid], function(err, rows){
+          if (err) throw err;
+          var links = []
+          for (var i = 0; i < rows.length; i++){
+            links.push(JSON.parse(JSON.stringify(rows))[i])
+          }
+          callback(null, links)
+        })
+      },
+      nodes: function(callback){
+        sqlstr2 = "SELECT DISTINCT CONCAT(ENTREZ_GENE_ID, '_0') AS ID, HUGO_GENE_SYMBOL AS Name FROM Gene JOIN Transcript USING(ENTREZ_GENE_ID) JOIN Y2HWTInteractor USING(REFSEQ_ID) WHERE HUGO_GENE_SYMBOL = ? UNION SELECT DISTINCT CONCAT(INTERACTOR_ENTREZ_GENE_ID, '_0') AS ID, (SELECT g.HUGO_GENE_SYMBOL FROM Gene AS g WHERE g.ENTREZ_GENE_ID = INTERACTOR_ENTREZ_GENE_ID) AS Name FROM Gene JOIN Transcript USING(ENTREZ_GENE_ID) JOIN Y2HWTInteractor USING(REFSEQ_ID) WHERE HUGO_GENE_SYMBOL = ? UNION SELECT DISTINCT CONCAT(ENTREZ_GENE_ID, '_', CCSB_MUTATION_ID) AS ID, MUT_HGVS_NT_ID AS Name FROM Gene JOIN Transcript USING(ENTREZ_GENE_ID) JOIN Variant USING(REFSEQ_ID) JOIN Y2HMUTInteractor USING(VARIANT_ID) WHERE HUGO_GENE_SYMBOL = ? UNION SELECT DISTINCT CONCAT(g.ENTREZ_GENE_ID, '_0') AS ID, g.HUGO_GENE_SYMBOL AS Name FROM Gene AS g JOIN Y2HMUTInteractor AS y2h ON g.ENTREZ_GENE_ID = y2h.INTERACTOR_ENTREZ_GENE_ID WHERE y2h.VARIANT_ID = ANY(SELECT VARIANT_ID FROM Gene JOIN Transcript USING (ENTREZ_GENE_ID) JOIN Variant USING(REFSEQ_ID) WHERE HUGO_GENE_SYMBOL = ?)"
+        connection.query(sqlstr2, [req.params.geneid, req.params.geneid, req.params.geneid, req.params.geneid], function(err, rows){
+          if (err) throw err;
+          var nodes = []
+          for (var i = 0; i < rows.length; i++){
+            nodes.push(JSON.parse(JSON.stringify(rows))[i])
+          }
+          callback(null, nodes)
+        })
+      },
+      gene: function(callback){
+        sqlstr3 = "SELECT * FROM Gene WHERE HUGO_GENE_SYMBOL = ?;"
+        connection.query(sqlstr3, [req.params.geneid], function(err, rows) {
+          var gene = []
+          for (var i = 0; i < rows.length; i++){
+            gene.push(JSON.parse(JSON.stringify(rows))[i])
+          }
+          callback(null, gene)
+        });
+      },
+      transcript: function(callback){
+        sqlstr4 = "SELECT * FROM Gene JOIN Transcript USING (ENTREZ_GENE_ID) JOIN Variant USING (REFSEQ_ID) JOIN VariantProperty USING (VARIANT_ID) WHERE HUGO_GENE_SYMBOL = ?;"
+        connection.query(sqlstr4, [req.params.geneid], function(err, rows) {
+          var transcript = []
+          for (var i = 0; i < rows.length; i++){
+            transcript.push(JSON.parse(JSON.stringify(rows))[i])
+          }
+          callback(null, transcript)
+        });
       }
-      console.log(result)
-      res.render('gene', {gene: result})
-      connection.release();
-    });
-  });
+    }, function(err, results){
+      connection.release()
+      console.log(results)
+      res.render('gene', {data: {links: results.links, nodes: results.nodes}, gene: results.gene, transcript: results.transcript})
+    })
+  })
 })
-
 
 module.exports = router;

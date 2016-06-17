@@ -5,11 +5,11 @@ include ../includes/mixins.jade
 block content
   div.container
     div.row
-      div.col-md-10.col-xs-10
+      div.col-md-10
         h1(id="GeneInfo") #{gene[0].HUGO_GENE_SYMBOL} 
         hr
         div.row
-          dl.dl-horizontal.col-md--6
+          dl.dl-horizontal.col-md-6
             dt(id='GeneDescription') Description
             dd #{gene[0].DESCRIPTION}
             dt(id="EntrezLink") Entrez 
@@ -24,27 +24,29 @@ block content
             dt(id="OmimLink") Omim
             dd
               a(href = 'http://www.omim.org/entry/' + gene[0].OMIM_ID) #{gene[0].OMIM_ID}
+          div.col-md-6(id='gene-interaction-graph')
         hr
         div(id="VariantListing")
-          - for item in gene 
-            - var MUT_HGVS_AA = item['MUT_HGVS_AA_ID'].split('.').pop(-1)
-            div.panel.panel-default(id=item.MUT_HGVS_NT_ID) 
-              div.panel-heading.text-left  
-                a(href = '/variant/' + item.MUT_HGVS_NT_ID) #{MUT_HGVS_AA}
-              //- div.panel-body 
-              table.table.table-hover
-                thread
-                  tr
-                    th.text-center cDNA mutation
-                    th.text-center Protein mutation
-                    th.text-center Chromosome position
-                    th.text-center Allele Frequency
-                tbody.text-center
-                  tr 
-                    td= item.MUT_HGVS_NT_ID
-                    td= item.MUT_HGVS_AA_ID
-                    td= item.CHR_COORDINATE_HG19
-                    td= item.EXAC_ALLELE_FREQUENCY
+          if transcript
+            - for item in transcript
+              - var MUT_HGVS_AA = item['MUT_HGVS_AA_ID'].split('.').pop(-1)
+              div.panel.panel-default(id= MUT_HGVS_AA) 
+                div.panel-heading.text-left  
+                  a(href = '/variant/' + item.MUT_HGVS_NT_ID) #{MUT_HGVS_AA}
+                //- div.panel-body 
+                table.table.table-hover
+                  thread
+                    tr
+                      th.text-center cDNA mutation
+                      th.text-center Protein mutation
+                      th.text-center Chromosome position
+                      th.text-center Allele Frequency
+                  tbody.text-center
+                    tr 
+                      td= item.MUT_HGVS_NT_ID
+                      td= item.MUT_HGVS_AA_ID
+                      td= item.CHR_COORDINATE_HG19
+                      td= item.EXAC_ALLELE_FREQUENCY
       nav.col-md-2.bs-docs-sidebar.hidden-print(id='target_nav')
         ul.nav.nav-stacked.bs-docs-sidenav.fixed(id="sidebar")
           +nav_item("#GeneInfo") Gene
@@ -56,8 +58,29 @@ block content
               +nav_item("#OmimLink") Omim
           +nav_item("#VariantListing") Variants 
             ul.nav.nav-stacked(id="sidebar")
-              //- - each item in gene 
-              //-   +nav_item("#"+ item.MUT_HGVS_NT_ID) #{item.MUT_HGVS_NT_ID} 
+              - for item in transcript
+                - var MUT_HGVS_AA = item['MUT_HGVS_AA_ID'].split('.').pop(-1)
+                  +nav_item("#" + MUT_HGVS_AA) #{MUT_HGVS_AA}
               
-
-//- , data-spy="affix", data-offset-top="200"
+block script 
+  script(type='text/javascript').
+    var config = {
+      "height": 125,
+      "width": 500,
+      "targetDOM": "#gene-interaction-graph"
+    }
+    //- var data = {
+    //-   links: [
+    //-     {source: 1, target: 2, score: 1},
+    //-     {source: 1, target: 3, score: 1},
+    //-     {source: 2, target: 1, score: 1},
+    //-     {source: 3, target: 3, score: 1}
+    //-   ],
+    //-   nodes: [
+    //-     {Name: 'node1', ID: 1},
+    //-     {Name: 'node2', ID: 2},
+    //-     {Name: 'node3', ID: 3}
+    //-   ]
+    //- }
+    var data =!{JSON.stringify(data)}
+    var fg = new forceGraph(data, config)

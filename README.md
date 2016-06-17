@@ -19,6 +19,7 @@
   - [ ] set up CA-SSL and nginx configs as well as server to allow for https using [lets encrypt](https://letsencrypt.org/)
   - [x] allow for static file serving for compressed data files
   - [x] use [PM2](http://pm2.keymetrics.io/) for persisting node processes (used forever instead)
+- [ ] use async sequence to check for presence of y2h interaction... or use ajax to grab interaction data.
 
 ---
 
@@ -129,7 +130,9 @@
 [_Nice summary from UCSC on genome assembly versions_](http://genome.ucsc.edu/FAQ/FAQreleases.html)  
 [_A working example of scrapy that inserts data to mysql in pipeline_](https://github.com/rolando/dirbot-mysql)  
 [_A nice working example of bootstrap doc sidebar_](http://www.java2s.com/Tutorials/HTML_CSS/Bootstrap_Example/Nav/Create_Side_Navbar.htm)  
-[_Uncaught error cannot read length of undefined d3js_](http://stackoverflow.com/questions/17181421/uncaught-typeerror-cannot-call-method-push-of-undefined-d3-force-layout)
+[_Uncaught error cannot read length of undefined d3js_](http://stackoverflow.com/questions/17181421/uncaught-typeerror-cannot-call-method-push-of-undefined-d3-force-layout)  
+[_How to add swap space in ubuntu server_](https://www.digitalocean.com/community/tutorials/how-to-add-swap-on-ubuntu-14-04)   
+[_A biostar post on generating lolipop graph mapped to protein domains_](https://www.biostars.org/p/61049/)  
 
 ---
 This is under an [__ODbL license__](http://opendatacommons.org/licenses/odbl/1.0/)

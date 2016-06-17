@@ -24,18 +24,20 @@ echo "---------------------"
 cd ../Pyannotate
 scrapy crawl exac
 
-echo "---------------------"
-echo "re compile dist/assets"
-echo "---------------------"
-cd ../../
-gulp
 
 echo "---------------------"
 echo "stopping previous forever instances"
 echo "---------------------"
+cd ../../
 forever stopall
 
 echo "---------------------"
 echo "starting running forever"
 echo "---------------------"
 HTTP_PORT=8888 forever start app.js
+
+
+echo "---------------------"
+echo "restarting nginx"
+echo "---------------------"
+service nginx restart

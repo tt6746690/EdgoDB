@@ -37,5 +37,22 @@ router.get('/', function(req, res, next){
   })
 })
 
+router.get('/test', function(req, res, next){
+  var data = {
+    links: [
+      {source: 1, target: 2, score: 1},
+      {source: 1, target: 3, score: 1},
+      {source: 2, target: 1, score: 1},
+      {source: 3, target: 3, score: 1}
+    ],
+    nodes: [
+      {Name: 'node1', ID: 1},
+      {Name: 'node2', ID: 2},
+      {Name: 'node3', ID: 3}
+    ]
+  }
+  res.render('interaction', {data: data})
+})
+
 
 module.exports = router;
