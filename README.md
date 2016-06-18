@@ -136,7 +136,10 @@
 [_How to add swap space in ubuntu server_](https://www.digitalocean.com/community/tutorials/how-to-add-swap-on-ubuntu-14-04)   
 [_A biostar post on generating lolipop graph mapped to protein domains_](https://www.biostars.org/p/61049/)   
 [_A nice gist on MakeFile_](https://gist.github.com/isaacs/62a2d1825d04437c6f08)   
-[_pfam sql database schema_](http://pfam.xfam.org/help#tabview=tab11)
+[_pfam sql database schema_](http://pfam.xfam.org/help#tabview=tab11)   
+[_How to use spider specific pipeline and item_](http://stackoverflow.com/questions/10543997/scrapy-how-to-change-spider-settings-after-start-crawling)    
+[_Use scrapy itemloader in a loop_](http://stackoverflow.com/questions/37658950/using-scrapy-itemloader-in-a-loop)   
+[_A good xpath cheatsheet_](http://ricostacruz.com/cheatsheets/xpath.html)  
 
 ---
 This is under an [__ODbL license__](http://opendatacommons.org/licenses/odbl/1.0/)

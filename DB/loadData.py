@@ -436,7 +436,8 @@ class LoadData:
             self.db.rollback()
 
     def addInteractorToGeneTable(self):
-        """ add target interactor in Y2HInteractor to Gene tabe using mmc3.csvv"""
+        """ add target interactor in Y2HInteractor to Gene tabe using mmc3.csv
+        this is required for generating nodes for force directed graph"""
         subsets = self.subsetCols([INTERACTOR_ENTREZ_GENE_ID, INTERACTOR_HUGO_GENE_SYMBOL])
         inserts = self.replaceNullwithEmptyString(subsets)
         inserts = [(int(t[0]), t[1]) for t in inserts]

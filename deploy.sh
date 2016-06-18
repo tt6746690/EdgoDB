@@ -23,21 +23,22 @@ echo "annotate with scrapy"
 echo "---------------------"
 cd ../Pyannotate
 scrapy crawl exac
-
-
-echo "---------------------"
-echo "stopping previous forever instances"
-echo "---------------------"
-cd ../../
-forever stopall
-
-echo "---------------------"
-echo "starting running forever"
-echo "---------------------"
-HTTP_PORT=8888 forever start app.js
-
-
-echo "---------------------"
-echo "restarting nginx"
-echo "---------------------"
-service nginx restart
+scrapy crawl uniprot
+# scrapy crawl pfam
+#
+# echo "---------------------"
+# echo "stopping previous forever instances"
+# echo "---------------------"
+# cd ../../
+# forever stopall
+#
+# echo "---------------------"
+# echo "starting running forever"
+# echo "---------------------"
+# HTTP_PORT=8888 forever start app.js
+#
+#
+# echo "---------------------"
+# echo "restarting nginx"
+# echo "---------------------"
+# service nginx restart

@@ -2,8 +2,8 @@
 import scrapy
 import MySQLdb
 from scrapy.loader import ItemLoader
-from annotatePy.items import VariantAnnotationItem
-
+from annotatePy.items import ExacItem
+from config import MYSQL_USER, MYSQL_HOST, MYSQL_PASSWD, MYSQL_DBNAME
 
 
 class ExacSpider(scrapy.Spider):
@@ -17,7 +17,7 @@ class ExacSpider(scrapy.Spider):
 
     def parse(self, response):
 
-        l = ItemLoader(item=VariantAnnotationItem(), response=response)
+        l = ItemLoader(item=ExacItem(), response=response)
         l.add_xpath('variantName', '/html/body/div[1]/div[1]/div[1]/h1/text()')
         l.add_xpath('alleleFrequency', '/html/body/div[1]/div[2]/div[1]/dl/dd[3]/text()')
         yield l.load_item()

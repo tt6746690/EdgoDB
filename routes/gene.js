@@ -59,12 +59,45 @@ router.get('/:geneid', function(req, res, next){
           }
           callback(null, transcript)
         });
+      },
+      domainRegion: function(callback){
+        sqlstr5 = "SELECT PFAM_ID AS name, SEQ_START AS start, SEQ_END AS end, PROTEIN_LENGTH AS proteinLength FROM PfamDomain JOIN Gene USING (UNIPROT_PROTEIN_NAME) WHERE HUGO_GENE_SYMBOL = ?;"
+        connection.query(sqlstr5, [req.params.geneid], function(err, rows) {
+          var domainRegion = []
+          for (var i = 0; i < rows.length; i++){
+            domainRegion.push(JSON.parse(JSON.stringify(rows))[i])
+          }
+          callback(null, domainRegion)
+        });
+      },
+      mutationPosition: function(callback){
+        sqlstr6 = "SELECT SPLIT_STR(MUT_HGVS_AA_ID, ':p.', 2) AS name FROM Gene JOIN Transcript USING (ENTREZ_GENE_ID) JOIN Variant USING (REFSEQ_ID) JOIN VariantProperty USING (VARIANT_ID) WHERE HUGO_GENE_SYMBOL = ?;"
+        connection.query(sqlstr6, [req.params.geneid], function(err, rows) {
+          var domainRegion = []
+          for (var i = 0; i < rows.length; i++){
+            domainRegion.push(JSON.parse(JSON.stringify(rows))[i])
+          }
+          callback(null, domainRegion)
+        });
       }
     }, function(err, results){
       connection.release()
       console.log(results)
-      res.render('gene', {data: {links: results.links, nodes: results.nodes}, gene: results.gene, transcript: results.transcript})
-    })
+      res.render('gene', {
+        forceGraphData: {
+          links: results.links,
+          nodes: results.nodes
+        },
+        gene: results.gene,
+        transcript: results.transcript,
+        proteinDomainData:{
+          region: results.domainRegion,
+          mutation: results.mutationPosition // later be filled with info from transcript client side
+        }
+      })
+    });
+
+
   })
 })
 

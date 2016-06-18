@@ -26,40 +26,31 @@ block content
               a(href = 'http://www.omim.org/entry/' + gene[0].OMIM_ID) #{gene[0].OMIM_ID}
           div.col-md-6(id='protein-domain-graph')
         hr
-        div.row 
+        div.row(id="GeneInteraction") 
           div.col-md-6(id='y2h-interaction-graph')
+            h4.display-4 Y2H Interaction
           div.col-md-6(id='lumier-interaction-graph')
         hr
         div(id="VariantListing")
           if transcript
             - for item in transcript
               - var MUT_HGVS_AA = item['MUT_HGVS_AA_ID'].split('.').pop(-1)
-              div.panel.panel-default(id= MUT_HGVS_AA) 
-                div.panel-heading.text-left  
-                  a(href = '/variant/' + item.MUT_HGVS_NT_ID) #{MUT_HGVS_AA}
-                //- div.panel-body 
-                table.table.table-hover
-                  thread
-                    tr
-                      th.text-center cDNA mutation
-                      th.text-center Protein mutation
-                      th.text-center Chromosome position
-                      th.text-center Allele Frequency
-                  tbody.text-center
-                    tr 
-                      td= item.MUT_HGVS_NT_ID
-                      td= item.MUT_HGVS_AA_ID
-                      td= item.CHR_COORDINATE_HG19
-                      td= item.EXAC_ALLELE_FREQUENCY
+                div.row
+                  h4
+                    a(href = '/variant/' + MUT_HGVS_AA)= MUT_HGVS_AA
+                  div.dl-horizontal.col-md-6
+                    dt RefSeq 
+                    dd 
+                      a(href='http://www.ncbi.nlm.nih.gov/nuccore/' + item.REFSEQ_ID) #{item.REFSEQ_ID}
+                
+                  div.col-md-6
+                
       nav.col-md-2.bs-docs-sidebar.hidden-print(id='target_nav')
         ul.nav.nav-stacked.bs-docs-sidenav.fixed(id="sidebar")
           +nav_item("#GeneInfo") Gene
             ul.nav.nav-stacked(id="sidebar")
-              +nav_item("#GeneDescription") Description
-              +nav_item("#EntrezLink") Entrez
-              +nav_item("#EnsemblLink") Ensembl 
-              +nav_item("#UniprotLink") Uniprot 
-              +nav_item("#OmimLink") Omim
+              +nav_item("#GeneDescription") Info
+              +nav_item("#GeneInteraction") Interaction
           +nav_item("#VariantListing") Variants 
             ul.nav.nav-stacked(id="sidebar")
               - for item in transcript
@@ -69,27 +60,9 @@ block content
 block script 
   script(type='text/javascript').
     var y2hInteractionConfig = {
-      "height": 200,
+      "height": 150,
       "width": 500,
       "targetDOM": "#y2h-interaction-graph"
-    }
-    var y2hInteractionData =!{JSON.stringify(data)}
-    var y2hForceGraph = new forceGraph(y2hInteractionData, y2hInteractionConfig)
-    var proteinDomainData = {
-      "length": "1000",
-      "region": [{
-        "name": "Peptidase_S8",
-        "start": "159",
-        "end": "361",
-        "color": "#dd8352"
-      },{
-        "name": "PA",
-        "start": "388",
-        "end": "469"
-      }],
-      "mutation": [{
-        "name": "N159K"
-      }]
     }
     var proteinDomainConfig = {
       "height": 125,
@@ -101,25 +74,53 @@ block script
       "regionBGHeight": 10,
       "stickHeight": 20,
       "headRadius": 5,
-      "regionFontSize": "12px",
+      "regionFontSize": "10px",
       "headFontSize": "10px"
-    }
-    var pg = new proteinDomainGraph(proteinDomainData, proteinDomainConfig)
-
-
-
-
+    }  
     
-    //- var data = {
-    //-   links: [
-    //-     {source: 1, target: 2, score: 1},
-    //-     {source: 1, target: 3, score: 1},
-    //-     {source: 2, target: 1, score: 1},
-    //-     {source: 3, target: 3, score: 1}
-    //-   ],
-    //-   nodes: [
-    //-     {Name: 'node1', ID: 1},
-    //-     {Name: 'node2', ID: 2},
-    //-     {Name: 'node3', ID: 3}
-    //-   ]
-    //- }
+    if (typeof forceGraphData != undefined){
+      var y2hInteractionData =!{JSON.stringify(forceGraphData)}
+      var y2hForceGraph = new forceGraph(y2hInteractionData, y2hInteractionConfig)
+    }
+    
+    if (typeof proteinDomainData != undefined){
+      var proteinDomainData =!{JSON.stringify(proteinDomainData)}
+      proteinDomainData.length = proteinDomainData.region[0].proteinLength
+
+      var pg = new proteinDomainGraph(proteinDomainData, proteinDomainConfig)
+    }
+    
+    
+
+// test for proteinDomain graph
+//- var proteinDomainData = {
+//-   "length": "1000",
+//-   "region": [{
+//-     "name": "Peptidase_S8",
+//-     "start": "159",
+//-     "end": "361",
+//-     "color": "#dd8352"
+//-   },{
+//-     "name": "PA",
+//-     "start": "388",
+//-     "end": "469"
+//-   }],
+//-   "mutation": [{
+//-     "name": "N159K"
+//-   }]
+//- }
+// test for interaction graph
+//- var data = {
+//-   links: [
+//-     {source: 1, target: 2, score: 1},
+//-     {source: 1, target: 3, score: 1},
+//-     {source: 2, target: 1, score: 1},
+//-     {source: 3, target: 3, score: 1}
+//-   ],
+//-   nodes: [
+//-     {Name: 'node1', ID: 1},
+//-     {Name: 'node2', ID: 2},
+//-     {Name: 'node3', ID: 3}
+//-   ]
+//- }
+--//

@@ -1,0 +1,4 @@
+MYSQL_HOST = 'localhost'
+MYSQL_DBNAME = 'EdgoDB'
+MYSQL_USER = 'public'
+MYSQL_PASSWD = '1122'
