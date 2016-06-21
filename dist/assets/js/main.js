@@ -5,7 +5,7 @@ var forceGraph = function(data, config){
   this.edges = this.getEdges()    // edges data
   this.nodes = this.getNodes()    // nodes data
   this.createElements()           // creates this.svg, this.force, and marker
-
+  color = d3.scale.category20()
 
   var link = this.svg.selectAll('.link')
       .data(this.edges)
@@ -14,27 +14,37 @@ var forceGraph = function(data, config){
       .attr("marker-end", "url(#end)")
       .style("stroke-width", 1)
       .style("stroke-dasharray", function(d){ if (d.score === 0){ return "5,5"} else {return undefined}})
+      .style("stroke", function(d){ if (d.score === 0){ return '#ff6300'} else {return '#96e6ff'}})
 
 
-  var node = this.svg.selectAll('.node')
-      .data(data.nodes)
-      .enter().append('circle')
+  var nodeGroup = this.svg.selectAll('.node')
+      .data(this.nodes)
+      .enter().append('g')
+      .attr('class', 'nodeGroup')
+      .on("mouseover", function(d){
+        d3.select(this).select("text").style("visibility","visible")
+      })
+      .on("mouseout", function(d){
+        d3.select(this).select("text").style("visibility","hidden")
+      })
+
+
+  var node = nodeGroup.append('a')
+      .attr('href', function(d){if (/^NM_[0-9]{5,}/i.test(d.Name)){ return "/variant/"+d.Name} else {return "/gene/" + d.Name}})
+      .append('circle')
       .attr('class', 'node')
-      .attr("r", 5)
+      .attr("r", this.config.nodeRadius)
+      .style('fill', function(d){ return color(d.Name)})
+      // .style("fill", function(d) { if (/^NM_[0-9]{5,}/i.test(d.Name)){ return '#0088b3'} else {return '#ff0066'}})
       .call(this.force.drag)
-      .style("fill", function(d) { if (/^NM_[0-9]{5,}/i.test(d.Name)){ return '#5bd0f0'} else {return '#d99db5'}})
 
-  node.on("dblclick.zoom", function(d) { d3.event.stopPropagation();
-  	var dcx = (window.innerWidth/2-d.x*zoom.scale());
-  	var dcy = (window.innerHeight/2-d.y*zoom.scale());
-  	zoom.translate([dcx,dcy]);
-  	 g.attr("transform", "translate("+ dcx + "," + dcy  + ")scale(" + zoom.scale() + ")");
-
-
-  	});
-
-  node.append("title")
-      .text(function(d) {return d.Name})
+  var nodeText = nodeGroup.append('text')
+      .attr('class', 'nodeText')
+      .attr('dx', 7)
+      .attr('dy', 10)
+      .style("font-size", "10px")
+      .style("visibility", "hidden")
+      .text(function(d) { return d.Name; })
 
 
   this.force.on("tick", function() {
@@ -43,8 +53,10 @@ var forceGraph = function(data, config){
         .attr("x2", function(d) { return d.target.x; })
         .attr("y2", function(d) { return d.target.y; });
 
-    node.attr("cx", function(d) { return d.x; })
-        .attr("cy", function(d) { return d.y; });
+    nodeGroup.attr("transform", function(d) {
+            return 'translate(' + [d.x, d.y] + ')';
+        });
+
   });
 
 }
@@ -53,7 +65,6 @@ forceGraph.prototype.getData = function(data){
   data.links = data.links.filter(function(l){
     return l.score ===1
   })
-  console.log(data.links.length)
   return data
 }
 
@@ -96,12 +107,18 @@ forceGraph.prototype.createElements = function(){
       .attr("height", height);
 
   this.force = d3.layout.force()
-      .charge(-70)
-      .linkDistance(50)
       .size([width, height])
       .nodes(this.nodes)
       .links(this.edges)
-      .start()
+      .linkStrength(0.1)
+      .friction(0.9)
+      .linkDistance(function(d){ if(d.score === 1){return 150} else {return 250}})
+      .charge(-150)
+      .charge(-30)
+      .gravity(0.1)
+      .theta(0.8)
+      .alpha(0.1)
+      .start();
 
   this.svg.append("svg:defs").selectAll("marker")
      .data(["end"])      // Different link/path types can be defined here
@@ -139,16 +156,14 @@ forceGraph.prototype.createElements = function(){
 // })
 //
 
-
-
-
 var proteinDomainGraph = function(data, config){
   this.config = config
   this.data = data
+  this.mutation =this.getMutationData()
   this.createSVG()
   this.x = d3.scale.linear()
             .domain([0, this.data.length])
-            .range([0, this.config.width])
+            .range([0, this.config.width - 3*this.config.xoffset])
 
   this.markMutations()
   this.drawRegions()
@@ -164,49 +179,59 @@ proteinDomainGraph.prototype.createSVG = function(){
       .attr("height", height);
 
   this.svg.append('g')
+          .attr("transform", "translate(-10,0)")
           .attr("class", "pdgraph")
 
 }
 
 
+proteinDomainGraph.prototype.getMutationData = function(){
+  config = this.config
+  this.data.mutation.forEach(function(m){
+    m.ranHeight = Math.random()*config.yoffset*0.5 + 0.1*config.yoffset
+  })
+  return this.data.mutation
+}
+
 proteinDomainGraph.prototype.markMutations = function(){
   var x = this.x
   var color = d3.scale.category20c()
+  var config = this.config
 
   var needles = d3.select(".pdgraph").selectAll()
-            .data(this.data.mutation).enter()
+            .data(this.mutation).enter()
             .append("line")
-            .attr("y1", this.config.stickHeight)
-            .attr("y2", this.config.yoffset)
-            .attr("x1", function(d){ return x(parseInt(d.name.replace(/[^0-9\.]/g, '')))})
-            .attr("x2", function(d){ return x(parseInt(d.name.replace(/[^0-9\.]/g, '')))})
+            .attr("y1", function(d){return d.ranHeight})
+            .attr("y2", config.yoffset)
+            .attr("x1", function(d){ return x(config.xoffset + parseInt(d.name.replace(/[^0-9\.]/g, '')))})
+            .attr("x2", function(d){ return x(config.xoffset + parseInt(d.name.replace(/[^0-9\.]/g, '')))})
             .attr("class", "needle-line")
             .attr("stroke", "lightgrey")
             .attr("stroke-width", 1.5);
 
   var needleHeads = d3.select(".pdgraph").selectAll()
-            .data(this.data.mutation)
+            .data(this.mutation)
             .enter().append("a")
             .attr("href", function(d){ return '#' + d.name})
 
   needleHeads.append("circle")
-            .attr("cy", this.config.stickHeight + this.config.headRadius)
-            .attr("cx", function(d) {return x(parseInt(d.name.replace(/[^0-9\.]/g, '')))})
-            .attr("r", this.config.headRadius)
+            .attr("cy", function(d){return d.ranHeight + config.headRadius})
+            .attr("cx", function(d) {return x(config.xoffset+ parseInt(d.name.replace(/[^0-9\.]/g, '')))})
+            .attr("r", config.headRadius)
             .attr("class", "needle-head")
             .style("fill", function(d) { return color(d.name)})
 
   var needleText = d3.select(".pdgraph").selectAll()
-            .data(this.data.mutation)
+            .data(this.mutation)
             .enter().append('text')
             .attr("class", "needleText")
             .attr("text-anchor", "center")
             .attr("fill", "black")
             .attr("opacity", 0.5)
-            .attr("x", function(d){ return x(parseInt(d.name.replace(/[^0-9\.]/g, '')) + 6)})
-            .attr("y", this.config.stickHeight + this.config.headRadius)
+            .attr("x", function(d){ return x(config.xoffset+ parseInt(d.name.replace(/[^0-9\.]/g, '')) + 2)})
+            .attr("y", function(d){ return d.ranHeight})
             .attr("dx", "3px")
-            .attr("font-size", this.config.headFontSize)
+            .attr("font-size", config.headFontSize)
             .text(function(d){return d.name})
 }
 
@@ -214,6 +239,7 @@ proteinDomainGraph.prototype.markMutations = function(){
 proteinDomainGraph.prototype.drawRegions = function(){
     var x = this.x
     var color = d3.scale.category20();
+    var xoffset = this.config.xoffset
 
     var regionsBG = d3.select('.pdgraph').selectAll()
                       .data(["dummy"]).enter()
@@ -222,7 +248,7 @@ proteinDomainGraph.prototype.drawRegions = function(){
                       .append("rect")
                       .attr("ry", "3")
                       .attr("rx", "3")
-                      .attr("x", 0)
+                      .attr("x", x(xoffset))
                       .attr("y", this.config.yoffset)
                       .attr("width", x(this.data.length))
                       .attr("height", this.config.regionBGHeight)
@@ -234,28 +260,28 @@ proteinDomainGraph.prototype.drawRegions = function(){
                     .attr("class", "regionGroup");
 
 
-    regions.append("rect")
-                .attr("class", "region")
-                .attr("x", function (d) {
-                    return x(d.start);
-                })
-                .attr("y", this.config.yoffset - (this.config.regionHeight - this.config.regionBGHeight)/2)
-                .attr("ry", "3")
-                .attr("rx", "3")
-                .attr("width", function (d) {
-                    return x(d.end) - x(d.start)
-                })
-                .attr("height", this.config.regionHeight)
-                .style("fill", function(d){ return color(d.start)})
-
-    var text = regions.append("a")
+    regions.append("a")
           .attr("href", function(d){ return 'http://pfam.xfam.org/family/' + d.name})
-          .append("text")
+          .append("rect")
+          .attr("class", "region")
+          .attr("x", function (d) {
+              return x(d.start + xoffset);
+          })
+          .attr("y", this.config.yoffset - (this.config.regionHeight - this.config.regionBGHeight)/2)
+          .attr("ry", "3")
+          .attr("rx", "3")
+          .attr("width", function (d) {
+              return x(d.end) - x(d.start)
+          })
+          .attr("height", this.config.regionHeight)
+          .style("fill", function(d){ return color(d.start)})
+
+    var text = regions.append("text")
           .attr("class", "regionText")
           .attr("text-anchor", "center")
           .attr("fill", "black")
           .attr("opacity", 0.5)
-          .attr("x", function (d) { return x(d.start)})
+          .attr("x", function (d) { return x(d.start + xoffset)})
           .attr("y", this.config.yoffset + this.config.regionHeight*2)
           .attr("dx", "2px")
           .style("font-size", this.config.regionFontSize)
@@ -265,22 +291,17 @@ proteinDomainGraph.prototype.drawRegions = function(){
           });
 }
 
-$(document).ready(function(){
-    $("body").scrollspy({
-        target: "#target_nav",
-        offset: 50
-    })
-});
-
 'use strict';
 
 $(document).ready(function(){
+
+
   var genes = new Bloodhound({
     datumTokenizer: Bloodhound.tokenizers.whitespace,
     queryTokenizer: Bloodhound.tokenizers.whitespace,
     // url points to a json file that contains an array of country names, see
     // https://github.com/twitter/typeahead.js/blob/gh-pages/data/countries.json
-    prefetch: '../data/genes.json'
+    prefetch: '../data/Gene.HUGO_GENE_SYMBOL.json'
   });
 
   var variants = new Bloodhound({
@@ -288,7 +309,7 @@ $(document).ready(function(){
     queryTokenizer: Bloodhound.tokenizers.whitespace,
     // url points to a json file that contains an array of country names, see
     // https://github.com/twitter/typeahead.js/blob/gh-pages/data/countries.json
-    prefetch: '../data/variants.json'
+    prefetch: '../data/Variant.MUT_HGVS_NT_ID.json'
   });
 
   $('input.typeahead').typeahead({
@@ -318,4 +339,92 @@ $(document).ready(function(){
       window.location.href = '/gene/' + suggestion;
     }
   });
+});
+
+'use strict';
+
+$(document).ready(function(){
+
+  $('form#advanceSearch').submit(function (e) {
+    e.preventDefault();
+    $.ajax({
+        url: '/search',
+        type: 'POST',
+        data : $('#advanceSearch').serialize(),
+        success: function(data) {
+          console.log(data)
+           $('#searchResult').html(data);
+        }
+    });
+  });
+//http://stackoverflow.com/questions/1200266/submit-a-form-using-jquery
+
+  var chromosomeLocation= new Bloodhound({
+    datumTokenizer: Bloodhound.tokenizers.whitespace,
+    queryTokenizer: Bloodhound.tokenizers.whitespace,
+    prefetch: '../data/Gene.CHROMOSOME_NAME.json'
+  });
+
+  var inPfam = new Bloodhound({
+    datumTokenizer: Bloodhound.tokenizers.whitespace,
+    queryTokenizer: Bloodhound.tokenizers.whitespace,
+    prefetch: '../data/VariantProperty.IN_PFAM.json'
+  });
+
+  var inMotif = new Bloodhound({
+    datumTokenizer: Bloodhound.tokenizers.whitespace,
+    queryTokenizer: Bloodhound.tokenizers.whitespace,
+    prefetch: '../data/VariantProperty.IN_MOTIF.json'
+  });
+
+  var clinVarSig= new Bloodhound({
+    datumTokenizer: Bloodhound.tokenizers.whitespace,
+    queryTokenizer: Bloodhound.tokenizers.whitespace,
+    prefetch: '../data/VariantProperty.CLINVAR_CLINICAL_SIGNIFICANCE.json'
+  });
+
+
+  $('input.chrName-typeahead').typeahead({
+    highlight: true
+  }, {
+    name: 'chromosomeLocation',
+    source: chromosomeLocation
+  });
+
+
+  $('input.inPfam-typeahead').typeahead({
+    highlight: true
+  }, {
+    name: 'inPfam',
+    source: inPfam
+  })
+
+  $('input.inMotif-typeahead').typeahead({
+    highlight: true
+  }, {
+    name: 'inMotif',
+    source: inMotif
+  })
+
+  $('input.clinVarSig-typeahead').typeahead({
+    highlight: true
+  }, {
+    name: 'clinVarSig',
+    source: clinVarSig
+  })
+
+});
+
+//
+// $(document).ready(function(){
+//   $('input.typeahead').bind('typeahead:select', function(ev, suggestion) {
+//
+//   });
+// });
+
+$(document).ready(function(){
+    $("body").scrollspy({
+        target: "#target_nav",
+        offset: 50
+    })
 });

@@ -5,7 +5,7 @@ var forceGraph = function(data, config){
   this.edges = this.getEdges()    // edges data
   this.nodes = this.getNodes()    // nodes data
   this.createElements()           // creates this.svg, this.force, and marker
-
+  color = d3.scale.category20()
 
   var link = this.svg.selectAll('.link')
       .data(this.edges)
@@ -14,27 +14,37 @@ var forceGraph = function(data, config){
       .attr("marker-end", "url(#end)")
       .style("stroke-width", 1)
       .style("stroke-dasharray", function(d){ if (d.score === 0){ return "5,5"} else {return undefined}})
+      .style("stroke", function(d){ if (d.score === 0){ return '#ff6300'} else {return '#96e6ff'}})
 
 
-  var node = this.svg.selectAll('.node')
-      .data(data.nodes)
-      .enter().append('circle')
+  var nodeGroup = this.svg.selectAll('.node')
+      .data(this.nodes)
+      .enter().append('g')
+      .attr('class', 'nodeGroup')
+      .on("mouseover", function(d){
+        d3.select(this).select("text").style("visibility","visible")
+      })
+      .on("mouseout", function(d){
+        d3.select(this).select("text").style("visibility","hidden")
+      })
+
+
+  var node = nodeGroup.append('a')
+      .attr('href', function(d){if (/^NM_[0-9]{5,}/i.test(d.Name)){ return "/variant/"+d.Name} else {return "/gene/" + d.Name}})
+      .append('circle')
       .attr('class', 'node')
-      .attr("r", 5)
+      .attr("r", this.config.nodeRadius)
+      .style('fill', function(d){ return color(d.Name)})
+      // .style("fill", function(d) { if (/^NM_[0-9]{5,}/i.test(d.Name)){ return '#0088b3'} else {return '#ff0066'}})
       .call(this.force.drag)
-      .style("fill", function(d) { if (/^NM_[0-9]{5,}/i.test(d.Name)){ return '#5bd0f0'} else {return '#d99db5'}})
 
-  node.on("dblclick.zoom", function(d) { d3.event.stopPropagation();
-  	var dcx = (window.innerWidth/2-d.x*zoom.scale());
-  	var dcy = (window.innerHeight/2-d.y*zoom.scale());
-  	zoom.translate([dcx,dcy]);
-  	 g.attr("transform", "translate("+ dcx + "," + dcy  + ")scale(" + zoom.scale() + ")");
-
-
-  	});
-
-  node.append("title")
-      .text(function(d) {return d.Name})
+  var nodeText = nodeGroup.append('text')
+      .attr('class', 'nodeText')
+      .attr('dx', 7)
+      .attr('dy', 10)
+      .style("font-size", "10px")
+      .style("visibility", "hidden")
+      .text(function(d) { return d.Name; })
 
 
   this.force.on("tick", function() {
@@ -43,8 +53,10 @@ var forceGraph = function(data, config){
         .attr("x2", function(d) { return d.target.x; })
         .attr("y2", function(d) { return d.target.y; });
 
-    node.attr("cx", function(d) { return d.x; })
-        .attr("cy", function(d) { return d.y; });
+    nodeGroup.attr("transform", function(d) {
+            return 'translate(' + [d.x, d.y] + ')';
+        });
+
   });
 
 }
@@ -53,7 +65,6 @@ forceGraph.prototype.getData = function(data){
   data.links = data.links.filter(function(l){
     return l.score ===1
   })
-  console.log(data.links.length)
   return data
 }
 
@@ -96,12 +107,18 @@ forceGraph.prototype.createElements = function(){
       .attr("height", height);
 
   this.force = d3.layout.force()
-      .charge(-70)
-      .linkDistance(50)
       .size([width, height])
       .nodes(this.nodes)
       .links(this.edges)
-      .start()
+      .linkStrength(0.1)
+      .friction(0.9)
+      .linkDistance(function(d){ if(d.score === 1){return 150} else {return 250}})
+      .charge(-150)
+      .charge(-30)
+      .gravity(0.1)
+      .theta(0.8)
+      .alpha(0.1)
+      .start();
 
   this.svg.append("svg:defs").selectAll("marker")
      .data(["end"])      // Different link/path types can be defined here

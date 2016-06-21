@@ -40,11 +40,13 @@ var users = require('./routes/users');
 var gene = require('./routes/gene')
 var variant = require('./routes/variant')
 var interaction = require('./routes/interaction')
+var search = require('./routes/search')
 app.use('/', routes);
 app.use('/users', users);
 app.use('/gene', gene)
 app.use('/variant', variant)
 app.use('/interaction', interaction)
+app.use('/search', search)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

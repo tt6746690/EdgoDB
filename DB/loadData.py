@@ -142,6 +142,21 @@ class LoadData:
                     f.write(url + '\n')
         except MySQLdb.Error, e:
             raise e
+
+    def exportOneColtoJSON(self, tblName, colName):
+        """ export just one column in one table to json"""
+        try:
+            sqlstr = """SELECT DISTINCT {} FROM {}""".format(colName, tblName)
+            self.c.execute(sqlstr)
+            # query return tuple as defult
+            # have to conver to list[str] first
+            result = [i[0] for i in self.c.fetchall()]
+            with open(tblName + '.' + colName + '.json', 'w') as f:
+                json.dump(result, f)
+        except MySQLdb.Error, e:
+            raise e
+
+            # self.c.execute()
 ### Loading methods
 
     def loadGeneTable(self):
@@ -394,6 +409,7 @@ class LoadData:
         self.loadTranscriptTable()
         self.loadORFeomeTable()
         self.loadVariantTable()
+        self.loadDiseaseTable()
         self.loadVariantPropertyTable()
         self.loadLocalCollectionTable()
         self.loadMeasurementTable()

@@ -1,0 +1,34 @@
+
+div.col-md-2
+div.col-md-8
+table.table.table-striped
+  thread
+    tr
+      th.text-center #
+      th.text-center Gene
+      th.text-center Variants
+  tbody.text-center
+    each gene, index in Object.keys(list)
+      tr 
+        th(scope="row", rowspan=list[gene].length)=index+1
+        td(rowspan=list[gene].length)
+          a(href = '/gene/' + gene)= gene
+        td 
+          a(href = '/variant/' + list[gene][0])= list[gene][0]
+      -if (list[gene].length > 1){
+        each variant, index in list[gene]
+          if index == 0
+          else
+            tr 
+              td
+                a(href = '/variant/' + list[gene][index])= variant
+      -}
+      //- - if list[gene].length >== 1
+      //-   tr 
+      //-     each variant in list[gene]
+      //-       a(href = '/variant/' + variant)= variant
+div.col-md-2
+    
+    
+script(type='text/javascript').
+   var list =!{JSON.stringify(list)}

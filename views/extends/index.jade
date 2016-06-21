@@ -4,10 +4,38 @@ block content
   div.container
     h1.display-1 EdgoDB
     p.lead An interaction and localization database for rare disease variants
-  div.stuffing
+  div#stuffing
   div.container 
     div.row 
-      div.col-md-2.col-xs-1
-      div.col-md-8.col-xs-10.input-group
+      div.col-md-2.col-xs-1.col-lg-2
+      div.col-md-8.col-xs-10.col-lg-8.input-group
         input.typeahead.form-control(text='text', placeholder='Search Gene or Variant' aria-label='...')
+    div#stuffing
+    div.row 
+      div.col-md-2.col-xs-1.col-lg-2
+      div.col-md-8.col-xs-10.col-lg-8
+        a.pull-right(data-toggle="collapse", href="#advanceSearchToggle", aria-expanded="false" aria-controls="advanceSearchToggle") Advanced Search
+    hr
+    div.row.collapse(id="advanceSearchToggle")
       div.col-md-2.col-xs-1
+      form.col-md-8.col-xs-10.form-horizontal(id="advanceSearch")
+        div.form-group.row
+          label.col-sm-2.form-control-label(for="chrName-input") Chr Number
+          div.col-sm-4
+            input.chrName-typeahead.form-control(id="chrName-input", name="CHROMOSOME_NAME", placeholder='chr number' aria-label='...')
+        div.form-group.row
+          label.col-sm-2.form-control-label(for="inPfam-input") In Pfam
+          div.col-sm-4
+            input.inPfam-typeahead.form-control(id="inPfam-input", name="IN_PFAM", placeholder='1 = true, 0 = false' aria-label='...')
+        div.form-group.row
+          label.col-sm-2.form-control-label(for="inMotif-input") In motif
+          div.col-sm-4
+            input.inMotif-typeahead.form-control(id="inMotif-input", name="IN_MOTIF", placeholder='1 = true, 0 = false' aria-label='...')
+        div.form-group.row
+          label.col-sm-2.form-control-label(for="clinVarSig-input") Clinvar Annotation
+          div.col-sm-4
+            input.clinVarSig-typeahead.form-control(id="clinVarSig-input", name="CLINVAR_CLINICAL_SIGNIFICANCE", placeholder='clinvar annotation' aria-label='...')
+        div.form-group.row
+          input.col-sm-12.btn.btn-default(type="submit", value="submit")
+      div.col-md-2.col-xs-1
+    div.row(id="searchResult")

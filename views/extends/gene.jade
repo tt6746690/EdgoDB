@@ -27,24 +27,39 @@ block content
           div.col-md-6(id='protein-domain-graph')
         hr
         div.row(id="GeneInteraction") 
-          div.col-md-6(id='y2h-interaction-graph')
-            h4.display-4 Y2H Interaction
-          div.col-md-6(id='lumier-interaction-graph')
-        hr
+          div.col-md-4(id='y2h-interaction')
+          div.col-md-6(id='lumier-interaction')
         div(id="VariantListing")
-          if transcript
-            - for item in transcript
+          if variant
+            - for item in variant
               - var MUT_HGVS_AA = item['MUT_HGVS_AA_ID'].split('.').pop(-1)
+              - var MUT_HGVS_NT = item['MUT_HGVS_NT_ID'].split('.').pop(-1)
                 div.row
-                  h4
-                    a(href = '/variant/' + MUT_HGVS_AA)= MUT_HGVS_AA
+                  h4(id=MUT_HGVS_AA)
+                    a(href = '/variant/' + item.MUT_HGVS_NT_ID)= MUT_HGVS_NT
+                    span.glyphicon.glyphicon-menu-right
+                    span= MUT_HGVS_AA
                   div.dl-horizontal.col-md-6
-                    dt RefSeq 
-                    dd 
-                      a(href='http://www.ncbi.nlm.nih.gov/nuccore/' + item.REFSEQ_ID) #{item.REFSEQ_ID}
-                
+                    if item.CHR_COORDINATE_HG19
+                      dt Chromosomal location 
+                      dd
+                        a(href="http://genome.ucsc.edu/cgi-bin/hgTracks?org=human&db=hg19&position=" + item.CHR_COORDINATE_HG19) #{item.CHR_COORDINATE_HG19}
+                    if item.REFSEQ_ID
+                      dt RefSeq 
+                      dd 
+                        a(href='http://www.ncbi.nlm.nih.gov/nuccore/' + item.REFSEQ_ID) #{item.REFSEQ_ID}
+                    if item.CCSB_MUTATION_ID
+                      dt CCSB mutation ID 
+                      dd #{item.CCSB_MUTATION_ID}
+                    if item.DBSNP_ID
+                      dt dbSNP ID 
+                      dd 
+                        a(href = 'http://www.ncbi.nlm.nih.gov/snp/?term=' + item.DBSNP_ID) #{item.DBSNP_ID}
+                    if item.EXAC_ALLELE_FREQUENCY
+                      dt Exac allele freq 
+                      dd #{item.EXAC_ALLELE_FREQUENCY}
+                    hr
                   div.col-md-6
-                
       nav.col-md-2.bs-docs-sidebar.hidden-print(id='target_nav')
         ul.nav.nav-stacked.bs-docs-sidenav.fixed(id="sidebar")
           +nav_item("#GeneInfo") Gene
@@ -53,22 +68,24 @@ block content
               +nav_item("#GeneInteraction") Interaction
           +nav_item("#VariantListing") Variants 
             ul.nav.nav-stacked(id="sidebar")
-              - for item in transcript
+              - for item in variant
                 - var MUT_HGVS_AA = item['MUT_HGVS_AA_ID'].split('.').pop(-1)
                   +nav_item("#" + MUT_HGVS_AA) #{MUT_HGVS_AA}
               
 block script 
   script(type='text/javascript').
     var y2hInteractionConfig = {
-      "height": 150,
-      "width": 500,
-      "targetDOM": "#y2h-interaction-graph"
+      "height": 300,
+      "width": 333,
+      "targetDOM": "#y2h-interaction",
+      "nodeRadius": 5,
+      "textSize": 12
     }
     var proteinDomainConfig = {
       "height": 125,
-      "width": 450,
+      "width": 460,
       "targetDOM": "#protein-domain-graph",
-      "xoffset": 20,
+      "xoffset": 10,
       "yoffset": 90,
       "regionHeight": 15,
       "regionBGHeight": 10,
@@ -77,18 +94,18 @@ block script
       "regionFontSize": "10px",
       "headFontSize": "10px"
     }  
-    
-    if (typeof forceGraphData != undefined){
-      var y2hInteractionData =!{JSON.stringify(forceGraphData)}
+    var y2hInteractionData =!{JSON.stringify(forceGraphData)}
+    if(y2hInteractionData.links.length !== 0 && y2hInteractionData.nodes.length !== 0){
       var y2hForceGraph = new forceGraph(y2hInteractionData, y2hInteractionConfig)
     }
     
-    if (typeof proteinDomainData != undefined){
-      var proteinDomainData =!{JSON.stringify(proteinDomainData)}
+    var proteinDomainData =!{JSON.stringify(proteinDomainData)}
+    if(proteinDomainData.region.length !== 0 && proteinDomainData.mutation.length !== 0){
       proteinDomainData.length = proteinDomainData.region[0].proteinLength
-
       var pg = new proteinDomainGraph(proteinDomainData, proteinDomainConfig)
     }
+    
+    
     
     
 

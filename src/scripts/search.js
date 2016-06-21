@@ -1,12 +1,14 @@
 'use strict';
 
 $(document).ready(function(){
+
+
   var genes = new Bloodhound({
     datumTokenizer: Bloodhound.tokenizers.whitespace,
     queryTokenizer: Bloodhound.tokenizers.whitespace,
     // url points to a json file that contains an array of country names, see
     // https://github.com/twitter/typeahead.js/blob/gh-pages/data/countries.json
-    prefetch: '../data/genes.json'
+    prefetch: '../data/Gene.HUGO_GENE_SYMBOL.json'
   });
 
   var variants = new Bloodhound({
@@ -14,7 +16,7 @@ $(document).ready(function(){
     queryTokenizer: Bloodhound.tokenizers.whitespace,
     // url points to a json file that contains an array of country names, see
     // https://github.com/twitter/typeahead.js/blob/gh-pages/data/countries.json
-    prefetch: '../data/variants.json'
+    prefetch: '../data/Variant.MUT_HGVS_NT_ID.json'
   });
 
   $('input.typeahead').typeahead({

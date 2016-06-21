@@ -30,7 +30,41 @@ router.get('/:geneid', function(req, res, next){
         })
       },
       nodes: function(callback){
-        sqlstr2 = "SELECT DISTINCT CONCAT(ENTREZ_GENE_ID, '_0') AS ID, HUGO_GENE_SYMBOL AS Name FROM Gene JOIN Transcript USING(ENTREZ_GENE_ID) JOIN Y2HWTInteractor USING(REFSEQ_ID) WHERE HUGO_GENE_SYMBOL = ? UNION SELECT DISTINCT CONCAT(INTERACTOR_ENTREZ_GENE_ID, '_0') AS ID, (SELECT g.HUGO_GENE_SYMBOL FROM Gene AS g WHERE g.ENTREZ_GENE_ID = INTERACTOR_ENTREZ_GENE_ID) AS Name FROM Gene JOIN Transcript USING(ENTREZ_GENE_ID) JOIN Y2HWTInteractor USING(REFSEQ_ID) WHERE HUGO_GENE_SYMBOL = ? UNION SELECT DISTINCT CONCAT(ENTREZ_GENE_ID, '_', CCSB_MUTATION_ID) AS ID, MUT_HGVS_NT_ID AS Name FROM Gene JOIN Transcript USING(ENTREZ_GENE_ID) JOIN Variant USING(REFSEQ_ID) JOIN Y2HMUTInteractor USING(VARIANT_ID) WHERE HUGO_GENE_SYMBOL = ? UNION SELECT DISTINCT CONCAT(g.ENTREZ_GENE_ID, '_0') AS ID, g.HUGO_GENE_SYMBOL AS Name FROM Gene AS g JOIN Y2HMUTInteractor AS y2h ON g.ENTREZ_GENE_ID = y2h.INTERACTOR_ENTREZ_GENE_ID WHERE y2h.VARIANT_ID = ANY(SELECT VARIANT_ID FROM Gene JOIN Transcript USING (ENTREZ_GENE_ID) JOIN Variant USING(REFSEQ_ID) WHERE HUGO_GENE_SYMBOL = ?)"
+        sqlstr2 = "SELECT \
+                      DISTINCT CONCAT(ENTREZ_GENE_ID, '_0') AS ID, \
+                      HUGO_GENE_SYMBOL AS Name \
+                  FROM Gene \
+                      JOIN Transcript USING(ENTREZ_GENE_ID) \
+                      JOIN Y2HWTInteractor USING(REFSEQ_ID) \
+                  WHERE HUGO_GENE_SYMBOL = ? \
+                  UNION \
+                  SELECT \
+                      DISTINCT CONCAT(INTERACTOR_ENTREZ_GENE_ID, '_0') AS ID, \
+                      (SELECT g.HUGO_GENE_SYMBOL \
+                      FROM Gene AS g \
+                      WHERE g.ENTREZ_GENE_ID = INTERACTOR_ENTREZ_GENE_ID) AS Name \
+                  FROM Gene JOIN Transcript USING(ENTREZ_GENE_ID) \
+                      JOIN Y2HWTInteractor USING(REFSEQ_ID) \
+                  WHERE HUGO_GENE_SYMBOL = ? \
+                  UNION \
+                  SELECT DISTINCT CONCAT(ENTREZ_GENE_ID, '_', CCSB_MUTATION_ID) AS ID, \
+                      MUT_HGVS_NT_ID AS Name \
+                  FROM Gene \
+                      JOIN Transcript USING(ENTREZ_GENE_ID) \
+                      JOIN Variant USING(REFSEQ_ID) \
+                      JOIN Y2HMUTInteractor USING(VARIANT_ID) \
+                  WHERE HUGO_GENE_SYMBOL = ? \
+                  UNION \
+                  SELECT DISTINCT CONCAT(g.ENTREZ_GENE_ID, '_0') AS ID, \
+                      g.HUGO_GENE_SYMBOL AS Name \
+                  FROM Gene AS g \
+                      JOIN Y2HMUTInteractor AS y2h \
+                          ON g.ENTREZ_GENE_ID = y2h.INTERACTOR_ENTREZ_GENE_ID \
+                  WHERE y2h.VARIANT_ID = ANY(SELECT VARIANT_ID \
+                                             FROM Gene \
+                                                JOIN Transcript USING (ENTREZ_GENE_ID) \
+                                                JOIN Variant USING(REFSEQ_ID) \
+                                             WHERE HUGO_GENE_SYMBOL = ?)"
         connection.query(sqlstr2, [req.params.geneid, req.params.geneid, req.params.geneid, req.params.geneid], function(err, rows){
           if (err) throw err;
           var nodes = []
@@ -41,7 +75,9 @@ router.get('/:geneid', function(req, res, next){
         })
       },
       gene: function(callback){
-        sqlstr3 = "SELECT * FROM Gene WHERE HUGO_GENE_SYMBOL = ?;"
+        sqlstr3 = "SELECT HUGO_GENE_SYMBOL, ENTREZ_GENE_ID, OMIM_ID, UNIPROT_SWISSPROT_ID, ENSEMBL_GENE_ID, DESCRIPTION \
+                   FROM Gene \
+                   WHERE HUGO_GENE_SYMBOL = ?;"
         connection.query(sqlstr3, [req.params.geneid], function(err, rows) {
           var gene = []
           for (var i = 0; i < rows.length; i++){
@@ -50,14 +86,14 @@ router.get('/:geneid', function(req, res, next){
           callback(null, gene)
         });
       },
-      transcript: function(callback){
+      variant: function(callback){
         sqlstr4 = "SELECT * FROM Gene JOIN Transcript USING (ENTREZ_GENE_ID) JOIN Variant USING (REFSEQ_ID) JOIN VariantProperty USING (VARIANT_ID) WHERE HUGO_GENE_SYMBOL = ?;"
         connection.query(sqlstr4, [req.params.geneid], function(err, rows) {
-          var transcript = []
+          var variant = []
           for (var i = 0; i < rows.length; i++){
-            transcript.push(JSON.parse(JSON.stringify(rows))[i])
+            variant.push(JSON.parse(JSON.stringify(rows))[i])
           }
-          callback(null, transcript)
+          callback(null, variant)
         });
       },
       domainRegion: function(callback){
@@ -89,10 +125,10 @@ router.get('/:geneid', function(req, res, next){
           nodes: results.nodes
         },
         gene: results.gene,
-        transcript: results.transcript,
+        variant: results.variant,
         proteinDomainData:{
           region: results.domainRegion,
-          mutation: results.mutationPosition // later be filled with info from transcript client side
+          mutation: results.mutationPosition // later be filled with info from variant client side
         }
       })
     });

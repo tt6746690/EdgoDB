@@ -22,7 +22,14 @@ div.dl-horizontal.col-md-6 > dd {
 }
 #VariantListing > div > h4 {
   text-align: left;
-  padding-left: 180px;
+  padding-left: 94px;
+}
+#VariantListing > div > h4 > span {
+  padding-left: 5px;
+  padding-right: 5px;
+}
+#y2h-interaction > svg > g:nth-child(97) > title {
+  transition: 0s;
 }
 
 #bs_overrides img,
@@ -115,6 +122,9 @@ header {
   background-color: #ececec;
   border-width: 1px;
   border-top-color: #cfcfcf;
+}
+#stuffing {
+  height: 10px;
 }
 
 .navbar-default .navbar-nav>.active>a,
