@@ -5,7 +5,7 @@ echo "/===== This is a shell script =====/"
 echo "/===== building mysql schema =====/"
 cd DB
 mysql < ./mysql/DBinit.sql
-
+mysql EdgoDB< ./mysql/customFunction.sql
 
 echo "/===== populating data from excel file =====/"
 python loadData.py
