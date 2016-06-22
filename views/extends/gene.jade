@@ -5,8 +5,8 @@ include ../includes/mixins.jade
 block content
   div.container
     div.row
-      div.col-md-10
-        h1(id="GeneInfo") #{gene[0].HUGO_GENE_SYMBOL} 
+      div.col-md-10(id=gene[0].HUGO_GENE_SYMBOL)
+        h1(id="GeneTitle") #{gene[0].HUGO_GENE_SYMBOL} 
         hr
         div.row
           dl.dl-horizontal.col-md-6
@@ -27,8 +27,23 @@ block content
           div.col-md-6(id='protein-domain-graph')
         hr
         div.row(id="GeneInteraction") 
-          div.col-md-4(id='y2h-interaction')
           div.col-md-6(id='lumier-interaction')
+          //- div.panel.panel-success.col-md-6
+          //-   div.panel-heading Success
+          //-   div.panel-body 
+          //-     table.table.table-ordered
+          //-       thead
+          //-         tr
+          //-           th.text-center #
+          //-           th.text-center BAG2
+          //-       tbody.text-center
+          //-         each 
+          //-           tr 
+          //-             th(scope="row")=index+1
+          //-             - for interactor in interactors 
+          //-               td 1
+        div.row
+          div.col-md-6(id='y2h-interaction')
         div(id="VariantListing")
           if variant
             - for item in variant
@@ -62,7 +77,7 @@ block content
                   div.col-md-6
       nav.col-md-2.bs-docs-sidebar.hidden-print(id='target_nav')
         ul.nav.nav-stacked.bs-docs-sidenav.fixed(id="sidebar")
-          +nav_item("#GeneInfo") Gene
+          +nav_item("#" + gene[0].HUGO_GENE_SYMBOL) Gene
             ul.nav.nav-stacked(id="sidebar")
               +nav_item("#GeneDescription") Info
               +nav_item("#GeneInteraction") Interaction
@@ -74,13 +89,20 @@ block content
               
 block script 
   script(type='text/javascript').
+    // force directed graph 
     var y2hInteractionConfig = {
-      "height": 300,
+      "height": 333,
       "width": 333,
       "targetDOM": "#y2h-interaction",
       "nodeRadius": 5,
       "textSize": 12
     }
+    var y2hInteractionData =!{JSON.stringify(forceGraphData)}
+    if(y2hInteractionData.links.length !== 0 && y2hInteractionData.nodes.length !== 0){
+      var y2hForceGraph = new forceGraph(y2hInteractionData, y2hInteractionConfig)
+    }
+    
+    // protein Domain chart 
     var proteinDomainConfig = {
       "height": 125,
       "width": 460,
@@ -94,50 +116,56 @@ block script
       "regionFontSize": "10px",
       "headFontSize": "10px"
     }  
-    var y2hInteractionData =!{JSON.stringify(forceGraphData)}
-    if(y2hInteractionData.links.length !== 0 && y2hInteractionData.nodes.length !== 0){
-      var y2hForceGraph = new forceGraph(y2hInteractionData, y2hInteractionConfig)
-    }
-    
     var proteinDomainData =!{JSON.stringify(proteinDomainData)}
     if(proteinDomainData.region.length !== 0 && proteinDomainData.mutation.length !== 0){
       proteinDomainData.length = proteinDomainData.region[0].proteinLength
       var pg = new proteinDomainGraph(proteinDomainData, proteinDomainConfig)
     }
     
+    // radar Chart
+    var gene =!{JSON.stringify(gene)}[0]
+    var variant =!{JSON.stringify(variant)}
+    var radarChartData =!{JSON.stringify(radarChartData)}   
+    var radarChartConfig = {
+      w: 220,
+      h: 220,
+      margin: {top: 40, right: 50, bottom: 40, left: 50},
+      maxValue: 0.5,
+      levels: 5,
+      roundStrokes: true,
+      color: d3.scale.category20()
+    };  
+    function selectRadarChartData(grpArray){
+      // create a object and map to a list[list]
+      var modData = {}    
+      //- grpArray.forEach(function(d){
+      //-   modData[d] = []
+      //- })
+      radarChartData.forEach(function(d){
+        if (grpArray.indexOf(d.grp) !== -1){
+          if ( !(typeof modData[d.grp] !== 'undefined' && modData[d.grp] instanceof Array) ) {
+            modData[d.grp] = []
+          }
+          // adding link ... to data 
+          if (/^NP_[0-9]{5,}/i.test(d.link)){  // this is to extract AA change for DOM ID redirection
+            d.link = d.link.split('.').pop(-1)
+          } 
+          modData[d.grp].push(d)
+        }
+      })
+      modData = Object.keys(modData).map(function(key){
+          return modData[key]
+      })
+      return modData
+    }
+    if (typeof radarChartData !== 'undefined') {
+      var garray = variant.map(function(d){return d.MUT_HGVS_NT_ID})
+      garray.push(gene.HUGO_GENE_SYMBOL)
+      var wtRadarData = selectRadarChartData(garray)
+      //Call function to draw the Radar chart
+      RadarChart("#lumier-interaction", wtRadarData, radarChartConfig);
+    }
     
     
-    
-
-// test for proteinDomain graph
-//- var proteinDomainData = {
-//-   "length": "1000",
-//-   "region": [{
-//-     "name": "Peptidase_S8",
-//-     "start": "159",
-//-     "end": "361",
-//-     "color": "#dd8352"
-//-   },{
-//-     "name": "PA",
-//-     "start": "388",
-//-     "end": "469"
-//-   }],
-//-   "mutation": [{
-//-     "name": "N159K"
-//-   }]
-//- }
-// test for interaction graph
-//- var data = {
-//-   links: [
-//-     {source: 1, target: 2, score: 1},
-//-     {source: 1, target: 3, score: 1},
-//-     {source: 2, target: 1, score: 1},
-//-     {source: 3, target: 3, score: 1}
-//-   ],
-//-   nodes: [
-//-     {Name: 'node1', ID: 1},
-//-     {Name: 'node2', ID: 2},
-//-     {Name: 'node3', ID: 3}
-//-   ]
-//- }
---//
+  
+      

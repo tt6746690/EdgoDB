@@ -3,7 +3,7 @@ extends ../layout
 block content
   div.container
     h1.display-1 EdgoDB
-    p.lead An interaction and localization database for rare disease variants
+    p.lead An interaction and localization database for human rare disease variants
   div#stuffing
   div.container 
     div.row 
@@ -15,27 +15,41 @@ block content
       div.col-md-2.col-xs-1.col-lg-2
       div.col-md-8.col-xs-10.col-lg-8
         a.pull-right(data-toggle="collapse", href="#advanceSearchToggle", aria-expanded="false" aria-controls="advanceSearchToggle") Advanced Search
-    hr
+    div#stuffing 
     div.row.collapse(id="advanceSearchToggle")
-      div.col-md-2.col-xs-1
-      form.col-md-8.col-xs-10.form-horizontal(id="advanceSearch")
-        div.form-group.row
-          label.col-sm-2.form-control-label(for="chrName-input") Chr Number
-          div.col-sm-4
-            input.chrName-typeahead.form-control(id="chrName-input", name="CHROMOSOME_NAME", placeholder='chr number' aria-label='...')
-        div.form-group.row
-          label.col-sm-2.form-control-label(for="inPfam-input") In Pfam
-          div.col-sm-4
-            input.inPfam-typeahead.form-control(id="inPfam-input", name="IN_PFAM", placeholder='1 = true, 0 = false' aria-label='...')
-        div.form-group.row
-          label.col-sm-2.form-control-label(for="inMotif-input") In motif
-          div.col-sm-4
-            input.inMotif-typeahead.form-control(id="inMotif-input", name="IN_MOTIF", placeholder='1 = true, 0 = false' aria-label='...')
-        div.form-group.row
-          label.col-sm-2.form-control-label(for="clinVarSig-input") Clinvar Annotation
-          div.col-sm-4
-            input.clinVarSig-typeahead.form-control(id="clinVarSig-input", name="CLINVAR_CLINICAL_SIGNIFICANCE", placeholder='clinvar annotation' aria-label='...')
-        div.form-group.row
-          input.col-sm-12.btn.btn-default(type="submit", value="submit")
-      div.col-md-2.col-xs-1
+      div.col-md-2
+      div.col-md-8.panel.panel-default
+        div.panel-body 
+          form.form-horizontal(id="advanceSearch")
+            div#stuffing
+            div.form-group.row
+              label.col-sm-2.form-control-label(for="chrName-input") Chr Number
+              div.col-sm-4
+                input.chrName-typeahead.form-control(id="chrName-input", name="CHROMOSOME_NAME", placeholder='Chr location' aria-label='...')
+            div.form-group.row
+              label.col-sm-2.form-control-label(for="inPfam-input") In Pfam
+              div.col-sm-4
+                input.inPfam-typeahead.form-control(id="inPfam-input", name="IN_PFAM", placeholder='1 = true, 0 = false' aria-label='...')
+            div.form-group.row
+              label.col-sm-2.form-control-label(for="inMotif-input") In motif
+              div.col-sm-4
+                input.inMotif-typeahead.form-control(id="inMotif-input", name="IN_MOTIF", placeholder='1 = true, 0 = false' aria-label='...')
+            div.form-group.row
+              label.col-sm-2.form-control-label(for="clinVarSig-input") ClinVar Anno
+              div.col-sm-4
+                input.clinVarSig-typeahead.form-control(id="clinVarSig-input", name="CLINVAR_CLINICAL_SIGNIFICANCE", placeholder='Clinvar Annotation' aria-label='...')
+            div.form-group.row
+              label.col-sm-2.form-control-label(for="hgmdVariantClass-input") HGMD Class
+              div.col-sm-4
+                input.hgmdVariantClass-typeahead.form-control(id="hgmdVariantClass-input", name="HGMD_VARIANT_CLASS", placeholder='Disease risk' aria-label='...')
+            //- div.form-group.row
+            //-   label.col-sm-2.form-control-label(for="alleleFreq-input") Allele Frequency
+            //-   div.col-sm-4
+            //-     input.alleFreq-typeahead.form-control(id="alleleFreq-input", name="EXAC_ALLELE_FREQUENCY", placeholder='Allele Frequency' aria-label='...')
+            div.form-group.row
+              input.col-sm-12.btn.btn-default(type="submit", value="Search")
+      div.col-md-2
+    div#stuffing
+    div#stuffing
     div.row(id="searchResult")
+    

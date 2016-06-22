@@ -40,6 +40,12 @@ $(document).ready(function(){
     prefetch: '../data/VariantProperty.CLINVAR_CLINICAL_SIGNIFICANCE.json'
   });
 
+  var hgmdVariantClass = new Bloodhound({
+    datumTokenizer: Bloodhound.tokenizers.whitespace,
+    queryTokenizer: Bloodhound.tokenizers.whitespace,
+    prefetch: '../data/Variant.HGMD_VARIANT_CLASS.json'
+  });
+
 
   $('input.chrName-typeahead').typeahead({
     highlight: true
@@ -69,6 +75,13 @@ $(document).ready(function(){
     name: 'clinVarSig',
     source: clinVarSig
   })
+
+  $('input.hgmdVariantClass-typeahead').typeahead({
+    highlight: true
+  }, {
+    name: 'hgmdVariantClass',
+    source: hgmdVariantClass
+  });
 
 });
 

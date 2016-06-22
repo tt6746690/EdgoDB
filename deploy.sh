@@ -23,8 +23,6 @@ echo "/===== annotate with scrapy =====/"
 cd ../Pyannotate
 scrapy crawl exac
 scrapy crawl uniprot
-
-
 scrapy crawl pfam
 
 echo "---------------------"

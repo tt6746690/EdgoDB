@@ -34,8 +34,8 @@ var forceGraph = function(data, config){
       .append('circle')
       .attr('class', 'node')
       .attr("r", this.config.nodeRadius)
-      .style('fill', function(d){ return color(d.Name)})
-      // .style("fill", function(d) { if (/^NM_[0-9]{5,}/i.test(d.Name)){ return '#0088b3'} else {return '#ff0066'}})
+      // .style('fill', function(d){ return color(d.Name)})
+      .style("fill", function(d) { if (/^NM_[0-9]{5,}/i.test(d.Name)){ return '#7ec1ff'} else {return '#ff7eb2'}})
       .call(this.force.drag)
 
   var nodeText = nodeGroup.append('text')

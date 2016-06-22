@@ -19,7 +19,6 @@ router.post('/', function(req, res, next){
                 LEFT JOIN Disease \
                   ON Variant.VARIANT_ID = Disease.VARIANT_ID \
               WHERE Gene.HUGO_GENE_SYMBOL IS NOT NULL"
-
     var cols = []
     Object.keys(req.body).forEach(function(col){
       if (req.body[col] === ''){ // if form field empty do nothing
@@ -28,6 +27,7 @@ router.post('/', function(req, res, next){
         cols.push(req.body[col])
       }
     })
+    console.log(sqlstr)
     connection.query(sqlstr, cols, function(err, rows) {
       if (err) throw err;
         var result = []

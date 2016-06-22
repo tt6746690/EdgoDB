@@ -15,6 +15,7 @@ if __name__ == "__main__":
     ld.exportOneColtoJSON('Variant', 'DBSNP_ID')
     ld.exportOneColtoJSON('Variant', 'CHR_COORDINATE_HG19')
     ld.exportOneColtoJSON('Variant', 'MUT_HGVS_AA_ID')
+    ld.exportOneColtoJSON('Variant', 'HGMD_VARIANT_CLASS')
     ld.exportOneColtoJSON('Gene', 'OMIM_ID')
     ld.exportOneColtoJSON('Gene', 'ENTREZ_GENE_ID')
     ld.exportOneColtoJSON('Gene', 'UNIPROT_SWISSPROT_ID')
