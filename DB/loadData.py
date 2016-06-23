@@ -20,13 +20,7 @@ CCSB_MUTATION_ID = "Allele_ID"
 DBSNP_ID = "dbSNP_ID"
 MUT_HGVS_NT_ID = "Mutation_RefSeq_NT"
 MUT_HGVS_AA_ID = "Mutation_RefSeq_AA"
-MUT_ORFEOME_NT = "Mutation_HORFeome_8.1_NT"
-MUT_ORFEOME_AA = "Mutation_HORFeome_8.1_AA"
 CHR_COORDINATE_HG18 = "Chromosome_coordinate_hg18"
-PMID = "pmid"
-HGMD_ACCESSION = "HGMD_accession"
-MUT_HGMD_AA = "Mutation_HGMD_AA"
-HGMD_VARIANT_CLASS = "HGMD_variant_class"
 # Disease
 DISEASE_NAME = "Disease"
 INHERITANCE_PATTERN = 'Inheritance'
@@ -44,6 +38,12 @@ PROTEIN_CHEMICAL_INTERFACE = "Protein_chemical_interface"
 FOLDX_VALUE = "FoldX_value"
 CLINVAR_ID = "ClinVar_ID"
 CLINVAR_CLINICAL_SIGNIFICANCE = "ClinVar_clinical_significance"
+MUT_ORFEOME_NT = "Mutation_HORFeome_8.1_NT"
+MUT_ORFEOME_AA = "Mutation_HORFeome_8.1_AA"
+PMID = "pmid"
+HGMD_ACCESSION = "HGMD_accession"
+MUT_HGMD_AA = "Mutation_HGMD_AA"
+HGMD_VARIANT_CLASS = "HGMD_variant_class"
 # LocalCollection
 ENTRY_CLONE_PLATE = "Ph1Mut_PLA"
 ENTRY_CLONE_WELL = "Ph1Mut_POS"
@@ -171,21 +171,6 @@ class LoadData:
             raise e
             self.db.rollback()
 
-
-    def loadTranscriptTable(self):
-        subset = self.subsetCols([REFSEQ_ID, ENTREZ_GENE_ID])
-        # have to remove duplicate tuples for insertion to work properly
-        inserts = list(set([(t[0].split(':')[0], t[1]) for t in subset]))
-        sqlstr = """INSERT INTO Transcript (REFSEQ_ID, ENTREZ_GENE_ID)
-                VALUES (%s, %s);"""
-        try:
-            self.c.executemany(sqlstr, inserts)
-            self.db.commit()
-        except MySQLdb.Error, e:
-            print 'insert to transcript table failed'
-            raise e
-            self.db.rollback()
-
     def loadORFeomeTable(self):
         inserts = self.subsetCols([CCSB_ORF_ID, ORF_LENGTH, CDS_ORFEOME_SEQ, ENTREZ_GENE_ID])
         sqlstr = """INSERT INTO ORFeome (ORFEOME_ID, CCSB_ORF_ID, ORF_LENGTH, CDS_ORFEOME_SEQ, ENTREZ_GENE_ID)
@@ -199,20 +184,21 @@ class LoadData:
             self.db.rollback()
 
     def loadVariantTable(self):
-        subsets = self.subsetCols([CCSB_MUTATION_ID, DBSNP_ID, MUT_HGVS_NT_ID,
-                                    MUT_HGVS_AA_ID, MUT_ORFEOME_NT,
-                                    MUT_ORFEOME_AA, CHR_COORDINATE_HG18,
-                                    PMID, HGMD_ACCESSION, MUT_HGMD_AA,
-                                    HGMD_VARIANT_CLASS, REFSEQ_ID])
+        subsets = self.subsetCols([CCSB_MUTATION_ID,         #0
+                                    DBSNP_ID,                #1
+                                    MUT_HGVS_NT_ID,          #2
+                                    MUT_HGVS_AA_ID,          #3
+                                    CHR_COORDINATE_HG18,     #4
+                                    ENTREZ_GENE_ID])         #5
         inserts = self.replaceNullwithEmptyString(subsets)
-        inserts = list(set([(t[0].split('_')[1], t[1],t[2], t[3], t[4], t[5],
-            t[6], t[7] if t[7] else 0, t[8], t[9], t[10], t[11].split(':')[0]) for t in inserts]))
-        sqlstr = """INSERT INTO Variant(VARIANT_ID, CCSB_MUTATION_ID, DBSNP_ID, MUT_HGVS_NT_ID,
-                                    MUT_HGVS_AA_ID, MUT_ORFEOME_NT,
-                                    MUT_ORFEOME_AA, CHR_COORDINATE_HG18,
-                                    PMID, HGMD_ACCESSION, MUT_HGMD_AA,
-                                    HGMD_VARIANT_CLASS, REFSEQ_ID)
-                VALUES (0, %s, %s, %s, %s, %s, %s, %s, %s, NULLIF(%s, ''), %s, %s, %s);"""
+        inserts = list(set([(t[0].split('_')[1], t[1],t[2].split(':')[0], t[2], t[3],
+            t[2].split('.')[-1], t[3].split('.')[-1], t[4], t[5]) for t in inserts]))
+        sqlstr = """INSERT INTO Variant(VARIANT_ID, CCSB_MUTATION_ID, DBSNP_ID,
+                                    REFSEQ_ID, MUT_HGVS_NT_ID,
+                                    MUT_HGVS_AA_ID, MUT_HGVS_NT,
+                                    MUT_HGVS_AA, CHR_COORDINATE_HG18,
+                                    ENTREZ_GENE_ID)
+                VALUES (0, %s, %s, %s, %s, %s, %s, %s, %s, %s);"""
         try:
             self.c.executemany(sqlstr, inserts)
             self.db.commit()
@@ -221,28 +207,17 @@ class LoadData:
             raise e
             self.db.rollback()
 
-    def loadDiseaseTable(self):
-        subsets = self.subsetCols([DISEASE_NAME, INHERITANCE_PATTERN, MUT_HGVS_NT_ID])
-        inserts = self.replaceNullwithEmptyString(subsets)
-        sqlstr = """INSERT INTO Disease (DISEASE_ID, DISEASE_NAME, INHERITANCE_PATTERN, VARIANT_ID)
-                VALUES (0, %s, %s, (SELECT VARIANT_ID FROM Variant WHERE MUT_HGVS_NT_ID = %s))
-                """
-        try:
-            self.c.executemany(sqlstr, inserts)
-            self.db.commit()
-        except MySQLdb.Error, e:
-            print 'insert to disease table failed'
-            raise e
-            self.db.rollback()
-
     def loadVariantPropertyTable(self):
         subsets = self.subsetCols([DISORDER_PROBABILITY, PFAM_PRESENT, IN_PFAM,
                 IN_MOTIF, POLYPHEN_SCORE, POLYPHEN_CLASS, SOLVENT_ACCESSIBILITY,
                 CONSERVATION_INDEX, HYDROPHOBICITY_DECREASE, PROTEIN_CHEMICAL_INTERFACE,
-                FOLDX_VALUE, CLINVAR_ID, CLINVAR_CLINICAL_SIGNIFICANCE, MUT_HGVS_NT_ID])
+                FOLDX_VALUE, CLINVAR_ID, CLINVAR_CLINICAL_SIGNIFICANCE, MUT_ORFEOME_NT,
+                MUT_ORFEOME_AA, HGMD_ACCESSION, MUT_HGMD_AA, HGMD_VARIANT_CLASS,
+                PMID, DISEASE_NAME, INHERITANCE_PATTERN, MUT_HGVS_NT_ID])
         inserts = self.replaceNullwithEmptyString(subsets)
         inserts = list(set([(t[0], t[1], t[2], t[3], t[4], t[5], t[6], t[7],
-            t[8], t[9], t[10], t[11] if t[11] else 0, t[12], t[13]) for t in inserts]))
+            t[8], t[9], t[10], t[11] if t[11] else 0, t[12], t[13], t[14], t[15],
+            t[16], t[17], t[18] if t[18] else 0, t[19], t[20], t[21]) for t in inserts]))
         # add nullif statement to any colname that is decimal or boolean (anything non-string)
         # in this case NULL represent empty cell otherwise '' represeent empty cell
         # for ids stored as INT, 0 represent empty cell
@@ -250,10 +225,12 @@ class LoadData:
                 DISORDER_PROBABILITY, PFAM_PRESENT, IN_PFAM, IN_MOTIF,
                 POLYPHEN_SCORE, POLYPHEN_CLASS, SOLVENT_ACCESSIBILITY,
                 CONSERVATION_INDEX, HYDROPHOBICITY_DECREASE, PROTEIN_CHEMICAL_INTERFACE,
-                FOLDX_VALUE, CLINVAR_ID, CLINVAR_CLINICAL_SIGNIFICANCE, VARIANT_ID)
+                FOLDX_VALUE, CLINVAR_ID, CLINVAR_CLINICAL_SIGNIFICANCE, MUT_ORFEOME_NT,
+                MUT_ORFEOME_AA, HGMD_ACCESSION, MUT_HGMD_AA, HGMD_VARIANT_CLASS,
+                PMID, DISEASE_NAME, INHERITANCE_PATTERN, VARIANT_ID)
                 VALUES (0, NULLIF(%s, ''), NULLIF(%s, ''), NULLIF(%s, ''), NULLIF(%s, ''),
                 NULLIF(%s, ''), %s, %s, NULLIF(%s, ''), NULLIF(%s, ''), %s, NULLIF(%s, ''),
-                %s, %s,
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                 (SELECT VARIANT_ID FROM Variant WHERE MUT_HGVS_NT_ID = %s))"""
         try:
             self.c.executemany(sqlstr, inserts)
@@ -300,15 +277,14 @@ class LoadData:
         INTERACTION_Z_SCORE = interactor + ' wt'
         EXPRESSION_ELISA = interactor + ' wt ELISA'
 
-        subsets = self.subsetCols([REFSEQ_ID, INTERACTION_Z_SCORE, EXPRESSION_ELISA])
+        subsets = self.subsetCols([INTERACTION_Z_SCORE, EXPRESSION_ELISA, ENTREZ_GENE_ID])
         inserts = self.replaceNullwithEmptyString(subsets)
         # remove rows that does not contain the required data
-        inserts = [t for t in inserts if t[1] and t[2] is not '']
-        # remove duplicate element as there are redundant data for variants sharing same REFSEQ_ID
-        inserts = list(set([(t[0].split(':')[0], interactor, t[1], t[2]) for t in inserts]))
-        sqlstr = """INSERT INTO LUMIERMeasurementWT (REFSEQ_ID, INTERACTOR,
-                    INTERACTION_Z_SCORE, EXPRESSION_ELISA)
-                    VALUES (%s, %s, %s, %s)"""
+        inserts = [t for t in inserts if t[0] and t[1] is not '']
+        inserts = list(set([(interactor, t[0], t[1], t[2]) for t in inserts]))
+        sqlstr = """INSERT INTO LUMIERMeasurementWT (LUMIER_MEASUREMENT_WT_ID,
+                    INTERACTOR, INTERACTION_Z_SCORE, EXPRESSION_ELISA, ENTREZ_GENE_ID)
+                    VALUES (0, %s, %s, %s, %s)"""
         try:
             self.c.executemany(sqlstr, inserts)
             self.db.commit()
@@ -328,17 +304,17 @@ class LoadData:
         EXPRESSION_ELISA = interactor + ' mut ELISA'
         EXPRESSION_RATIO = interactor + ' ratio E'
 
-        subsets = self.subsetCols([MUT_HGVS_NT_ID, INTERACTION_Z_SCORE,
-        INTERACTION_DIFFERENCE, INTERACTION_SIGNIFICANT, EXPRESSION_ELISA, EXPRESSION_RATIO])
+        subsets = self.subsetCols([INTERACTION_Z_SCORE, INTERACTION_DIFFERENCE,
+        INTERACTION_SIGNIFICANT, EXPRESSION_ELISA, EXPRESSION_RATIO, MUT_HGVS_NT_ID])
         inserts = self.replaceNullwithEmptyString(subsets)
         # remove rows that does not contain the required data
-        inserts = [t for t in inserts if t[1] and t[2] and t[4] and t[5] is not '']
-        inserts = [(t[0], interactor, t[1], t[2], 1 if t[3]=='hit' else 0, t[4], t[5]) for t in inserts]
-        sqlstr = """INSERT INTO LUMIERMeasurementMUT (VARIANT_ID, INTERACTOR,
-                    INTERACTION_Z_SCORE, INTERACTION_DIFFERENCE,
-                    INTERACTION_SIGNIFICANT, EXPRESSION_ELISA, EXPRESSION_RATIO)
-                    VALUES ((SELECT VARIANT_ID FROM Variant WHERE MUT_HGVS_NT_ID = %s),
-                    %s, %s, %s, %s, %s, %s)"""
+        inserts = [t for t in inserts if t[0] and t[1] and t[3] and t[4] is not '']
+        inserts = [(interactor, t[0], t[1], 1 if t[2]=='hit' else 0, t[3], t[4], t[5]) for t in inserts]
+        sqlstr = """INSERT INTO LUMIERMeasurementMUT (LUMIER_MEASUREMENT_MUT_ID,
+                    INTERACTOR, INTERACTION_Z_SCORE, INTERACTION_DIFFERENCE,
+                    INTERACTION_SIGNIFICANT, EXPRESSION_ELISA, EXPRESSION_RATIO, VARIANT_ID)
+                    VALUES (0 , %s, %s, %s, %s, %s, %s,
+                    (SELECT VARIANT_ID FROM Variant WHERE MUT_HGVS_NT_ID = %s))"""
         try:
             self.c.executemany(sqlstr, inserts)
             self.db.commit()
@@ -406,10 +382,8 @@ class LoadData:
         master function which controls individual insertion
         """
         self.loadGeneTable()
-        self.loadTranscriptTable()
         self.loadORFeomeTable()
         self.loadVariantTable()
-        self.loadDiseaseTable()
         self.loadVariantPropertyTable()
         self.loadLocalCollectionTable()
         self.loadMeasurementTable()
@@ -426,10 +400,10 @@ class LoadData:
         WTinserts = [(t[2], t[3], t[0]) for t in WTinserts]
         MUTinserts = [t for t in inserts if t[1] != "0"]
         MUTinserts = [(t[2], t[3], t[1]) for t in MUTinserts]
-        sqlstr = """INSERT INTO Y2HWTInteractor (WT_INTERACTOR_ID,
-                    INTERACTOR_ENTREZ_GENE_ID, Y2H_SCORE, REFSEQ_ID)
-                    VALUES (0, %s, %s, (SELECT REFSEQ_ID FROM Gene JOIN
-                    Transcript USING (ENTREZ_GENE_ID) WHERE ENTREZ_GENE_ID = %s LIMIT 1));"""
+
+        sqlstr = """INSERT INTO Y2HWTInteractor (Y2H_WT_INTERACTOR_ID,
+                    INTERACTOR_ENTREZ_GENE_ID, Y2H_SCORE, ENTREZ_GENE_ID)
+                    VALUES (0, %s, %s, %s);"""
 
         try:
             self.c.executemany(sqlstr, WTinserts)
@@ -439,7 +413,7 @@ class LoadData:
             raise e
             self.db.rollback()
 
-        sqlstr = """INSERT INTO Y2HMUTInteractor (MUT_INTERACTOR_ID,
+        sqlstr = """INSERT INTO Y2HMUTInteractor (Y2H_MUT_INTERACTOR_ID,
                     INTERACTOR_ENTREZ_GENE_ID, Y2H_SCORE, VARIANT_ID)
                     VALUES (0, %s, %s, (SELECT VARIANT_ID FROM Variant
                     WHERE CCSB_MUTATION_ID = %s LIMIT 1));"""
