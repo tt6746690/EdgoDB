@@ -40,8 +40,10 @@ class MySQLUpdatePipeline(object):
 
         if isinstance(item, ExacItem):
             try:
-                self.c.execute("""UPDATE Variant SET EXAC_ALLELE_FREQUENCY = %s
-                                WHERE CHR_COORDINATE_HG19 = %s AND MUT_HGVS_NT_ID LIKE %s""",
+                self.c.execute("""UPDATE VariantProperty
+                                      JOIN Variant USING(VARIANT_ID)
+                                  SET EXAC_ALLELE_FREQUENCY = %s
+                                  WHERE CHR_COORDINATE_HG19 = %s AND MUT_HGVS_NT_ID LIKE %s""",
                                 (item['alleleFrequency'], item['chrLocation'], '%' + item['mutation']))
                 self.db.commit()
             except MySQLdb.Error, e:
@@ -66,7 +68,7 @@ class MySQLUpdatePipeline(object):
                     sqlstr = """INSERT INTO PfamDomain (PFAM_DOMAIN_ID, PFAM_ACCESSION,
                                 PFAM_ID, PROTEIN_LENGTH, SEQ_START, SEQ_END, UNIPROT_PROTEIN_NAME)
                                 VALUES (0, %s, %s, %s, %s, %s, %s)"""
-                    inserts = (item['pfamAccession'], item['pfamID'], item['proteinLength'], 
+                    inserts = (item['pfamAccession'], item['pfamID'], item['proteinLength'],
                         item['sequenceStart'], item['sequenceEnd'], item['proteinName'])
                     self.c.execute(sqlstr, inserts)
                     self.db.commit()

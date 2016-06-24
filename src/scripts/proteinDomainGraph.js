@@ -1,3 +1,6 @@
+
+
+
 var proteinDomainGraph = function(data, config){
   this.config = config
   this.data = data

@@ -5,104 +5,78 @@ include ../includes/mixins.jade
 block content
   div.container
     div.row
-      div.col-md-10(id=gene[0].HUGO_GENE_SYMBOL)
-        h1(id="GeneTitle") #{gene[0].HUGO_GENE_SYMBOL} 
+      div.col-md-10(id=gene.symbol)
+        h1(id="GeneTitle") #{gene.symbol} 
         hr
         div.row
-          dl.dl-horizontal.col-md-6
-            dt(id='GeneDescription') Description
-            dd #{gene[0].DESCRIPTION}
-            dt(id="EntrezLink") Entrez 
-            dd
-              a(href = 'http://www.ncbi.nlm.nih.gov/gene/' + gene[0].ENTREZ_GENE_ID) #{gene[0].ENTREZ_GENE_ID} 
-            dt(id="EnsemblLink") Ensembl 
-            dd 
-              a(href = 'http://useast.ensembl.org/Homo_sapiens/Gene/Summary?g=' + gene[0].ENSEMBL_GENE_ID) #{gene[0].ENSEMBL_GENE_ID}
-            dt(id="UniprotLink") Uniprot
-            dd
-              a(href = 'http://www.uniprot.org/uniprot/' + gene[0].UNIPROT_SWISSPROT_ID) #{gene[0].UNIPROT_SWISSPROT_ID}
-            dt(id="OmimLink") Omim
-            dd
-              a(href = 'http://www.omim.org/entry/' + gene[0].OMIM_ID) #{gene[0].OMIM_ID}
-          div.col-md-6(id='protein-domain-graph')
+          dl.dl-horizontal.col-md-4
+            each l in Object.keys(gene.links)
+              if gene.links[l].display  
+                dt= l
+                dd
+                  a(href = gene.links[l].link)= gene.links[l].display 
+          div.col-md-8(id='protein-domain-graph')
+          //- protein domain graph 
         hr
         div.row(id="GeneInteraction") 
           div.col-md-6(id='lumier-interaction')
-          //- div.panel.panel-success.col-md-6
-          //-   div.panel-heading Success
-          //-   div.panel-body 
-          //-     table.table.table-ordered
-          //-       thead
-          //-         tr
-          //-           th.text-center #
-          //-           th.text-center BAG2
-          //-       tbody.text-center
-          //-         each 
-          //-           tr 
-          //-             th(scope="row")=index+1
-          //-             - for interactor in interactors 
-          //-               td 1
         div.row
           div.col-md-6(id='y2h-interaction')
-        div(id="VariantListing")
-          if variant
-            - for item in variant
-              - var MUT_HGVS_AA = item['MUT_HGVS_AA_ID'].split('.').pop(-1)
-              - var MUT_HGVS_NT = item['MUT_HGVS_NT_ID'].split('.').pop(-1)
-                div.row
-                  h4(id=MUT_HGVS_AA)
-                    a(href = '/variant/' + item.MUT_HGVS_NT_ID)= MUT_HGVS_NT
-                    span.glyphicon.glyphicon-menu-right
-                    span= MUT_HGVS_AA
-                  div.dl-horizontal.col-md-6
-                    if item.CHR_COORDINATE_HG19
-                      dt Chromosomal location 
-                      dd
-                        a(href="http://genome.ucsc.edu/cgi-bin/hgTracks?org=human&db=hg19&position=" + item.CHR_COORDINATE_HG19) #{item.CHR_COORDINATE_HG19}
-                    if item.REFSEQ_ID
-                      dt RefSeq 
-                      dd 
-                        a(href='http://www.ncbi.nlm.nih.gov/nuccore/' + item.REFSEQ_ID) #{item.REFSEQ_ID}
-                    if item.CCSB_MUTATION_ID
-                      dt CCSB mutation ID 
-                      dd #{item.CCSB_MUTATION_ID}
-                    if item.DBSNP_ID
-                      dt dbSNP ID 
-                      dd 
-                        a(href = 'http://www.ncbi.nlm.nih.gov/snp/?term=' + item.DBSNP_ID) #{item.DBSNP_ID}
-                    if item.EXAC_ALLELE_FREQUENCY
-                      dt Exac allele freq 
-                      dd #{item.EXAC_ALLELE_FREQUENCY}
-                    hr
-                  div.col-md-6
+        //- div(id="VariantListing")
+        //-   if variant
+        //-     - for item in variant
+        //-       div.row
+        //-         h4(id=item.MUT_HGVS_AA)
+        //-           a(href = '/variant/' + item.MUT_HGVS_NT_ID)= item.MUT_HGVS_NT
+        //-           span.glyphicon.glyphicon-menu-right
+        //-           span= item.MUT_HGVS_AA
+        //-         div.dl-horizontal.col-md-6
+        //-           if item.CHR_COORDINATE_HG19
+        //-             dt Chromosomal location 
+        //-             dd
+        //-               a(href="http://genome.ucsc.edu/cgi-bin/hgTracks?org=human&db=hg19&position=" + item.CHR_COORDINATE_HG19) #{item.CHR_COORDINATE_HG19}
+        //-           if item.REFSEQ_ID
+        //-             dt RefSeq 
+        //-             dd 
+        //-               a(href='http://www.ncbi.nlm.nih.gov/nuccore/' + item.REFSEQ_ID) #{item.REFSEQ_ID}
+        //-           if item.CCSB_MUTATION_ID
+        //-             dt CCSB mutation ID 
+        //-             dd #{item.CCSB_MUTATION_ID}
+        //-           if item.DBSNP_ID
+        //-             dt dbSNP ID 
+        //-             dd 
+        //-               a(href = 'http://www.ncbi.nlm.nih.gov/snp/?term=' + item.DBSNP_ID) #{item.DBSNP_ID}
+        //-           if item.EXAC_ALLELE_FREQUENCY
+        //-             dt Exac allele freq 
+        //-             dd #{item.EXAC_ALLELE_FREQUENCY}
+        //-           hr
+        //-         div.col-md-6
       nav.col-md-2.bs-docs-sidebar.hidden-print(id='target_nav')
         ul.nav.nav-stacked.bs-docs-sidenav.fixed(id="sidebar")
-          +nav_item("#" + gene[0].HUGO_GENE_SYMBOL) Gene
+          +nav_item("#" + gene.symbol) Gene
             ul.nav.nav-stacked(id="sidebar")
               +nav_item("#GeneDescription") Info
               +nav_item("#GeneInteraction") Interaction
           +nav_item("#VariantListing") Variants 
             ul.nav.nav-stacked(id="sidebar")
               - for item in variant
-                - var MUT_HGVS_AA = item['MUT_HGVS_AA_ID'].split('.').pop(-1)
-                  +nav_item("#" + MUT_HGVS_AA) #{MUT_HGVS_AA}
+                +nav_item("#" + item.MUT_HGVS_AA) #{item.MUT_HGVS_AA}
               
-block script 
+append script 
   script(type='text/javascript').
     // force directed graph 
-    var y2hInteractionConfig = {
-      "height": 333,
-      "width": 333,
-      "targetDOM": "#y2h-interaction",
-      "nodeRadius": 5,
-      "textSize": 12
-    }
-    var y2hInteractionData =!{JSON.stringify(forceGraphData)}
-    if(y2hInteractionData.links.length !== 0 && y2hInteractionData.nodes.length !== 0){
-      var y2hForceGraph = new forceGraph(y2hInteractionData, y2hInteractionConfig)
-    }
-    
-    // protein Domain chart 
+    //- var y2hInteractionConfig = {
+    //-   "height": 333,
+    //-   "width": 333,
+    //-   "targetDOM": "#y2h-interaction",
+    //-   "nodeRadius": 5,
+    //-   "textSize": 12
+    //- }
+    //- var y2hInteractionData =!{JSON.stringify(forceGraphData)}
+    //- if(y2hInteractionData.links.length !== 0 && y2hInteractionData.nodes.length !== 0){
+    //-   var y2hForceGraph = new forceGraph(y2hInteractionData, y2hInteractionConfig)
+    //- }
+    //--- protein Domain chart ----//
     var proteinDomainConfig = {
       "height": 125,
       "width": 460,
@@ -118,12 +92,11 @@ block script
     }  
     var proteinDomainData =!{JSON.stringify(proteinDomainData)}
     if(proteinDomainData.region.length !== 0 && proteinDomainData.mutation.length !== 0){
-      proteinDomainData.length = proteinDomainData.region[0].proteinLength
       var pg = new proteinDomainGraph(proteinDomainData, proteinDomainConfig)
     }
     
-    // radar Chart
-    var gene =!{JSON.stringify(gene)}[0]
+    //----- Radar Chart -----//
+    var gene =!{JSON.stringify(gene)}
     var variant =!{JSON.stringify(variant)}
     var radarChartData =!{JSON.stringify(radarChartData)}   
     var radarChartConfig = {
@@ -135,34 +108,11 @@ block script
       roundStrokes: true,
       color: d3.scale.category20()
     };  
-    function selectRadarChartData(grpArray){
-      // create a object and map to a list[list]
-      var modData = {}    
-      //- grpArray.forEach(function(d){
-      //-   modData[d] = []
-      //- })
-      radarChartData.forEach(function(d){
-        if (grpArray.indexOf(d.grp) !== -1){
-          if ( !(typeof modData[d.grp] !== 'undefined' && modData[d.grp] instanceof Array) ) {
-            modData[d.grp] = []
-          }
-          // adding link ... to data 
-          if (/^NP_[0-9]{5,}/i.test(d.link)){  // this is to extract AA change for DOM ID redirection
-            d.link = d.link.split('.').pop(-1)
-          } 
-          modData[d.grp].push(d)
-        }
-      })
-      modData = Object.keys(modData).map(function(key){
-          return modData[key]
-      })
-      return modData
-    }
+    
     if (typeof radarChartData !== 'undefined') {
-      var garray = variant.map(function(d){return d.MUT_HGVS_NT_ID})
-      garray.push(gene.HUGO_GENE_SYMBOL)
-      var wtRadarData = selectRadarChartData(garray)
-      //Call function to draw the Radar chart
+      //- var garray = variant.map(function(d){return d.MUT_HGVS_NT_ID})
+      //- garray.push(gene.symbol)
+      var wtRadarData = selectRadarChartData(radarChartData, [gene.symbol])
       RadarChart("#lumier-interaction", wtRadarData, radarChartConfig);
     }
     

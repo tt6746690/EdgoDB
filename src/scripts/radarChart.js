@@ -1,11 +1,6 @@
-/////////////////////////////////////////////////////////
-/////////////// The Radar Chart Function ////////////////
-/////////////// Written by Nadieh Bremer ////////////////
-////////////////// VisualCinnamon.com ///////////////////
-/////////// Inspired by the code of alangrafu ///////////
-/////////////////////////////////////////////////////////
+// taken from web thanks for the code...
 
-function RadarChart(id, data, options) {
+var RadarChart = function(id, data, options) {
 	var cfg = {
 	 w: 600,				//Width of the circle
 	 h: 600,				//Height of the circle
@@ -273,3 +268,25 @@ function RadarChart(id, data, options) {
 	}//wrap
 
 }//RadarChart
+
+
+var selectRadarChartData = function(rcdata, grpArray){
+  // create a object and map to a list[list]
+  var modData = {}
+  rcdata.forEach(function(d){
+    if (grpArray.indexOf(d.grp) !== -1){
+      if ( !(typeof modData[d.grp] !== 'undefined' && modData[d.grp] instanceof Array) ) {
+        modData[d.grp] = []
+      }
+      // adding link ... to data
+      if (/^NP_[0-9]{5,}/i.test(d.link)){  // this is to extract AA change for DOM ID redirection
+        d.link = d.link.split('.').pop(-1)
+      }
+      modData[d.grp].push(d)
+    }
+  })
+  modData = Object.keys(modData).map(function(key){
+      return modData[key]
+  })
+  return modData
+}

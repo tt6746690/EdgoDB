@@ -10,15 +10,12 @@ router.post('/', function(req, res, next){
               FROM Gene \
                 LEFT JOIN ORFeome \
                   ON Gene.ENTREZ_GENE_ID = ORFeome.ENTREZ_GENE_ID \
-                LEFT JOIN Transcript \
-                  ON Gene.ENTREZ_GENE_ID = Transcript.ENTREZ_GENE_ID \
                 LEFT JOIN Variant \
-                  ON Transcript.REFSEQ_ID = Variant.REFSEQ_ID \
+                  ON Gene.ENTREZ_GENE_ID = Variant.ENTREZ_GENE_ID \
                 LEFT JOIN VariantProperty \
                   ON Variant.VARIANT_ID = VariantProperty.VARIANT_ID \
-                LEFT JOIN Disease \
-                  ON Variant.VARIANT_ID = Disease.VARIANT_ID \
               WHERE Gene.HUGO_GENE_SYMBOL IS NOT NULL"
+    // BUILING SQL QUERY FROM SEARCH FORM
     var cols = []
     Object.keys(req.body).forEach(function(col){
       if (req.body[col] === ''){ // if form field empty do nothing
@@ -27,7 +24,7 @@ router.post('/', function(req, res, next){
         cols.push(req.body[col])
       }
     })
-    console.log(sqlstr)
+    // QUERY
     connection.query(sqlstr, cols, function(err, rows) {
       if (err) throw err;
         var result = []
@@ -35,6 +32,7 @@ router.post('/', function(req, res, next){
           result.push(JSON.parse(JSON.stringify(rows))[i])
       }
       data = {}
+      // RESTRUCTURE QUERY RESULT => {geneid: [variants]}
       result.forEach(function(d){
         key = d.HUGO_GENE_SYMBOL
         if (data.hasOwnProperty(key)){
@@ -43,7 +41,6 @@ router.post('/', function(req, res, next){
           data[key] = [d.MUT_HGVS_NT_ID]
         }
       })
-      // console.log(data)
       res.render('searchResult', {list: data})
       connection.release();
     });
@@ -51,9 +48,4 @@ router.post('/', function(req, res, next){
 
 })
 
-
 module.exports = router;
-
-// Gene.CHROMOSOME_NAME = ? \
-//     AND VariantProperty.IN_PFAM = ? \
-//     AND VariantProperty.IN_MOTIF = ?"

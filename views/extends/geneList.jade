@@ -10,7 +10,7 @@ block content
             th.text-center Symbol 
             th.text-center Entrez Gene ID
         tbody.text-center
-        - each row in rows
+        - each row in geneList
           tr 
             td
               a(href = '/gene/' + row["HUGO_GENE_SYMBOL"]) #{row["HUGO_GENE_SYMBOL"]}
