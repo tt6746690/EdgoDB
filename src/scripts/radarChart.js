@@ -147,11 +147,21 @@ var RadarChart = function(id, data, options) {
 	var blobWrapper = g.selectAll(".radarWrapper")
 		.data(data)
 		.enter().append("g")
-		.attr("class", "radarWrapper");
+		.attr("class", "radarWrapper")
+    .attr("id", function(d){return d[0].grp + '_radarWrapper'})
+    .style("opacity", 0)
 
+  blobWrapper.filter(function (d, i) {  // make only the first element visible on start
+    if(i === 0){
+      d3.select(this).style("opacity", 1)
+    }
+  })
+
+
+// .append("a")
+//   .attr("href", function(d){ return '#' + d[0].link})
 	//Append the backgrounds
-	blobWrapper.append("a")
-    .attr("href", function(d){ return '#' + d[0].link})
+	blobWrapper
 		.append("path")
 		.attr("class", "radarArea")
 		.attr("d", function(d,i) { return radarLine(d); })

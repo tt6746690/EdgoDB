@@ -188,7 +188,7 @@ router.get('/:geneid', function(req, res, next){
                          LEFT JOIN LUMIERMeasurementWT USING(ENTREZ_GENE_ID) \
                        WHERE HUGO_GENE_SYMBOL = ? AND INTERACTOR IS NOT NULL AND INTERACTION_Z_SCORE IS NOT NULL\
                        UNION \
-                       SELECT INTERACTOR AS axis, INTERACTION_Z_SCORE AS value, MUT_HGVS_NT_ID AS grp, MUT_HGVS_AA_ID AS link\
+                       SELECT INTERACTOR AS axis, INTERACTION_Z_SCORE AS value, MUT_HGVS_AA AS grp, MUT_HGVS_AA_ID AS link\
                        FROM Gene \
                          LEFT JOIN Variant USING(ENTREZ_GENE_ID) \
                          LEFT JOIN LUMIERMeasurementMUT USING(VARIANT_ID) \
@@ -227,5 +227,56 @@ router.get('/:geneid', function(req, res, next){
 
   })
 })
+
+
+router.get('/:geneid/domainGraph', function(req, res, next){
+  pool.getConnection(function(err, connection){
+    async.parallel({
+      domainRegion: function(callback){
+        var sqlstr5 = "SELECT PFAM_ID AS name, SEQ_START AS start, SEQ_END AS end, PROTEIN_LENGTH AS proteinLength \
+                       FROM PfamDomain \
+                          LEFT JOIN Gene USING (UNIPROT_PROTEIN_NAME) \
+                       WHERE HUGO_GENE_SYMBOL = ?;"
+        connection.query(sqlstr5, [req.params.geneid], function(err, rows) {
+          if (err) {return next(err)}
+          var domainRegion = []
+          for (var i = 0; i < rows.length; i++){
+            domainRegion.push(JSON.parse(JSON.stringify(rows))[i])
+          }
+          callback(null, domainRegion)
+        });
+      },
+      mutationPosition: function(callback){
+        var sqlstr6 = "SELECT MUT_HGVS_AA AS name \
+                       FROM Gene \
+                         LEFT JOIN Variant USING (ENTREZ_GENE_ID) \
+                         LEFT JOIN VariantProperty USING (VARIANT_ID) \
+                       WHERE HUGO_GENE_SYMBOL = ?;"
+        connection.query(sqlstr6, [req.params.geneid], function(err, rows) {
+          if (err) {return next(err)}
+          var domainRegion = []
+          for (var i = 0; i < rows.length; i++){
+            domainRegion.push(JSON.parse(JSON.stringify(rows))[i])
+          }
+          callback(null, domainRegion)
+        });
+      }
+    }, function(err, results){
+      if (err) {return next(err)}
+      connection.release()
+      console.log(results)
+      res.send({
+        proteinDomainData:{         // data for proteinDomain Graph
+          proteinLength: results.domainRegion[0].proteinLength,
+          region: results.domainRegion,
+          mutation: results.mutationPosition // later be filled with info from variant client side
+        }
+      })
+    })
+  })
+})
+
+
+
 
 module.exports = router;

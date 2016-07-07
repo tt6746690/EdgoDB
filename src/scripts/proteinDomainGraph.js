@@ -7,7 +7,7 @@ var proteinDomainGraph = function(data, config){
   this.mutation =this.getMutationData()
   this.createSVG()
   this.x = d3.scale.linear()
-            .domain([0, this.data.length])
+            .domain([0, this.data.proteinLength])
             .range([0, this.config.width - 3*this.config.xoffset])
 
   this.markMutations()
@@ -55,16 +55,44 @@ proteinDomainGraph.prototype.markMutations = function(){
             .attr("stroke-width", 1.5);
 
   var needleHeads = d3.select(".pdgraph").selectAll()
-            .data(this.mutation)
-            .enter().append("a")
-            .attr("href", function(d){ return '#' + d.name})
-
-  needleHeads.append("circle")
+            .data(this.mutation).enter()
+            .append("circle")
             .attr("cy", function(d){return d.ranHeight + config.headRadius})
             .attr("cx", function(d) {return x(config.xoffset+ parseInt(d.name.replace(/[^0-9\.]/g, '')))})
             .attr("r", config.headRadius)
             .attr("class", "needle-head")
-            .style("fill", function(d) { return color(d.name)})
+            .attr("id", function(d){return d.name + "_needleHead"})
+            .classed("active", false)
+            .style("stroke-width", 1)
+            .style("stroke", 'lightgrey')
+            .style("fill", function(d) {
+              return color(d.name)
+            })
+            .on("mouseover", function(){
+              d3.select(this)
+                .transition()
+                .duration(200)
+                .attr("r", config.headRadius * 2);
+            })
+            .on("mouseout", needleHeadMouseOut)
+            .on("click", function(d){
+              var active   = d3.select(this).classed("active") ? false : true,
+	                newOpacity = active ? 1 : 0,
+                  newStroke = active ? '#76b2e9' : 'lightgrey',
+                  activeMouseOut = active ? null: needleHeadMouseOut;
+              d3.select("#" + d.name + '_radarWrapper').style("opacity", newOpacity)
+              d3.select(this).classed("active", active)
+
+              d3.select(this).style("stroke", newStroke)
+              d3.select(this).on("mouseout", activeMouseOut);
+            })
+
+  var needleHeadMouseOut = function(){
+      d3.select(this)
+        .transition()
+        .duration(200)
+        .attr("r", config.headRadius);
+  }
 
   var needleText = d3.select(".pdgraph").selectAll()
             .data(this.mutation)
@@ -95,7 +123,7 @@ proteinDomainGraph.prototype.drawRegions = function(){
                       .attr("rx", "3")
                       .attr("x", x(xoffset))
                       .attr("y", this.config.yoffset)
-                      .attr("width", x(this.data.length))
+                      .attr("width", x(this.data.proteinLength))
                       .attr("height", this.config.regionBGHeight)
                       .attr("fill", "lightgrey")
 
@@ -134,4 +162,22 @@ proteinDomainGraph.prototype.drawRegions = function(){
           .text(function (d) {
               return d.name
           });
+}
+
+
+function propagateUpdates(activeElement){
+  var radarChartConfig = {
+    w: 220,
+    h: 220,
+    margin: {top: 40, right: 50, bottom: 40, left: 50},
+    maxValue: 0.5,
+    levels: 5,
+    roundStrokes: true,
+    color: d3.scale.category20()
+  };
+  visibleElement.push(activeElement)
+  var wtRadarData = selectRadarChartData(radarChartData, visibleElement)
+  RadarChart("#lumier-interaction", wtRadarData, radarChartConfig);
+
+
 }

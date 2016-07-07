@@ -42,7 +42,7 @@ block content
         //-           if item.CCSB_MUTATION_ID
         //-             dt CCSB mutation ID 
         //-             dd #{item.CCSB_MUTATION_ID}
-        //-           if item.DBSNP_ID
+        //-           if item.DBSNP_ID`
         //-             dt dbSNP ID 
         //-             dd 
         //-               a(href = 'http://www.ncbi.nlm.nih.gov/snp/?term=' + item.DBSNP_ID) #{item.DBSNP_ID}
@@ -77,6 +77,49 @@ append script
     //-   var y2hForceGraph = new forceGraph(y2hInteractionData, y2hInteractionConfig)
     //- }
     //--- protein Domain chart ----//
+    //- var proteinDomainConfig = {
+    //-   "height": 125,
+    //-   "width": 460,
+    //-   "targetDOM": "#protein-domain-graph",
+    //-   "xoffset": 10,
+    //-   "yoffset": 90,
+    //-   "regionHeight": 15,
+    //-   "regionBGHeight": 10,
+    //-   "stickHeight": 20,
+    //-   "headRadius": 5,
+    //-   "regionFontSize": "10px",
+    //-   "headFontSize": "10px"
+    //- }  
+    //- var proteinDomainData =!{JSON.stringify(proteinDomainData)}
+    //- if(proteinDomainData.region.length !== 0 && proteinDomainData.mutation.length !== 0){
+    //-   var pg = new proteinDomainGraph(proteinDomainData, proteinDomainConfig)
+    //- }
+    
+    //----- Radar Chart -----//
+    var gene =!{JSON.stringify(gene)}
+    var variant =!{JSON.stringify(variant)}
+    var radarChartData =!{JSON.stringify(radarChartData)} 
+
+    var radarChartConfig = {
+      w: 220,
+      h: 220,
+      margin: {top: 40, right: 50, bottom: 40, left: 50},
+      maxValue: 0.5,
+      levels: 5,
+      roundStrokes: true,
+      color: d3.scale.category20()
+    };  
+    var garray = variant.map(function(d){return d.MUT_HGVS_AA})
+    garray.push(gene.symbol)
+    
+    if (typeof radarChartData !== 'undefined') {
+      var wtRadarData = selectRadarChartData(radarChartData, garray)
+      RadarChart("#lumier-interaction", wtRadarData, radarChartConfig);
+    }
+    
+
+append script
+  script(type="text/babel"). 
     var proteinDomainConfig = {
       "height": 125,
       "width": 460,
@@ -90,32 +133,35 @@ append script
       "regionFontSize": "10px",
       "headFontSize": "10px"
     }  
-    var proteinDomainData =!{JSON.stringify(proteinDomainData)}
-    if(proteinDomainData.region.length !== 0 && proteinDomainData.mutation.length !== 0){
-      var pg = new proteinDomainGraph(proteinDomainData, proteinDomainConfig)
-    }
+    var DomainGraph = React.createClass({
+      getInitialState: function() {
+        return {data: {}};
+      },
+      componentDidMount: function() {
+        console.log(window.location.href + '/domainGraph')
+        $.ajax({
+          method: 'GET',
+          url: window.location.href + '/domainGraph',
+          dataType: 'json',
+          cache: false,
+          success: function(data) {
+            this.setState({data: data.proteinDomainData});
+            var pg = new proteinDomainGraph(this.state.data, proteinDomainConfig)
+          }.bind(this),
+          error: function(xhr, status, err) {
+            console.error('wtf', status, err.toString());
+          }.bind(this)
+        });
+      },
+      render: function() { 
+        return (
+          <div></div>
+        );
+      }
+    });
+    ReactDOM.render(
+      <DomainGraph />,
+      document.getElementById('protein-domain-graph')
+    );
     
-    //----- Radar Chart -----//
-    var gene =!{JSON.stringify(gene)}
-    var variant =!{JSON.stringify(variant)}
-    var radarChartData =!{JSON.stringify(radarChartData)}   
-    var radarChartConfig = {
-      w: 220,
-      h: 220,
-      margin: {top: 40, right: 50, bottom: 40, left: 50},
-      maxValue: 0.5,
-      levels: 5,
-      roundStrokes: true,
-      color: d3.scale.category20()
-    };  
     
-    if (typeof radarChartData !== 'undefined') {
-      //- var garray = variant.map(function(d){return d.MUT_HGVS_NT_ID})
-      //- garray.push(gene.symbol)
-      var wtRadarData = selectRadarChartData(radarChartData, [gene.symbol])
-      RadarChart("#lumier-interaction", wtRadarData, radarChartConfig);
-    }
-    
-    
-  
-      
