@@ -94,8 +94,8 @@ router.get('/:geneid', function(req, res, next){
       //   })
       // },
       gene: function(callback){
-        var sqlstr3 = "SELECT HUGO_GENE_SYMBOL, ENTREZ_GENE_ID, OMIM_ID, UNIPROT_SWISSPROT_ID, ENSEMBL_GENE_ID, DESCRIPTION \
-                       FROM Gene \
+        var sqlstr3 = "SELECT HUGO_GENE_SYMBOL, ENTREZ_GENE_ID, OMIM_ID, UNIPROT_SWISSPROT_ID, ENSEMBL_GENE_ID, DESCRIPTION, CCSB_ORF_ID, ORF_LENGTH \
+                       FROM Gene JOIN ORFeome USING(ENTREZ_GENE_ID)\
                        WHERE HUGO_GENE_SYMBOL = ?;"
         connection.query(sqlstr3, [req.params.geneid], function(err, rows) {
           if (err) {return next(err)}
@@ -112,11 +112,8 @@ router.get('/:geneid', function(req, res, next){
           gene = gene[0]
           var composeGene = {
             symbol: gene.HUGO_GENE_SYMBOL,
+            description: gene.DESCRIPTION,
             links: {
-              Description: {
-                link: 'http://www.uniprot.org/uniprot/' + gene.UNIPROT_SWISSPROT_ID,
-                display: gene.DESCRIPTION
-              },
               Entrez: {
                 link: 'http://www.ncbi.nlm.nih.gov/gene/' + gene.ENTREZ_GENE_ID,
                 display: gene.ENTREZ_GENE_ID
@@ -129,9 +126,29 @@ router.get('/:geneid', function(req, res, next){
                 link: 'http://www.uniprot.org/uniprot/' + gene.UNIPROT_SWISSPROT_ID,
                 display: gene.UNIPROT_SWISSPROT_ID
               },
+              ProteinAtlas: {
+                link: 'http://www.proteinatlas.org/' + gene.ENSEMBL_GENE_ID,
+                display: gene.ENSEMBL_GENE_ID
+              },
+              ProteinDB: {
+                link: 'https://www.proteomicsdb.org/proteomicsdb/#human/search/query?protein_name=' + gene.HUGO_GENE_SYMBOL,
+                display: gene.HUGO_GENE_SYMBOL
+              },
+              PDB: {
+                link: 'http://www.rcsb.org/pdb/protein/' + gene.UNIPROT_SWISSPROT_ID,
+                display: gene.UNIPROT_SWISSPROT_ID
+              },
               Omim: {
                 link: 'http://www.omim.org/entry/' + gene.OMIM_ID,
                 display: gene.OMIM_ID
+              },
+              ExAC: {
+                link: 'http://exac.broadinstitute.org/gene/' + gene.ENSEMBL_GENE_ID,
+                display: gene.ENSEMBL_GENE_ID
+              },
+              ORFeome: {
+                link: 'http://horfdb.dfci.harvard.edu/index.php?page=showdetail&orf=' + gene.CCSB_ORF_ID,
+                display: gene.CCSB_ORF_ID + ' (length: '+ gene.ORF_LENGTH+ ')'
               }
             }
           }

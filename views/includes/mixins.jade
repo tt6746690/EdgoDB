@@ -40,3 +40,7 @@ mixin nav_item(href, active)
     li(class=active): a( href=href )
         block
                   
+mixin cardblock(variant)
+  div.collapse(id=variant.MUT_HGVS_AA + '_cardbox')
+    div.card.card-block
+      p=variant.MUT_HGVS_AA

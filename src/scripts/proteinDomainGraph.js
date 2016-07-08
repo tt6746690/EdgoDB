@@ -79,15 +79,20 @@ proteinDomainGraph.prototype.markMutations = function(){
               var active   = d3.select(this).classed("active") ? false : true,
 	                newOpacity = active ? 1 : 0,
                   newStroke = active ? '#76b2e9' : 'lightgrey',
-                  activeMouseOut = active ? null: needleHeadMouseOut;
+                  activeMouseOut = active ? null: needleHeadMouseOut,
+                  newTextFontSize = active ? config.headFontSize * 2: config.headFontSize;
               d3.select("#" + d.name + '_radarWrapper').style("opacity", newOpacity)
               d3.select(this).classed("active", active)
 
               d3.select(this).style("stroke", newStroke)
               d3.select(this).on("mouseout", activeMouseOut);
+              d3.select("#" + d.name + "_needleText")
+                .transition()
+                .duration(200)
+                .attr("font-size", newTextFontSize)
             })
 
-  var needleHeadMouseOut = function(){
+  function needleHeadMouseOut(){
       d3.select(this)
         .transition()
         .duration(200)
@@ -98,12 +103,14 @@ proteinDomainGraph.prototype.markMutations = function(){
             .data(this.mutation)
             .enter().append('text')
             .attr("class", "needleText")
+            .attr("id", function(d){ return d.name + "_needleText"})
             .attr("text-anchor", "center")
             .attr("fill", "black")
             .attr("opacity", 0.5)
             .attr("x", function(d){ return x(config.xoffset+ parseInt(d.name.replace(/[^0-9\.]/g, '')) + 2)})
             .attr("y", function(d){ return d.ranHeight})
-            .attr("dx", "3px")
+            .attr("dx", "6px")
+            .attr("dy", "-2px")
             .attr("font-size", config.headFontSize)
             .text(function(d){return d.name})
 }

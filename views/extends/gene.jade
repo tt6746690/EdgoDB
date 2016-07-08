@@ -6,51 +6,40 @@ block content
   div.container
     div.row
       div.col-md-10(id=gene.symbol)
-        h1(id="GeneTitle") #{gene.symbol} 
-        hr
         div.row
-          dl.dl-horizontal.col-md-4
-            each l in Object.keys(gene.links)
-              if gene.links[l].display  
-                dt= l
-                dd
-                  a(href = gene.links[l].link)= gene.links[l].display 
-          div.col-md-8(id='protein-domain-graph')
-          //- protein domain graph 
-        hr
-        div.row(id="GeneInteraction") 
-          div.col-md-6(id='lumier-interaction')
-        div.row
-          div.col-md-6(id='y2h-interaction')
-        //- div(id="VariantListing")
-        //-   if variant
-        //-     - for item in variant
-        //-       div.row
-        //-         h4(id=item.MUT_HGVS_AA)
-        //-           a(href = '/variant/' + item.MUT_HGVS_NT_ID)= item.MUT_HGVS_NT
-        //-           span.glyphicon.glyphicon-menu-right
-        //-           span= item.MUT_HGVS_AA
-        //-         div.dl-horizontal.col-md-6
-        //-           if item.CHR_COORDINATE_HG19
-        //-             dt Chromosomal location 
-        //-             dd
-        //-               a(href="http://genome.ucsc.edu/cgi-bin/hgTracks?org=human&db=hg19&position=" + item.CHR_COORDINATE_HG19) #{item.CHR_COORDINATE_HG19}
-        //-           if item.REFSEQ_ID
-        //-             dt RefSeq 
-        //-             dd 
-        //-               a(href='http://www.ncbi.nlm.nih.gov/nuccore/' + item.REFSEQ_ID) #{item.REFSEQ_ID}
-        //-           if item.CCSB_MUTATION_ID
-        //-             dt CCSB mutation ID 
-        //-             dd #{item.CCSB_MUTATION_ID}
-        //-           if item.DBSNP_ID`
-        //-             dt dbSNP ID 
-        //-             dd 
-        //-               a(href = 'http://www.ncbi.nlm.nih.gov/snp/?term=' + item.DBSNP_ID) #{item.DBSNP_ID}
-        //-           if item.EXAC_ALLELE_FREQUENCY
-        //-             dt Exac allele freq 
-        //-             dd #{item.EXAC_ALLELE_FREQUENCY}
-        //-           hr
-        //-         div.col-md-6
+          div.col-md-4
+            h1(id="GeneTitle") #{gene.symbol} 
+              p(style='font-size:15px') #{gene.description}
+          div.col-md-8(id="variantList")
+            - for item in variant
+              a(data-toggle='collapse' href="#" + item.MUT_HGVS_AA + "_cardbox" aria-expanded="false" aria-controls=item.MUT_HGVS_AA + "_cardbox") #{item.MUT_HGVS_AA}
+        div#stuffing
+        div.row 
+          ul.nav.nav-tabs(id="geneTab")
+            li.nav-item.active(role='general')
+              a.nav-link(data-toggle='tab' href='#generalInfo') General Info 
+            li.nav-item(role='pview')
+              a.nav-link(data-toggle='tab' href='#pv') 3D viewer
+        div#stuffing
+        div#stuffing
+        div.tab-content 
+          div.tab-pane.active.in.fade(id='generalInfo')
+            div.row
+              dl.dl-horizontal.col-md-4
+                each l in Object.keys(gene.links)
+                  if gene.links[l].display  
+                    dt= l
+                    dd
+                      a(href = gene.links[l].link)= gene.links[l].display 
+              div.col-md-8(id='protein-domain-graph')
+            div.row(id="GeneInteraction") 
+              div.col-md-6(id='lumier-interaction')
+            div.row
+              div.col-md-6(id='y2h-interaction')
+          div.tab-pane.fade(id='pv')
+        div.row(id='variantBox')
+          - for item in variant 
+            +cardblock(item)
       nav.col-md-2.bs-docs-sidebar.hidden-print(id='target_nav')
         ul.nav.nav-stacked.bs-docs-sidenav.fixed(id="sidebar")
           +nav_item("#" + gene.symbol) Gene
@@ -60,64 +49,23 @@ block content
           +nav_item("#VariantListing") Variants 
             ul.nav.nav-stacked(id="sidebar")
               - for item in variant
-                +nav_item("#" + item.MUT_HGVS_AA) #{item.MUT_HGVS_AA}
-              
-append script 
+                +nav_item("#" + item.MUT_HGVS_AA + '_cardbox') #{item.MUT_HGVS_AA}
+                //- li.active
+                //-   a.btn.btn-primary(href="#collapseExample", data-toggle="collapse", aria-expanded="false" aria-controls="collapseExample")
+                //- //- +nav_item("#" + item.MUT_HGVS_AA) #{item.MUT_HGVS_AA}
+                //- 
+
+prepend script 
   script(type='text/javascript').
-    // force directed graph 
-    //- var y2hInteractionConfig = {
-    //-   "height": 333,
-    //-   "width": 333,
-    //-   "targetDOM": "#y2h-interaction",
-    //-   "nodeRadius": 5,
-    //-   "textSize": 12
-    //- }
-    //- var y2hInteractionData =!{JSON.stringify(forceGraphData)}
-    //- if(y2hInteractionData.links.length !== 0 && y2hInteractionData.nodes.length !== 0){
-    //-   var y2hForceGraph = new forceGraph(y2hInteractionData, y2hInteractionConfig)
-    //- }
-    //--- protein Domain chart ----//
-    //- var proteinDomainConfig = {
-    //-   "height": 125,
-    //-   "width": 460,
-    //-   "targetDOM": "#protein-domain-graph",
-    //-   "xoffset": 10,
-    //-   "yoffset": 90,
-    //-   "regionHeight": 15,
-    //-   "regionBGHeight": 10,
-    //-   "stickHeight": 20,
-    //-   "headRadius": 5,
-    //-   "regionFontSize": "10px",
-    //-   "headFontSize": "10px"
-    //- }  
-    //- var proteinDomainData =!{JSON.stringify(proteinDomainData)}
-    //- if(proteinDomainData.region.length !== 0 && proteinDomainData.mutation.length !== 0){
-    //-   var pg = new proteinDomainGraph(proteinDomainData, proteinDomainConfig)
-    //- }
-    
-    //----- Radar Chart -----//
     var gene =!{JSON.stringify(gene)}
     var variant =!{JSON.stringify(variant)}
     var radarChartData =!{JSON.stringify(radarChartData)} 
-
-    var radarChartConfig = {
-      w: 220,
-      h: 220,
-      margin: {top: 40, right: 50, bottom: 40, left: 50},
-      maxValue: 0.5,
-      levels: 5,
-      roundStrokes: true,
-      color: d3.scale.category20()
-    };  
-    var garray = variant.map(function(d){return d.MUT_HGVS_AA})
-    garray.push(gene.symbol)
+    console.log(variant)
     
-    if (typeof radarChartData !== 'undefined') {
-      var wtRadarData = selectRadarChartData(radarChartData, garray)
-      RadarChart("#lumier-interaction", wtRadarData, radarChartConfig);
-    }
     
-
+prepend script         
+  script(src='/bio-pv.min.js', type="text/javascript")
+      
 append script
   script(type="text/babel"). 
     var proteinDomainConfig = {
@@ -138,10 +86,9 @@ append script
         return {data: {}};
       },
       componentDidMount: function() {
-        console.log(window.location.href + '/domainGraph')
         $.ajax({
           method: 'GET',
-          url: window.location.href + '/domainGraph',
+          url: document.location.protocol +"//"+ document.location.hostname + ':' + document.location.port + document.location.pathname + '/domainGraph',
           dataType: 'json',
           cache: false,
           success: function(data) {
@@ -149,7 +96,7 @@ append script
             var pg = new proteinDomainGraph(this.state.data, proteinDomainConfig)
           }.bind(this),
           error: function(xhr, status, err) {
-            console.error('wtf', status, err.toString());
+            console.error('ajax domain graph failed', status, err.toString());
           }.bind(this)
         });
       },

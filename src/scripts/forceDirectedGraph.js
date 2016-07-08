@@ -1,4 +1,36 @@
 
+
+// force directed graph
+//- var y2hInteractionConfig = {
+//-   "height": 333,
+//-   "width": 333,
+//-   "targetDOM": "#y2h-interaction",
+//-   "nodeRadius": 5,
+//-   "textSize": 12
+//- }
+//- var y2hInteractionData =!{JSON.stringify(forceGraphData)}
+//- if(y2hInteractionData.links.length !== 0 && y2hInteractionData.nodes.length !== 0){
+//-   var y2hForceGraph = new forceGraph(y2hInteractionData, y2hInteractionConfig)
+//- }
+//--- protein Domain chart ----//
+//- var proteinDomainConfig = {
+//-   "height": 125,
+//-   "width": 460,
+//-   "targetDOM": "#protein-domain-graph",
+//-   "xoffset": 10,
+//-   "yoffset": 90,
+//-   "regionHeight": 15,
+//-   "regionBGHeight": 10,
+//-   "stickHeight": 20,
+//-   "headRadius": 5,
+//-   "regionFontSize": "10px",
+//-   "headFontSize": "10px"
+//- }
+//- var proteinDomainData =!{JSON.stringify(proteinDomainData)}
+//- if(proteinDomainData.region.length !== 0 && proteinDomainData.mutation.length !== 0){
+//-   var pg = new proteinDomainGraph(proteinDomainData, proteinDomainConfig)
+//- }
+
 var forceGraph = function(data, config){
   this.config = config
   this.data = data

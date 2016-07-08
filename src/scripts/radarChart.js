@@ -1,5 +1,4 @@
 // taken from web thanks for the code...
-
 var RadarChart = function(id, data, options) {
 	var cfg = {
 	 w: 600,				//Width of the circle
@@ -299,4 +298,27 @@ var selectRadarChartData = function(rcdata, grpArray){
       return modData[key]
   })
   return modData
+}
+
+
+if (typeof window.variant !== 'undefined' && typeof window.gene !== 'undefined' && typeof window.radarChartData !== 'undefined'){
+  //----- Instantiation -----//
+  var radarChartConfig = {
+    w: 220,
+    h: 220,
+    margin: {top: 40, right: 50, bottom: 40, left: 50},
+    maxValue: 0.5,
+    levels: 5,
+    roundStrokes: true,
+    color: d3.scale.category20()
+  };
+
+  if (radarChartData.length !== 0) {
+    var garray = variant.map(function(d){return d.MUT_HGVS_AA})
+    garray.push(gene.symbol)
+    console.log('here')
+    var wtRadarData = selectRadarChartData(radarChartData, garray)
+    RadarChart("#lumier-interaction", wtRadarData, radarChartConfig);
+  }
+
 }

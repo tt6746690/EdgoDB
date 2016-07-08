@@ -1,4 +1,36 @@
 
+
+// force directed graph
+//- var y2hInteractionConfig = {
+//-   "height": 333,
+//-   "width": 333,
+//-   "targetDOM": "#y2h-interaction",
+//-   "nodeRadius": 5,
+//-   "textSize": 12
+//- }
+//- var y2hInteractionData =!{JSON.stringify(forceGraphData)}
+//- if(y2hInteractionData.links.length !== 0 && y2hInteractionData.nodes.length !== 0){
+//-   var y2hForceGraph = new forceGraph(y2hInteractionData, y2hInteractionConfig)
+//- }
+//--- protein Domain chart ----//
+//- var proteinDomainConfig = {
+//-   "height": 125,
+//-   "width": 460,
+//-   "targetDOM": "#protein-domain-graph",
+//-   "xoffset": 10,
+//-   "yoffset": 90,
+//-   "regionHeight": 15,
+//-   "regionBGHeight": 10,
+//-   "stickHeight": 20,
+//-   "headRadius": 5,
+//-   "regionFontSize": "10px",
+//-   "headFontSize": "10px"
+//- }
+//- var proteinDomainData =!{JSON.stringify(proteinDomainData)}
+//- if(proteinDomainData.region.length !== 0 && proteinDomainData.mutation.length !== 0){
+//-   var pg = new proteinDomainGraph(proteinDomainData, proteinDomainConfig)
+//- }
+
 var forceGraph = function(data, config){
   this.config = config
   this.data = data
@@ -237,15 +269,20 @@ proteinDomainGraph.prototype.markMutations = function(){
               var active   = d3.select(this).classed("active") ? false : true,
 	                newOpacity = active ? 1 : 0,
                   newStroke = active ? '#76b2e9' : 'lightgrey',
-                  activeMouseOut = active ? null: needleHeadMouseOut;
+                  activeMouseOut = active ? null: needleHeadMouseOut,
+                  newTextFontSize = active ? config.headFontSize * 2: config.headFontSize;
               d3.select("#" + d.name + '_radarWrapper').style("opacity", newOpacity)
               d3.select(this).classed("active", active)
 
               d3.select(this).style("stroke", newStroke)
               d3.select(this).on("mouseout", activeMouseOut);
+              d3.select("#" + d.name + "_needleText")
+                .transition()
+                .duration(200)
+                .attr("font-size", newTextFontSize)
             })
 
-  var needleHeadMouseOut = function(){
+  function needleHeadMouseOut(){
       d3.select(this)
         .transition()
         .duration(200)
@@ -256,12 +293,14 @@ proteinDomainGraph.prototype.markMutations = function(){
             .data(this.mutation)
             .enter().append('text')
             .attr("class", "needleText")
+            .attr("id", function(d){ return d.name + "_needleText"})
             .attr("text-anchor", "center")
             .attr("fill", "black")
             .attr("opacity", 0.5)
             .attr("x", function(d){ return x(config.xoffset+ parseInt(d.name.replace(/[^0-9\.]/g, '')) + 2)})
             .attr("y", function(d){ return d.ranHeight})
-            .attr("dx", "3px")
+            .attr("dx", "6px")
+            .attr("dy", "-2px")
             .attr("font-size", config.headFontSize)
             .text(function(d){return d.name})
 }
@@ -340,8 +379,39 @@ function propagateUpdates(activeElement){
 
 }
 
-// taken from web thanks for the code...
 
+if(typeof window.pv !== 'undefined'){
+  // override the default options with something less restrictive.
+  var options = {
+    width: 600,
+    height: 600,
+    antialias: true,
+    quality : 'medium'
+  };
+  var viewer = pv.Viewer(document.getElementById('pv'), options);
+  function loadMethylTransferase() {
+    // asynchronously load the PDB file for the dengue methyl transferase
+    // from the server and display it in the viewer.
+    pv.io.fetchPdb('http://files.rcsb.org/download/5CEA.pdb', function(structure) {
+        // display the protein as cartoon, coloring the secondary structure
+        // elements in a rainbow gradient.
+        viewer.cartoon('protein', structure, { color : color.ssSuccession() });
+        // there are two ligands in the structure, the co-factor S-adenosyl
+        // homocysteine and the inhibitor ribavirin-5' triphosphate. They have
+        // the three-letter codes SAH and RVP, respectively. Let's display them
+        // with balls and sticks.
+        var ligands = structure.select({ rnames : ['SAH', 'RVP'] });
+        viewer.ballsAndSticks('ligands', ligands);
+        viewer.centerOn(structure);
+    });
+  }
+  // load the methyl transferase once the DOM has finished loading. That's
+  // the earliest point the WebGL context is available.
+  document.addEventListener('DOMContentLoaded', loadMethylTransferase);
+
+}
+
+// taken from web thanks for the code...
 var RadarChart = function(id, data, options) {
 	var cfg = {
 	 w: 600,				//Width of the circle
@@ -641,6 +711,29 @@ var selectRadarChartData = function(rcdata, grpArray){
       return modData[key]
   })
   return modData
+}
+
+
+if (typeof window.variant !== 'undefined' && typeof window.gene !== 'undefined' && typeof window.radarChartData !== 'undefined'){
+  //----- Instantiation -----//
+  var radarChartConfig = {
+    w: 220,
+    h: 220,
+    margin: {top: 40, right: 50, bottom: 40, left: 50},
+    maxValue: 0.5,
+    levels: 5,
+    roundStrokes: true,
+    color: d3.scale.category20()
+  };
+
+  if (radarChartData.length !== 0) {
+    var garray = variant.map(function(d){return d.MUT_HGVS_AA})
+    garray.push(gene.symbol)
+    console.log('here')
+    var wtRadarData = selectRadarChartData(radarChartData, garray)
+    RadarChart("#lumier-interaction", wtRadarData, radarChartConfig);
+  }
+
 }
 
 'use strict';
