@@ -1,4 +1,5 @@
 import MySQLdb
+import urllib,urllib2
 import csv
 from collections import defaultdict
 from Config import DB_HOST, DB_USER, DB_PASS, DB_NAME
@@ -62,7 +63,13 @@ ALLELE_ID = "Allele_ID"
 INTERACTOR_ENTREZ_GENE_ID = "Interactor_Gene_ID"
 INTERACTOR_HUGO_GENE_SYMBOL = "Interactor_symbol"
 Y2H_SCORE = "Y2H_score"
+Y2H_EDGOTYPE = "Edgotype_class"
 
+
+# protein atlas localization csv
+PROTEIN_ATLAS_GENE = 'Gene'
+PROTEIN_ATLAS_LOCATION = 'Main location'
+PROTEIN_ATLAS_RELIABILITY = 'Reliability'
 
 
 class LoadData:
@@ -347,7 +354,7 @@ class LoadData:
         # 2 additional chr location cannot be mapped with liftover
 
         from pyliftover import LiftOver
-        lo = LiftOver('hg18ToHg19.over.chain.gz')
+        lo = LiftOver('./origExcel/hg18ToHg19.over.chain.gz')
 
         def lifting(chrPosition):
             chromosome = chrPosition.split(':')[0]
@@ -377,6 +384,93 @@ class LoadData:
             raise e
             self.db.rollback()
 
+    def getBiogridIDFromUniprot(self):
+        ''' get biogrid id from uniprot id '''
+        # get uniprot for query
+        try:
+            self.c.execute("""SELECT UNIPROT_SWISSPROT_ID FROM Gene WHERE UNIPROT_SWISSPROT_ID IS NOT NULL""")
+            result = self.c.fetchall()
+            querystr = ' '.join([i[0] for i in result])
+        except MySQLdb.Error, e:
+            print 'getting uniprot ids failed'
+            raise e
+            self.db.rollback()
+        # query using http://www.uniprot.org/uploadlists/
+        url = 'http://www.uniprot.org/mapping/'
+        params = {
+            'from' : 'ACC+ID',
+            'to' : 'BIOGRID_ID',
+            'format' : 'tab',
+            'query' : querystr
+        }
+        data = urllib.urlencode(params)
+        request = urllib2.Request(url, data)
+        contact = "peiqi1122@gmail.com"
+        request.add_header('User-Agent', 'Python %s' % contact)
+        try:
+            response = urllib2.urlopen(request)
+            page = response.read()
+            inserts = [tuple([int(i.split('\t')[1]), i.split('\t')[0]]) for i in page.split('\n')[1:-1]]
+        except urllib2.HTTPError as e:
+            print 'url request for uniprot id conversion failed'
+            print e.code
+            print e.read()
+
+        # insert biogrid id to database
+        try:
+            sqlstr = "UPDATE Gene SET BIOGRID_ID = %s WHERE UNIPROT_SWISSPROT_ID = %s"
+            self.c.executemany(sqlstr, inserts)
+            self.db.commit()
+        except MySQLdb.Error, e:
+            print('insert biogrid id to Gene table failed')
+            self.db.rollback()
+            raise e
+
+    def loadProteinDataBankTable(self):
+        ''' get pdb id from uniprot id '''
+        # get uniprot for query
+        try:
+            self.c.execute("""SELECT UNIPROT_SWISSPROT_ID FROM Gene WHERE UNIPROT_SWISSPROT_ID IS NOT NULL""")
+            result = self.c.fetchall()
+            querystr = ' '.join([i[0] for i in result])
+        except MySQLdb.Error, e:
+            print 'getting uniprot ids failed'
+            raise e
+            self.db.rollback()
+
+        # query using http://www.uniprot.org/uploadlists/
+        url = 'http://www.uniprot.org/mapping/'
+        params = {
+            'from' : 'ACC+ID',
+            'to' : 'PDB_ID',
+            'format' : 'tab',
+            'query' : querystr
+        }
+        data = urllib.urlencode(params)
+        request = urllib2.Request(url, data)
+        contact = "peiqi1122@gmail.com"
+        request.add_header('User-Agent', 'Python %s' % contact)
+        try:
+            response = urllib2.urlopen(request)
+            page = response.read()
+            inserts = [tuple([i.split('\t')[1], i.split('\t')[0]])
+                for i in page.split('\n')[1:-1]]
+        except urllib2.HTTPError as e:
+            print 'url request for uniprot id conversion failed'
+            print e.code
+            print e.read()
+        # insert to database
+        try:
+            sqlstr = """INSERT INTO ProteinDataBank (PROTEIN_DATA_BANK_ID,
+                        PDB_ID, UNIPROT_SWISSPROT_ID)
+                        VALUES(0, %s, %s)"""
+            self.c.executemany(sqlstr, inserts)
+            self.db.commit()
+        except MySQLdb.Error, e:
+            print('insert into proteindatabank table failed')
+            self.db.rollback()
+            raise e
+
     def loadTables(self):
         """
         master function which controls individual insertion
@@ -389,6 +483,7 @@ class LoadData:
         self.loadMeasurementTable()
         self.loadLUMIERSummaryTable()
         self.updateChrFromHg18ToHg19()
+
 
     def loadY2HInteractorTable(self):
         """ populate Y2HWTInteractor and Y2HMUTInteractor table with data
@@ -425,6 +520,27 @@ class LoadData:
             raise e
             self.db.rollback()
 
+
+    def addEdgoType(self):
+        subsets = self.subsetCols([ALLELE_ID, Y2H_EDGOTYPE])
+        inserts = self.replaceNullwithEmptyString(subsets)
+        inserts = [(t[1], t[0].split('_')[1]) for t in inserts]
+        sqlstr = """
+            UPDATE VariantProperty
+                JOIN Variant USING(VARIANT_ID)
+            SET VariantProperty.Y2H_EDGOTYPE = %s
+            WHERE CCSB_MUTATION_ID = %s;
+        """
+        try:
+            self.c.executemany(sqlstr, inserts)
+            self.db.commit()
+        except MySQLdb.Error, e:
+            print 'update edgotype to VariantProperty table failed'
+            raise e
+            self.db.rollback()
+
+
+
     def addInteractorToGeneTable(self):
         """ add target interactor in Y2HInteractor to Gene tabe using mmc3.csv
         this is required for generating nodes for force directed graph"""
@@ -442,11 +558,35 @@ class LoadData:
             self.db.rollback()
 
 
+    def addProteinAtlasLocalization(self):
+        subsets = self.subsetCols([PROTEIN_ATLAS_LOCATION,
+            PROTEIN_ATLAS_RELIABILITY,
+            PROTEIN_ATLAS_GENE])
+        inserts = self.replaceNullwithEmptyString(subsets)
+        inserts = [(i[0].replace(';', ',') + ':' + i[1], i[2]) for i in inserts]
+        sqlstr = """
+            UPDATE Gene SET PROTEIN_ATLAS_LOCALIZATION = %s
+            WHERE ENSEMBL_GENE_ID = %s
+        """
+        try:
+            self.c.executemany(sqlstr, inserts)
+            self.db.commit()
+        except MySQLdb.Error, e:
+            print 'adding protein atlas localization to gene table failed'
+            raise e
+            self.db.rollback()
+
+
 if __name__ == "__main__":
     ld = LoadData()
     ld.importCSV("./origExcel/csvMutCollection.csv")
     ld.loadTables()
+
+    # y2h data
     ld.importCSV("./origExcel/mmc3.csv")
     ld.loadY2HInteractorTable()
     ld.addInteractorToGeneTable()
-    # ld.generateExacVariantUrlForAnnotatePy()
+
+    # y2h edgotype
+    ld.importCSV("./origExcel/mmc3_edgotype.csv")
+    ld.addEdgoType()

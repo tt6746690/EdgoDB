@@ -10,9 +10,6 @@ block content
           div.col-md-4
             h1(id="GeneTitle") #{gene.symbol} 
               p(style='font-size:15px') #{gene.description}
-          div.col-md-8(id="variantList")
-            - for item in variant
-              a(data-toggle='collapse' href="#" + item.MUT_HGVS_AA + "_cardbox" aria-expanded="false" aria-controls=item.MUT_HGVS_AA + "_cardbox") #{item.MUT_HGVS_AA}
         div#stuffing
         div.row 
           ul.nav.nav-tabs(id="geneTab")
@@ -20,6 +17,10 @@ block content
               a.nav-link(data-toggle='tab' href='#generalInfo') General Info 
             li.nav-item(role='pview')
               a.nav-link(data-toggle='tab' href='#pv') 3D viewer
+            - for item in variant
+              li
+                a(data-toggle='collapse' href="#" + item.MUT_HGVS_AA + "_cardbox" aria-expanded="false" aria-controls=item.MUT_HGVS_AA + "_cardbox" ) 
+                  small.text-muted #{item.MUT_HGVS_AA} 
         div#stuffing
         div#stuffing
         div.tab-content 
@@ -32,12 +33,14 @@ block content
                     dd
                       a(href = gene.links[l].link)= gene.links[l].display 
               div.col-md-8(id='protein-domain-graph')
+            div#stuffing
+            div#stuffing
             div.row(id="GeneInteraction") 
               div.col-md-6(id='lumier-interaction')
             div.row
               div.col-md-6(id='y2h-interaction')
           div.tab-pane.fade(id='pv')
-        div.row(id='variantBox')
+        div.row(id='variantListing')
           - for item in variant 
             +cardblock(item)
       nav.col-md-2.bs-docs-sidebar.hidden-print(id='target_nav')

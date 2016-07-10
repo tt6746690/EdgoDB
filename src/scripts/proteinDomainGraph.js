@@ -185,6 +185,4 @@ function propagateUpdates(activeElement){
   visibleElement.push(activeElement)
   var wtRadarData = selectRadarChartData(radarChartData, visibleElement)
   RadarChart("#lumier-interaction", wtRadarData, radarChartConfig);
-
-
 }

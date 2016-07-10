@@ -1,6 +1,7 @@
 import scrapy
 import MySQLdb
 from scrapy.loader import ItemLoader
+from scrapy.selector import Selector
 from annotatePy.items import UniprotItem
 from config import MYSQL_USER, MYSQL_HOST, MYSQL_PASSWD, MYSQL_DBNAME
 
@@ -28,7 +29,8 @@ class UniprotSpider(scrapy.Spider):
     start_urls = getUrls()
 
     # for testing purposes
-    # start_urls = ['http://www.uniprot.org/uniprot/P01023',
+
+    # start_urls = ['http://www.uniprot.org/uniprot/Q06187',
     #                 'http://www.uniprot.org/uniprot/P18440']
 
 
@@ -36,4 +38,11 @@ class UniprotSpider(scrapy.Spider):
         l = ItemLoader(item=UniprotItem(), response=response)
         l.add_xpath('proteinName', "//*[@id='page-header']/h2/span/text()")
         l.add_value('uniprotAccession', response.url)
+        l.add_xpath('uniprotProteinLength', "//*[@id='sequences-section']/div[1]/div[2]/div[1]/span[2]/text()")
+        listing = response.xpath("//*[@id='subcellular_location']/div[1]/ul")
+        subcellular_location = []
+        for li in listing:
+            subcellular_location.append(li.xpath("./li/a/text()").extract())
+        l.add_value('uniprotLocalization', subcellular_location)
+
         yield l.load_item()

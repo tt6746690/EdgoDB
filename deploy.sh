@@ -1,29 +1,37 @@
-#!/bin/bash
+# #!/bin/bash
+#
+# echo "/===== This is a shell script =====/"
+#
+# echo "/===== building mysql schema =====/"
+# cd DB
+# mysql < ./mysql/DBinit.sql
+# mysql EdgoDB < ./mysql/customFunction.sql
+#
+# echo "/===== populating data from excel file =====/"
+# python loadData.py
+#
+#
+# echo "/===== annotate with biomart =====/"
+# cd Rannotate
+# Rscript annotate.R
+#
+#
+# echo "/===== generating JSON for typeahead search =====/"
+# cd ..
+# python utilities.py
+# mv -f *.json ../dist/data/
+#
+#
+# echo "/===== annotate with scrapy =====/"
+# cd Pyannotate
+# scrapy crawl exac
+# scrapy crawl uniprot
+# scrapy crawl pfam
 
-echo "/===== This is a shell script =====/"
+echo "/===== restore db from dumps =====/"
+cd DB/mysql
+mysql -u root -p EdgoDB < EdgoDB_backup.sql 
 
-echo "/===== building mysql schema =====/"
-cd DB
-mysql < ./mysql/DBinit.sql
-mysql EdgoDB < ./mysql/customFunction.sql
-
-echo "/===== populating data from excel file =====/"
-python loadData.py
-
-echo "/===== generating JSON for typeahead search =====/"
-python utilities.py
-mv -f *.json ../dist/data/
-
-
-echo "/===== annotate with biomart =====/"
-cd Rannotate
-Rscript annotate.R
-
-echo "/===== annotate with scrapy =====/"
-cd ../Pyannotate
-scrapy crawl exac
-scrapy crawl uniprot
-scrapy crawl pfam
 
 echo "---------------------"
 echo "stopping previous forever instances"

@@ -1,5 +1,14 @@
 
 
+_standard error for plotting expression graph_
+
+```SQL
+SELECT STD(LOG(2, EXPRESSION_RATIO))/COUNT(*) AS standard_error,
+FROM Variant join LUMIERMeasurementMUT using(VARIANT_ID)
+where MUT_HGVS_NT_ID = 'NM_017436:c.287G>A'
+
+```
+
 
 _JOIN semantics_
 

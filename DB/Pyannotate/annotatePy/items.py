@@ -29,7 +29,14 @@ class UniprotItem(Item):
         input_processor = MapCompose(remove_tags, lambda x: x.strip('()')),
         output_processor = TakeFirst()
     )
-
+    uniprotProteinLength = Field(
+        input_processor = MapCompose(remove_tags, lambda x: x.strip('()')),
+        output_processor = TakeFirst()
+    )
+    uniprotLocalization = Field(
+        input_processor = MapCompose(lambda x: (',').join(x)),
+        output_processor = TakeFirst()
+    )
 
 
 class PfamItem(Item):
