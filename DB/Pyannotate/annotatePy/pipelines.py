@@ -2,7 +2,7 @@
 from annotatePy.items import UniprotItem, ExacItem, PfamItem
 from scrapy.exceptions import DropItem
 import MySQLdb
-
+from utils import convertBP
 
 
 class ManipulateFieldPipeline(object):
@@ -40,12 +40,18 @@ class MySQLUpdatePipeline(object):
     def process_item(self, item, spider):
 
         if isinstance(item, ExacItem):
+            inverseMut = convertBP(item['mutation'])
             try:
                 self.c.execute("""UPDATE VariantProperty
                                       JOIN Variant USING(VARIANT_ID)
                                   SET EXAC_ALLELE_FREQUENCY = %s
-                                  WHERE CHR_COORDINATE_HG19 = %s AND MUT_HGVS_NT_ID LIKE %s""",
-                                (item['alleleFrequency'], item['chrLocation'], '%' + item['mutation']))
+                                  WHERE CHR_COORDINATE_HG19 = %s AND
+                                    (MUT_HGVS_NT_ID LIKE %s OR
+                                    MUT_HGVS_NT_ID LIKE %s)""",
+                                (item['alleleFrequency'],
+                                item['chrLocation'],
+                                '%' + item['mutation'],
+                                '%' + inverseMut))
                 self.db.commit()
             except MySQLdb.Error, e:
                 spider.log("Error %d: %s" % (e.args[0], e.args[1]))
