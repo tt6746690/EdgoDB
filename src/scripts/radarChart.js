@@ -306,8 +306,8 @@ var selectRadarChartData = function(rcdata, grpArray){
 if (typeof window.variant !== 'undefined' && typeof window.gene !== 'undefined' && typeof window.radarChartData !== 'undefined'){
   //----- Instantiation -----//
   var radarChartConfig = {
-    w: 220,
-    h: 220,
+    w: 170,
+    h: 170,
     margin: {top: 40, right: 50, bottom: 40, left: 50},
     maxValue: 28,   // greatest number expression z score can get for lumier data in db
     levels: 5,

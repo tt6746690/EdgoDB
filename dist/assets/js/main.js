@@ -1,3 +1,451 @@
+(function() {
+
+// Inspired by http://informationandvisualization.de/blog/box-plot
+d3.box = function() {
+  var width = 1,
+      height = 1,
+      duration = 0,
+      domain = null,
+      value = Number,
+      whiskers = boxWhiskers,
+      quartiles = boxQuartiles,
+      tickFormat = null;
+
+  // For each small multiple…
+  function box(g) {
+    g.each(function(d, i) {
+      d = d.map(value).sort(d3.ascending);
+      var g = d3.select(this),
+          n = d.length,
+          min = d[0],
+          max = d[n - 1];
+
+      // Compute quartiles. Must return exactly 3 elements.
+      var quartileData = d.quartiles = quartiles(d);
+
+      // Compute whiskers. Must return exactly 2 elements, or null.
+      var whiskerIndices = whiskers && whiskers.call(this, d, i),
+          whiskerData = whiskerIndices && whiskerIndices.map(function(i) { return d[i]; });
+
+      // Compute outliers. If no whiskers are specified, all data are "outliers".
+      // We compute the outliers as indices, so that we can join across transitions!
+      var outlierIndices = whiskerIndices
+          ? d3.range(0, whiskerIndices[0]).concat(d3.range(whiskerIndices[1] + 1, n))
+          : d3.range(n);
+
+      // Compute the new x-scale.
+      var x1 = d3.scale.linear()
+          .domain(domain && domain.call(this, d, i) || [min, max])
+          .range([height, 0]);
+
+      // Retrieve the old x-scale, if this is an update.
+      var x0 = this.__chart__ || d3.scale.linear()
+          .domain([0, Infinity])
+          .range(x1.range());
+
+      // Stash the new scale.
+      this.__chart__ = x1;
+
+      // Note: the box, median, and box tick elements are fixed in number,
+      // so we only have to handle enter and update. In contrast, the outliers
+      // and other elements are variable, so we need to exit them! Variable
+      // elements also fade in and out.
+
+      // Update center line: the vertical line spanning the whiskers.
+      var center = g.selectAll("line.center")
+          .data(whiskerData ? [whiskerData] : []);
+
+      center.enter().insert("line", "rect")
+          .attr("class", "center")
+          .attr("x1", width / 2)
+          .attr("y1", function(d) { return x0(d[0]); })
+          .attr("x2", width / 2)
+          .attr("y2", function(d) { return x0(d[1]); })
+          .style("opacity", 1e-6)
+        .transition()
+          .duration(duration)
+          .style("opacity", 1)
+          .attr("y1", function(d) { return x1(d[0]); })
+          .attr("y2", function(d) { return x1(d[1]); });
+
+      center.transition()
+          .duration(duration)
+          .style("opacity", 1)
+          .attr("y1", function(d) { return x1(d[0]); })
+          .attr("y2", function(d) { return x1(d[1]); });
+
+      center.exit().transition()
+          .duration(duration)
+          .style("opacity", 1e-6)
+          .attr("y1", function(d) { return x1(d[0]); })
+          .attr("y2", function(d) { return x1(d[1]); })
+          .remove();
+
+      // Update innerquartile box.
+      var box = g.selectAll("rect.box")
+          .data([quartileData]);
+
+      box.enter().append("rect")
+          .attr("class", "box")
+          .attr("x", 0)
+          .attr("y", function(d) { return x0(d[2]); })
+          .attr("width", width)
+          .attr("height", function(d) { return x0(d[0]) - x0(d[2]); })
+        .transition()
+          .duration(duration)
+          .attr("y", function(d) { return x1(d[2]); })
+          .attr("height", function(d) { return x1(d[0]) - x1(d[2]); });
+
+      box.transition()
+          .duration(duration)
+          .attr("y", function(d) { return x1(d[2]); })
+          .attr("height", function(d) { return x1(d[0]) - x1(d[2]); });
+
+      // Update median line.
+      var medianLine = g.selectAll("line.median")
+          .data([quartileData[1]]);
+
+      medianLine.enter().append("line")
+          .attr("class", "median")
+          .attr("x1", 0)
+          .attr("y1", x0)
+          .attr("x2", width)
+          .attr("y2", x0)
+        .transition()
+          .duration(duration)
+          .attr("y1", x1)
+          .attr("y2", x1);
+
+      medianLine.transition()
+          .duration(duration)
+          .attr("y1", x1)
+          .attr("y2", x1);
+
+      // Update whiskers.
+      var whisker = g.selectAll("line.whisker")
+          .data(whiskerData || []);
+
+      whisker.enter().insert("line", "circle, text")
+          .attr("class", "whisker")
+          .attr("x1", 0)
+          .attr("y1", x0)
+          .attr("x2", width)
+          .attr("y2", x0)
+          .style("opacity", 1e-6)
+        .transition()
+          .duration(duration)
+          .attr("y1", x1)
+          .attr("y2", x1)
+          .style("opacity", 1);
+
+      whisker.transition()
+          .duration(duration)
+          .attr("y1", x1)
+          .attr("y2", x1)
+          .style("opacity", 1);
+
+      whisker.exit().transition()
+          .duration(duration)
+          .attr("y1", x1)
+          .attr("y2", x1)
+          .style("opacity", 1e-6)
+          .remove();
+
+      // Update outliers.
+      var outlier = g.selectAll("circle.outlier")
+          .data(outlierIndices, Number);
+
+      outlier.enter().insert("circle", "text")
+          .attr("class", "outlier")
+          .attr("r", 5)
+          .attr("cx", width / 2)
+          .attr("cy", function(i) { return x0(d[i]); })
+          .style("opacity", 1e-6)
+        .transition()
+          .duration(duration)
+          .attr("cy", function(i) { return x1(d[i]); })
+          .style("opacity", 1);
+
+      outlier.transition()
+          .duration(duration)
+          .attr("cy", function(i) { return x1(d[i]); })
+          .style("opacity", 1);
+
+      outlier.exit().transition()
+          .duration(duration)
+          .attr("cy", function(i) { return x1(d[i]); })
+          .style("opacity", 1e-6)
+          .remove();
+
+      // Compute the tick format.
+      var format = tickFormat || x1.tickFormat(8);
+
+      // Update box ticks.
+      var boxTick = g.selectAll("text.box")
+          .data(quartileData);
+
+      boxTick.enter().append("text")
+          .attr("class", "box")
+          .attr("dy", ".3em")
+          .attr("dx", function(d, i) { return i & 1 ? 6 : -6 })
+          .attr("x", function(d, i) { return i & 1 ? width : 0 })
+          .attr("y", x0)
+          .attr("text-anchor", function(d, i) { return i & 1 ? "start" : "end"; })
+          .text(format)
+        .transition()
+          .duration(duration)
+          .attr("y", x1);
+
+      boxTick.transition()
+          .duration(duration)
+          .text(format)
+          .attr("y", x1);
+
+      // Update whisker ticks. These are handled separately from the box
+      // ticks because they may or may not exist, and we want don't want
+      // to join box ticks pre-transition with whisker ticks post-.
+      var whiskerTick = g.selectAll("text.whisker")
+          .data(whiskerData || []);
+
+      whiskerTick.enter().append("text")
+          .attr("class", "whisker")
+          .attr("dy", ".3em")
+          .attr("dx", 6)
+          .attr("x", width)
+          .attr("y", x0)
+          .text(format)
+          .style("opacity", 1e-6)
+        .transition()
+          .duration(duration)
+          .attr("y", x1)
+          .style("opacity", 1);
+
+      whiskerTick.transition()
+          .duration(duration)
+          .text(format)
+          .attr("y", x1)
+          .style("opacity", 1);
+
+      whiskerTick.exit().transition()
+          .duration(duration)
+          .attr("y", x1)
+          .style("opacity", 1e-6)
+          .remove();
+    });
+    d3.timer.flush();
+  }
+
+  box.width = function(x) {
+    if (!arguments.length) return width;
+    width = x;
+    return box;
+  };
+
+  box.height = function(x) {
+    if (!arguments.length) return height;
+    height = x;
+    return box;
+  };
+
+  box.tickFormat = function(x) {
+    if (!arguments.length) return tickFormat;
+    tickFormat = x;
+    return box;
+  };
+
+  box.duration = function(x) {
+    if (!arguments.length) return duration;
+    duration = x;
+    return box;
+  };
+
+  box.domain = function(x) {
+    if (!arguments.length) return domain;
+    domain = x == null ? x : d3.functor(x);
+    return box;
+  };
+
+  box.value = function(x) {
+    if (!arguments.length) return value;
+    value = x;
+    return box;
+  };
+
+  box.whiskers = function(x) {
+    if (!arguments.length) return whiskers;
+    whiskers = x;
+    return box;
+  };
+
+  box.quartiles = function(x) {
+    if (!arguments.length) return quartiles;
+    quartiles = x;
+    return box;
+  };
+
+  return box;
+};
+
+function boxWhiskers(d) {
+  return [0, d.length - 1];
+}
+
+function boxQuartiles(d) {
+  return [
+    d3.quantile(d, .25),
+    d3.quantile(d, .5),
+    d3.quantile(d, .75)
+  ];
+}
+
+})();
+
+
+
+var expressionChart = function(target_dom, raw_data, config) {
+  this.config = config
+  this.target_dom = target_dom
+  this.config.width = this.config.w - this.config.margin.left -  this.config.margin.right
+  this.config.height = this.config.h - this.config.margin.top -  this.config.margin.bottom
+
+  this.xScale = d3.scale.linear()
+    .range([this.config.padding, this.config.width - this.config.padding])
+
+
+  // this.data = this.processData(data)
+  var data = this.processData(raw_data)
+  console.log(data)
+
+
+};
+
+
+expressionChart.prototype.createSVG = function(){
+  config = this.config
+  xScale = this.xScale
+  data = this.data
+  target_dom = this.target_dom
+
+  var svg = d3.select(target_dom)
+              .append("svg")
+              .attr("width", config.w)
+              .attr("height", config.h);
+
+  var xAxis = d3.svg.axis()
+    .scale(xScale)
+    .orient("bottom");
+
+  svg.append("g")
+     .attr("class", "axis")
+     .attr("transform", "translate(0, " + (config.height - config.padding) + ")")
+     .call(xAxis);
+
+  var boxGroup = svg.append('g')
+     .attr("transform", "translate(0,0)")
+     .attr("class", "boxGroup")
+
+  console.log(data)
+  var box = d3.select('.boxGroup').selectAll()
+    .data(data).enter()
+    .append("line")
+    .attr("class", "whisker")
+    .attr("x1", function(d){ return xScale(d.lowerWhisker)})
+    .attr("x2", function(d){ return xScale(d.lowerWhisker)})
+    .attr("stroke", "black")
+    .attr("y1", function(d){ return 30})
+    .attr("y2", function(d){ return 30})
+
+  //draw vertical line for upperWhisker
+  // svg.append("line")
+  //    .attr("class", "whisker")
+  //    .attr("x1", xScale(upperWhisker))
+  //    .attr("x2", xScale(upperWhisker))
+  //    .attr("stroke", "black")
+  //    .attr("y1", midline - 10)
+  //    .attr("y2", midline + 10);
+
+
+}
+
+expressionChart.prototype.processData = function(data){
+  new_data = {}
+  data.forEach(function(d){
+    if(!(d.grp in new_data)){
+      new_data[d.grp] = {}
+      new_data[d.grp].values = []
+      new_data[d.grp].grp = d.grp
+    }
+    new_data[d.grp].values.push(d.expression)
+  })
+
+  Object.keys(new_data).forEach(function(k){
+    var col = new_data[k]
+    grpVal = col.values.sort(d3.ascending)
+
+    col.minVal = grpVal[0]
+    col.q1Val = d3.quantile(grpVal, .25)
+    col.medianVal = d3.quantile(grpVal, .5)
+    col.q3Val = d3.quantile(grpVal, .75)
+    col.iqr = col.q3Val - col.q1Val
+    col.maxVal = grpVal[grpVal.length - 1];
+    col.lowerWhisker = d3.max([col.minVal, col.q1Val - col.iqr])
+    col.upperWhisker = d3.min([col.maxVal, col.q3Val + col.iqr]);
+    col.outliers = []
+
+    var index = 0;
+    //search for the lower whisker, the mininmum value within q1Val - 1.5*iqr
+    while (index < grpVal.length && col.lowerWhisker == Infinity) {
+      if (grpVal[index] >= (col.q1Val - 1.5*col.iqr)){
+        col.lowerWhisker = grpVal[index];
+      } else {
+        col.outliers.push(grqVal[index]);
+      }
+      index++;
+    }
+    index = grpVal.length-1; // reset index to end of array
+
+    //search for the upper whisker, the maximum value within q1Val + 1.5*iqr
+    while (index >= 0 && col.upperWhisker == -Infinity) {
+      if (grpVal[index] <= (col.q3Val + 1.5*col.iqr)){
+          col.upperWhisker = grpVal[index];
+      } else {
+        col.outliers.push(grpVal[index]);
+      }
+      index--;
+    }
+  })
+
+  mmax = Object.keys(new_data).map(function(k){
+    return new_data[k].maxVal
+  })
+  mmin = Object.keys(new_data).map(function(k){
+    return new_data[k].minVal
+  })
+  this.xScale.domain([d3.min(mmin)*1.10, d3.max(mmax)*1.10]);
+
+  return_data = Object.keys(new_data).map(function(k){
+    return new_data[k]
+  })
+
+  return(return_data)
+}
+
+if (typeof window.expressionChartData !== 'undefined' &&
+  typeof window.gene !== 'undefined' &&
+  typeof window.variant !== 'undefined') {
+  //----- Instantiation -----//
+  var expressionChartConfig = {
+    w: 220,
+    h: 220,
+    margin: {top: 10, right: 10, bottom: 10, left: 10},
+    padding: 10
+  };
+
+  if (expressionChartData.length !== 0) {
+    ex = new expressionChart("#elisa-expression", expressionChartData, expressionChartConfig);
+  }
+}
+
 
 
 // force directed graph
@@ -194,12 +642,11 @@ forceGraph.prototype.createElements = function(){
 var proteinDomainGraph = function(data, config){
   this.config = config
   this.data = data
-  this.mutation =this.getMutationData()
-  this.createSVG()
+  this.mutation = this.getMutationData()
   this.x = d3.scale.linear()
             .domain([0, this.data.proteinLength])
             .range([0, this.config.width - 3*this.config.xoffset])
-
+  this.createSVG()
   this.markMutations()
   this.drawRegions()
 }
@@ -209,12 +656,15 @@ proteinDomainGraph.prototype.createSVG = function(){
   var width = this.config.width || 1000
       height = this.config.height || 200
 
+  config = this.config
+  x = this.x
+
   this.svg = d3.select(this.config.targetDOM).append("svg")
       .attr("width", width)
       .attr("height", height);
 
   this.svg.append('g')
-          .attr("transform", "translate(-10,0)")
+          .attr("transform", "translate(0,0)")
           .attr("class", "pdgraph")
 
 }
@@ -268,13 +718,11 @@ proteinDomainGraph.prototype.markMutations = function(){
             .on("click", function(d){
               var active   = d3.select(this).classed("active") ? false : true,
 	                newOpacity = active ? 1 : 0,
-                  newStroke = active ? '#76b2e9' : 'lightgrey',
                   activeMouseOut = active ? null: needleHeadMouseOut,
                   newTextFontSize = active ? config.headFontSize * 2: config.headFontSize;
               d3.select("#" + d.name + '_radarWrapper').style("opacity", newOpacity)
               d3.select(this).classed("active", active)
 
-              d3.select(this).style("stroke", newStroke)
               d3.select(this).on("mouseout", activeMouseOut);
               d3.select("#" + d.name + "_needleText")
                 .transition()
@@ -310,6 +758,7 @@ proteinDomainGraph.prototype.drawRegions = function(){
     var x = this.x
     var color = d3.scale.category20();
     var xoffset = this.config.xoffset
+    var config = this.config
 
     var regionsBG = d3.select('.pdgraph').selectAll()
                       .data(["dummy"]).enter()
@@ -328,6 +777,23 @@ proteinDomainGraph.prototype.drawRegions = function(){
                     .data(this.data.region).enter()
                     .append("g")
                     .attr("class", "regionGroup");
+
+    var xAxis = d3.svg.axis()
+                  .tickSize(0)
+                  .orient('top')
+                  .scale(x)
+
+    d3.select('.pdgraph')
+      .append("g")
+      .attr("class", "axisGroup")
+      .attr("transform", "translate(" + x(xoffset) + "," + this.config.axisHeight + ")")
+      .style("fill", "lightgrey")
+      .call(xAxis);
+
+    d3.select(".axisGroup")
+      .selectAll("text")
+      .style("font-size","12px");
+
 
 
     regions.append("a")
@@ -359,6 +825,7 @@ proteinDomainGraph.prototype.drawRegions = function(){
           .text(function (d) {
               return d.name
           });
+
 }
 
 
@@ -717,8 +1184,8 @@ var selectRadarChartData = function(rcdata, grpArray){
 if (typeof window.variant !== 'undefined' && typeof window.gene !== 'undefined' && typeof window.radarChartData !== 'undefined'){
   //----- Instantiation -----//
   var radarChartConfig = {
-    w: 220,
-    h: 220,
+    w: 170,
+    h: 170,
     margin: {top: 40, right: 50, bottom: 40, left: 50},
     maxValue: 28,   // greatest number expression z score can get for lumier data in db
     levels: 5,
@@ -899,7 +1366,7 @@ $(document).ready(function(){
             'variant_aa_id': variant_aa_id
           },
           success: function(data) {
-            console.log(data)
+            // console.log(data)
             $('#' + variant_aa_id + '_cardbox').html(data);
           }
       });

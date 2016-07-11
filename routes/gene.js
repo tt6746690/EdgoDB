@@ -95,7 +95,9 @@ router.get('/:geneid', function(req, res, next){
       //   })
       // },
       gene: function(callback){
-        var sqlstr = "SELECT HUGO_GENE_SYMBOL, ENTREZ_GENE_ID, OMIM_ID, UNIPROT_SWISSPROT_ID, ENSEMBL_GENE_ID, DESCRIPTION, CCSB_ORF_ID, ORF_LENGTH \
+        var sqlstr = "SELECT HUGO_GENE_SYMBOL, ENTREZ_GENE_ID, OMIM_ID, \
+                       UNIPROT_SWISSPROT_ID, UNIPROT_PROTEIN_LENGTH, \
+                       ENSEMBL_GENE_ID, DESCRIPTION, CCSB_ORF_ID, ORF_LENGTH \
                        FROM Gene JOIN ORFeome USING(ENTREZ_GENE_ID)\
                        WHERE HUGO_GENE_SYMBOL = ?;"
         connection.query(sqlstr, [req.params.geneid], function(err, rows) {
@@ -120,7 +122,7 @@ router.get('/:geneid', function(req, res, next){
               },
               Uniprot: {
                 link: 'http://www.uniprot.org/uniprot/' + gene.UNIPROT_SWISSPROT_ID,
-                display: gene.UNIPROT_SWISSPROT_ID
+                display: gene.UNIPROT_SWISSPROT_ID + ' ('+ gene.UNIPROT_PROTEIN_LENGTH + 'AA)'
               },
               ProteinAtlas: {
                 link: 'http://www.proteinatlas.org/' + gene.ENSEMBL_GENE_ID,
@@ -144,7 +146,7 @@ router.get('/:geneid', function(req, res, next){
               },
               ORFeome: {
                 link: 'http://horfdb.dfci.harvard.edu/index.php?page=showdetail&orf=' + gene.CCSB_ORF_ID,
-                display: gene.CCSB_ORF_ID + ' (length: '+ gene.ORF_LENGTH+ ')'
+                display: gene.CCSB_ORF_ID + ' ('+ gene.ORF_LENGTH / 3+ 'AA)'
               }
             }
           }
@@ -188,6 +190,30 @@ router.get('/:geneid', function(req, res, next){
           }
           callback(null, radarChart)
         });
+      },
+      expressionChart: function(callback){
+        var sqlstr = "SELECT wt.EXPRESSION_ELISA AS expression, \
+                      wt.INTERACTOR AS interactor, HUGO_GENE_SYMBOL AS grp\
+                      FROM Gene AS g \
+                        JOIN LUMIERMeasurementWT AS wt USING(ENTREZ_GENE_ID) \
+                      WHERE HUGO_GENE_SYMBOL = ? \
+                      UNION \
+                      SELECT mut.EXPRESSION_ELISA AS expression, \
+                      mut.INTERACTOR as interactor, v.MUT_HGVS_AA AS grp \
+                      FROM Gene AS g \
+                        JOIN Variant AS v USING(ENTREZ_GENE_ID) \
+                        JOIN LUMIERMeasurementMUT AS mut USING(VARIANT_ID) \
+                      WHERE HUGO_GENE_SYMBOL = ?"
+        connection.query(sqlstr, [req.params.geneid, req.params.geneid], function(err, rows){
+          if (err) {return next(err)}
+
+          var expressionChart = []
+          for (var i = 0; i < rows.length; i++){
+            expressionChart.push(JSON.parse(JSON.stringify(rows))[i])
+          }
+          callback(null, expressionChart)
+        })
+
       }
     }, function(err, results){
       if (err) {return next(err)}
@@ -201,7 +227,8 @@ router.get('/:geneid', function(req, res, next){
         //   links: results.links,
         //   nodes: results.nodes
         // },
-        radarChartData: results.radarChart // needs post processing to [[{axis, value, grp}, ...], ...]
+        radarChartData: results.radarChart, // needs post processing to [[{axis, value, grp}, ...], ...]
+        expressionChartData: results.expressionChart
       })
     });
 
@@ -214,11 +241,11 @@ router.get('/:geneid/domainGraph', function(req, res, next){
   pool.getConnection(function(err, connection){
     async.parallel({
       domainRegion: function(callback){
-        var sqlstr5 = "SELECT PFAM_ID AS name, SEQ_START AS start, SEQ_END AS end, PROTEIN_LENGTH AS proteinLength \
+        var sqlstr = "SELECT PFAM_ID AS name, SEQ_START AS start, SEQ_END AS end, PROTEIN_LENGTH AS proteinLength \
                        FROM PfamDomain \
                           LEFT JOIN Gene USING (UNIPROT_PROTEIN_NAME) \
                        WHERE HUGO_GENE_SYMBOL = ?;"
-        connection.query(sqlstr5, [req.params.geneid], function(err, rows) {
+        connection.query(sqlstr, [req.params.geneid], function(err, rows) {
           if (err) {return next(err)}
           if (rows.length == 0) {return next(new Error('Entry unavailable in database'))}
 
@@ -230,12 +257,12 @@ router.get('/:geneid/domainGraph', function(req, res, next){
         });
       },
       mutationPosition: function(callback){
-        var sqlstr6 = "SELECT MUT_HGVS_AA AS name \
+        var sqlstr = "SELECT MUT_HGVS_AA AS name \
                        FROM Gene \
                          LEFT JOIN Variant USING (ENTREZ_GENE_ID) \
                          LEFT JOIN VariantProperty USING (VARIANT_ID) \
                        WHERE HUGO_GENE_SYMBOL = ?;"
-        connection.query(sqlstr6, [req.params.geneid], function(err, rows) {
+        connection.query(sqlstr, [req.params.geneid], function(err, rows) {
           if (err) {return next(err)}
           if (rows.length == 0) {return next(new Error('Entry unavailable in database'))}
 
@@ -249,7 +276,7 @@ router.get('/:geneid/domainGraph', function(req, res, next){
     }, function(err, results){
       if (err) {return next(err)}
       connection.release()
-      console.log(results)
+      // console.log(results)
       var proteinL = typeof results.domainRegion === 'undefined' ? 500: results.domainRegion[0].proteinLength
       res.send({
         proteinDomainData:{         // data for proteinDomain Graph
@@ -284,7 +311,6 @@ router.get('/:geneid/variantBoxAjax', function(req, res, next){
           for (var i = 0; i < rows.length; i++){
             variantBox.push(JSON.parse(JSON.stringify(rows))[i])
           }
-          console.log(variantBox)
 
           variantBox = variantBox[0]
           composeVariant = {
@@ -334,15 +360,13 @@ router.get('/:geneid/variantBoxAjax', function(req, res, next){
               }
             }
           }
-          console.log(composeVariant)
-
           callback(null, composeVariant) // only one will match... so take the first object
         });
       }
     }, function(err, results){
       if (err) {return next(err)}
       connection.release()
-      console.log(results)
+      // console.log(results)
 
       res.render('variantBox', {
         variantInfo: results.variantInfo

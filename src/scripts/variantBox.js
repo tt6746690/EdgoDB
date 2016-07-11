@@ -12,7 +12,7 @@ $(document).ready(function(){
             'variant_aa_id': variant_aa_id
           },
           success: function(data) {
-            console.log(data)
+            // console.log(data)
             $('#' + variant_aa_id + '_cardbox').html(data);
           }
       });

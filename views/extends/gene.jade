@@ -26,19 +26,26 @@ block content
         div.tab-content 
           div.tab-pane.active.in.fade(id='generalInfo')
             div.row
-              dl.dl-horizontal.col-md-4
+              dl.col-md-4.dl-horizontal
                 each l in Object.keys(gene.links)
                   if gene.links[l].display  
                     dt= l
                     dd
                       a(href = gene.links[l].link)= gene.links[l].display 
               div.col-md-8(id='protein-domain-graph')
-            div#stuffing
-            div#stuffing
-            div.row(id="GeneInteraction") 
-              div.col-md-6(id='lumier-interaction')
-            div.row
-              div.col-md-6(id='y2h-interaction')
+            div.row(id="GeneInteraction").panel.panel-default
+              div#stuffing
+              div.col-md-4
+                - if (radarChartData.length !== 0){
+                  h5 Chaperone interaction
+                - } 
+                div(id='lumier-interaction')
+              div.col-md-4
+                - if (expressionChartData.length !== 0){
+                  h5 Expression (ELISA) 
+                - } 
+                div(id='elisa-expression')
+              div.col-md-4(id='y2h-interaction')
           div.tab-pane.fade(id='pv')
         div.row(id='variantListing')
           - for item in variant 
@@ -59,10 +66,13 @@ prepend script
     var gene =!{JSON.stringify(gene)}
     var variant =!{JSON.stringify(variant)}
     var radarChartData =!{JSON.stringify(radarChartData)}
+    var expressionChartData =!{JSON.stringify(expressionChartData)}
     
     
 prepend script         
   script(src='/bio-pv.min.js', type="text/javascript")
+  script(src='https://d3js.org/d3-axis.v1.min.js', type="text/javascript")
+  script(src='https://cdn.plot.ly/plotly-latest.min.js', type='text/javascript')
       
 append script
   script(type="text/babel"). 
@@ -75,9 +85,10 @@ append script
       "regionHeight": 15,
       "regionBGHeight": 10,
       "stickHeight": 20,
-      "headRadius": 5,
+      "headRadius": 8,
       "regionFontSize": "10px",
-      "headFontSize": "10px"
+      "headFontSize": "10px",
+      "axisHeight": 105
     }  
     var DomainGraph = React.createClass({
       getInitialState: function() {

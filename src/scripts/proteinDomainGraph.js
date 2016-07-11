@@ -4,12 +4,11 @@
 var proteinDomainGraph = function(data, config){
   this.config = config
   this.data = data
-  this.mutation =this.getMutationData()
-  this.createSVG()
+  this.mutation = this.getMutationData()
   this.x = d3.scale.linear()
             .domain([0, this.data.proteinLength])
             .range([0, this.config.width - 3*this.config.xoffset])
-
+  this.createSVG()
   this.markMutations()
   this.drawRegions()
 }
@@ -19,12 +18,15 @@ proteinDomainGraph.prototype.createSVG = function(){
   var width = this.config.width || 1000
       height = this.config.height || 200
 
+  config = this.config
+  x = this.x
+
   this.svg = d3.select(this.config.targetDOM).append("svg")
       .attr("width", width)
       .attr("height", height);
 
   this.svg.append('g')
-          .attr("transform", "translate(-10,0)")
+          .attr("transform", "translate(0,0)")
           .attr("class", "pdgraph")
 
 }
@@ -78,13 +80,11 @@ proteinDomainGraph.prototype.markMutations = function(){
             .on("click", function(d){
               var active   = d3.select(this).classed("active") ? false : true,
 	                newOpacity = active ? 1 : 0,
-                  newStroke = active ? '#76b2e9' : 'lightgrey',
                   activeMouseOut = active ? null: needleHeadMouseOut,
                   newTextFontSize = active ? config.headFontSize * 2: config.headFontSize;
               d3.select("#" + d.name + '_radarWrapper').style("opacity", newOpacity)
               d3.select(this).classed("active", active)
 
-              d3.select(this).style("stroke", newStroke)
               d3.select(this).on("mouseout", activeMouseOut);
               d3.select("#" + d.name + "_needleText")
                 .transition()
@@ -120,6 +120,7 @@ proteinDomainGraph.prototype.drawRegions = function(){
     var x = this.x
     var color = d3.scale.category20();
     var xoffset = this.config.xoffset
+    var config = this.config
 
     var regionsBG = d3.select('.pdgraph').selectAll()
                       .data(["dummy"]).enter()
@@ -138,6 +139,23 @@ proteinDomainGraph.prototype.drawRegions = function(){
                     .data(this.data.region).enter()
                     .append("g")
                     .attr("class", "regionGroup");
+
+    var xAxis = d3.svg.axis()
+                  .tickSize(0)
+                  .orient('top')
+                  .scale(x)
+
+    d3.select('.pdgraph')
+      .append("g")
+      .attr("class", "axisGroup")
+      .attr("transform", "translate(" + x(xoffset) + "," + this.config.axisHeight + ")")
+      .style("fill", "lightgrey")
+      .call(xAxis);
+
+    d3.select(".axisGroup")
+      .selectAll("text")
+      .style("font-size","12px");
+
 
 
     regions.append("a")
@@ -169,6 +187,7 @@ proteinDomainGraph.prototype.drawRegions = function(){
           .text(function (d) {
               return d.name
           });
+
 }
 
 
