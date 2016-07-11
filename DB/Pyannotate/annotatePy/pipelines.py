@@ -59,18 +59,36 @@ class MySQLUpdatePipeline(object):
 
         if isinstance(item, UniprotItem):
             try:
-                self.c.execute("""UPDATE Gene SET UNIPROT_PROTEIN_NAME = %s,
-                                UNIPROT_PROTEIN_LENGTH = %s,
-                                UNIPROT_PROTEIN_LOCALIZATION = %s
-                                WHERE UNIPROT_SWISSPROT_ID = %s""",
+                self.c.execute("""UPDATE Gene
+                                SET UNIPROT_PROTEIN_NAME = %s
+                                WHERE UNIPROT_SWISSPROT_ID = %s;""",
                                 (item['proteinName'],
-                                item['uniprotProteinLength'],
-                                item['uniprotLocalization'],
+                                item['uniprotAccession']))
+                self.db.commit()
+            except MySQLdb.Error, e:
+                spider.log("Error %d: %s" % (e.args[0], e.args[1]))
+
+            try:
+                self.c.execute("""UPDATE Gene
+                                SET UNIPROT_PROTEIN_LOCALIZATION = %s
+                                WHERE UNIPROT_SWISSPROT_ID = %s;""",
+                                (item['uniprotLocalization'],
+                                item['uniprotAccession']))
+                self.db.commit()
+            except MySQLdb.Error, e:
+                spider.log("Error %d: %s" % (e.args[0], e.args[1]))
+
+            try:
+                self.c.execute("""UPDATE Gene
+                                SET UNIPROT_PROTEIN_LENGTH = %s
+                                WHERE UNIPROT_SWISSPROT_ID = %s;""",
+                                (item['uniprotProteinLength'],
                                 item['uniprotAccession']))
                 self.db.commit()
             except MySQLdb.Error, e:
                 spider.log("Error %d: %s" % (e.args[0], e.args[1]))
             return item
+
 
 
         if isinstance(item, PfamItem):

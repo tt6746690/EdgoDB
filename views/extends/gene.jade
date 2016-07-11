@@ -19,7 +19,7 @@ block content
               a.nav-link(data-toggle='tab' href='#pv') 3D viewer
             - for item in variant
               li
-                a(data-toggle='collapse' href="#" + item.MUT_HGVS_AA + "_cardbox" aria-expanded="false" aria-controls=item.MUT_HGVS_AA + "_cardbox" ) 
+                a(data-toggle='collapse' href="#" + item.MUT_HGVS_AA + "_cardbox" aria-expanded="false" aria-controls=item.MUT_HGVS_AA + "_cardbox" id="variantBoxAjax") 
                   small.text-muted #{item.MUT_HGVS_AA} 
         div#stuffing
         div#stuffing
@@ -42,7 +42,7 @@ block content
           div.tab-pane.fade(id='pv')
         div.row(id='variantListing')
           - for item in variant 
-            +cardblock(item)
+            div.col-md-12.collapse(id=item.MUT_HGVS_AA + '_cardbox')
       nav.col-md-2.bs-docs-sidebar.hidden-print(id='target_nav')
         ul.nav.nav-stacked.bs-docs-sidenav.fixed(id="sidebar")
           +nav_item("#" + gene.symbol) Gene
@@ -53,17 +53,12 @@ block content
             ul.nav.nav-stacked(id="sidebar")
               - for item in variant
                 +nav_item("#" + item.MUT_HGVS_AA + '_cardbox') #{item.MUT_HGVS_AA}
-                //- li.active
-                //-   a.btn.btn-primary(href="#collapseExample", data-toggle="collapse", aria-expanded="false" aria-controls="collapseExample")
-                //- //- +nav_item("#" + item.MUT_HGVS_AA) #{item.MUT_HGVS_AA}
-                //- 
 
 prepend script 
   script(type='text/javascript').
     var gene =!{JSON.stringify(gene)}
     var variant =!{JSON.stringify(variant)}
-    var radarChartData =!{JSON.stringify(radarChartData)} 
-    console.log(variant)
+    var radarChartData =!{JSON.stringify(radarChartData)}
     
     
 prepend script         
@@ -72,11 +67,11 @@ prepend script
 append script
   script(type="text/babel"). 
     var proteinDomainConfig = {
-      "height": 125,
-      "width": 460,
+      "height": 200,
+      "width": 540,
       "targetDOM": "#protein-domain-graph",
       "xoffset": 10,
-      "yoffset": 90,
+      "yoffset": 110,
       "regionHeight": 15,
       "regionBGHeight": 10,
       "stickHeight": 20,
@@ -113,5 +108,6 @@ append script
       <DomainGraph />,
       document.getElementById('protein-domain-graph')
     );
+    
     
     

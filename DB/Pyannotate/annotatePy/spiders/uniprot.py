@@ -25,13 +25,13 @@ class UniprotSpider(scrapy.Spider):
         except MySQLdb.Error, e:
             spider.log("Error %d: %s" % (e.args[0], e.args[1]))
 
-
+# select * from Gene where UNIPROT_PROTEIN_NAME IS NULL;
     start_urls = getUrls()
 
     # for testing purposes
 
-    # start_urls = ['http://www.uniprot.org/uniprot/Q06187',
-    #                 'http://www.uniprot.org/uniprot/P18440']
+    # start_urls = ['http://www.uniprot.org/uniprot/P01023',
+    #                 'http://www.uniprot.org/uniprot/P02538']
 
 
     def parse(self, response):

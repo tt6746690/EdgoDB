@@ -4,32 +4,17 @@
 @import "http://fonts.googleapis.com/css?family=Lato&subset=latin,latin-ext";
 @import "https://fonts.googleapis.com/css?family=Ubuntu";
 
-#bs_overrides > main > div > div > div > div.row > div > dl > dd {
-  text-align: left;
-}
-#bs_overrides > main > div > div > div > div > dl > dd {
-  text-align: left;
-}
 dl {
   margin-bottom: 0px;
 }
-div.dl-horizontal.col-md-6 > dd {
-  text-align: left;
+p {
+  margin-bottom: 0px;
+}
+#generalInfo > div:nth-child(1) > dl > dd > a {
+  float: left;
 }
 #GeneTitle {
   text-align: left;
-  padding-left: 30px;
-}
-#VariantListing > div > h4 {
-  text-align: left;
-  padding-left: 94px;
-}
-#VariantListing > div > h4 > span {
-  padding-left: 5px;
-  padding-right: 5px;
-}
-#y2h-interaction > svg > g:nth-child(97) > title {
-  transition: 0s;
 }
 
 #bs_overrides img,
