@@ -33,18 +33,24 @@ block content
                     dd
                       a(href = gene.links[l].link)= gene.links[l].display 
               div.col-md-8(id='protein-domain-graph')
-            div.row(id="GeneInteraction").panel.panel-default
+            div.row(id="GeneInteraction")
               div#stuffing
               div.col-md-4
                 - if (radarChartData.length !== 0){
-                  h5 Chaperone interaction
-                - } 
-                div(id='lumier-interaction')
+                  div.panel.panel-default
+                    h5 Chaperone interaction
+                    div(id='lumier-interaction')
+                - } else {
+                  div(id='lumier-interaction')
+                - }
               div.col-md-4
                 - if (expressionChartData.length !== 0){
-                  h5 Expression (ELISA) 
-                - } 
-                div(id='elisa-expression')
+                  div.panel.panel-default
+                    h5 Expression (ELISA) 
+                    div(id='elisa-expression')
+                - } else {
+                  div(id='elisa-expression')
+                - }
               div.col-md-4(id='y2h-interaction')
           div.tab-pane.fade(id='pv')
         div.row(id='variantListing')

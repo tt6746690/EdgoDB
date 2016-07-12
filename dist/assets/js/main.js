@@ -302,72 +302,185 @@ function boxQuartiles(d) {
 
 
 
+// reference: http://bl.ocks.org/mattbrehmer/12ea86353bc807df2187
+
 var expressionChart = function(target_dom, raw_data, config) {
   this.config = config
   this.target_dom = target_dom
   this.config.width = this.config.w - this.config.margin.left -  this.config.margin.right
   this.config.height = this.config.h - this.config.margin.top -  this.config.margin.bottom
-
-  this.xScale = d3.scale.linear()
-    .range([this.config.padding, this.config.width - this.config.padding])
+  this.config.color = d3.scale.category20c()
 
 
-  // this.data = this.processData(data)
-  var data = this.processData(raw_data)
-  console.log(data)
+  this.yScale = d3.scale.linear()
+    .range([this.config.height - this.config.padding, this.config.padding])
+
+  this.xScale = d3.scale.ordinal()
+    .rangeBands([this.config.padding, this.config.width - this.config.padding])
+
+  this.data = this.processData(raw_data)
+  var numberOfBox = this.data.length
+  this.config.midLineMultiplier = (this.config.width - this.config.padding) / numberOfBox
+
+  this.draw()
 
 
 };
 
 
-expressionChart.prototype.createSVG = function(){
-  config = this.config
-  xScale = this.xScale
-  data = this.data
-  target_dom = this.target_dom
+expressionChart.prototype.draw = function(){
+  var config = this.config
+  var yScale = this.yScale
+  var xScale = this.xScale
+  var data = this.data
+  var target_dom = this.target_dom
 
   var svg = d3.select(target_dom)
               .append("svg")
               .attr("width", config.w)
               .attr("height", config.h);
 
-  var xAxis = d3.svg.axis()
-    .scale(xScale)
-    .orient("bottom");
+  var yAxis = d3.svg.axis()
+    .scale(yScale)
+    .tickSize(1)
+    .ticks(5)
+    .tickFormat(d3.format('.01f'))
+    .orient("left");
 
-  svg.append("g")
-     .attr("class", "axis")
-     .attr("transform", "translate(0, " + (config.height - config.padding) + ")")
-     .call(xAxis);
+  var xAxis = d3.svg.axis()
+    .tickSize((-config.height + 2 * config.padding))
+    .scale(xScale)
+    .orient("bottom")
+
+  var y_axis = svg.append("g")
+     .attr("class", "y-axis")
+     .attr("transform", "translate(" + 2 * config.padding + ", 0)")
+     .style("fill", "#fbfbfb")
+     .call(yAxis);
+
+  var x_axis = svg.append("g")
+    .attr("class", "x-axis")
+    .attr("transform", "translate(" + 1*config.padding + ", " + (config.height - config.padding) + ")")
+    .style("fill", "#fbfbfb")
+    .call(xAxis);
+
+
+  d3.select(".y-axis")
+    .selectAll("text")
+    .style("font-size","9px")
+    .style("fill", config.labelColor)
+
+  d3.select(".x-axis")
+    .selectAll("text")
+    .style("font-size","9px")
+    .style("fill", config.labelColor)
 
   var boxGroup = svg.append('g')
-     .attr("transform", "translate(0,0)")
+     .attr("transform", "translate(" + (1*config.padding + config.xScaleIncrement/2 + config.padding)+ ",0)")
      .attr("class", "boxGroup")
 
-  console.log(data)
   var box = d3.select('.boxGroup').selectAll()
     .data(data).enter()
-    .append("line")
-    .attr("class", "whisker")
-    .attr("x1", function(d){ return xScale(d.lowerWhisker)})
-    .attr("x2", function(d){ return xScale(d.lowerWhisker)})
+    .append("g")
+    .attr("class", "box")
+// return xScale(d.grp) - (config.bar_width / 2)
+  box.append("line")
+    .attr("class", "lowerWhisker")
+    .attr("x1", function(d, i){
+      return xScale(d.grp) - (config.bar_width / 2)
+    })
+    .attr("x2", function(d, i){ return xScale(d.grp) + (config.bar_width / 2)})
     .attr("stroke", "black")
-    .attr("y1", function(d){ return 30})
-    .attr("y2", function(d){ return 30})
+    .attr("y1", function(d){ return yScale(d.lowerWhisker)})
+    .attr("y2", function(d){ return yScale(d.lowerWhisker)})
+    .style("stroke", function(i){
+      return "lightgrey"
+    })
 
-  //draw vertical line for upperWhisker
-  // svg.append("line")
-  //    .attr("class", "whisker")
-  //    .attr("x1", xScale(upperWhisker))
-  //    .attr("x2", xScale(upperWhisker))
-  //    .attr("stroke", "black")
-  //    .attr("y1", midline - 10)
-  //    .attr("y2", midline + 10);
+  box.append("line")
+    .attr("class", "upperWhisker")
+    .attr("x1", function(d){ return xScale(d.grp) - (config.bar_width / 2)})
+    .attr("x2", function(d){ return xScale(d.grp) + (config.bar_width / 2)})
+    .attr("y1", function(d){ return yScale(d.upperWhisker)})
+    .attr("y2", function(d){ return yScale(d.upperWhisker)})
+    .style("stroke", "lightgrey")
+
+  box.append("line")
+     .attr("class", "whiskerDash")
+     .attr("y1",  function(d){return yScale(d.lowerWhisker)})
+     .attr("y2",  function(d){return yScale(d.upperWhisker)})
+     .attr("stroke", "black")
+     .attr("x1", function(d){ return xScale(d.grp)})
+     .attr("x2", function(d){ return xScale(d.grp)})
+     .style("stroke", "lightgrey")
+
+  box.append("rect")
+    .attr("class", "boxRect")
+    .attr("stroke", "lightgrey")
+    .attr("fill", "lightgrey")
+    .attr("x", function(d, i){
+      return xScale(d.grp)- (config.bar_width / 2)
+    })
+    .attr("y", function(d){
+      return yScale(d.q3Val)
+    })
+    .attr("width", config.bar_width)
+    .attr("height", function(d){
+      return yScale(d.q1Val) - yScale(d.q3Val)
+    });
+
+  box.append("line")
+    .attr("class", "median")
+    .attr("stroke", "black")
+    .attr("x1", function(d, i){ return xScale(d.grp) - (config.bar_width / 2)})
+    .attr("x2", function(d, i){ return xScale(d.grp) + (config.bar_width / 2)})
+    .attr("y1", function(d){ return yScale(d.medianVal)})
+    .attr("y2", function(d){ return yScale(d.medianVal)})
+    .style("stroke", "#838383")
+
+  var dataPoint = box.selectAll('circle')
+    .data(function(d){ return d.values}).enter()
+    .append("circle")
+    .attr("r", 1.5)
+    .attr("class", function(d, i){
+      var lowerWhisker = d3.select(this.parentNode).datum().lowerWhisker
+      var upperWhisker = d3.select(this.parentNode).datum().upperWhisker
+      if (d < lowerWhisker || d > upperWhisker){
+        return "outlier_point";
+      } else {
+        return "inlier_point";
+      }})
+    .attr("cx", function() {
+        var parentIndex =  box.data().indexOf(d3.select(this.parentNode).datum())
+        var parentData = d3.select(this.parentNode).datum()
+        return random_jitter(parentData, parentIndex);
+     })
+    .attr("cy", function(d) {
+      return yScale(d);
+    })
+    .style("fill", function() {
+      var index =  box.data().indexOf(d3.select(this.parentNode).datum())
+      return config.color(index)
+    })
+
+  function random_jitter(d, i) {
+    if (Math.round(Math.random() * 1) == 0){
+      var seed = - (config.bar_width / 2);
+    } else {
+      var seed = (config.bar_width / 2);
+    }
+    return xScale(d.grp) + Math.floor((Math.random() * seed) + 1);
+  }
+
 
 
 }
 
 expressionChart.prototype.processData = function(data){
+  var config = this.config
+  var xScale = this.xScale
+  var yScale = this.yScale
+
   new_data = {}
   data.forEach(function(d){
     if(!(d.grp in new_data)){
@@ -415,17 +528,35 @@ expressionChart.prototype.processData = function(data){
     }
   })
 
-  mmax = Object.keys(new_data).map(function(k){
-    return new_data[k].maxVal
-  })
-  mmin = Object.keys(new_data).map(function(k){
-    return new_data[k].minVal
-  })
-  this.xScale.domain([d3.min(mmin)*1.10, d3.max(mmax)*1.10]);
-
+  // convert object to array
   return_data = Object.keys(new_data).map(function(k){
     return new_data[k]
   })
+
+  // setting x and y scale domain
+  var mmax = Object.keys(new_data).map(function(k){
+    return new_data[k].maxVal
+  })
+  var mmin = Object.keys(new_data).map(function(k){
+    return new_data[k].minVal
+  })
+
+  var spaceMultiplier = 1.10
+  var minValue = d3.min(mmin)
+  var maxValue = d3.max(mmax)
+  var lowerBound = minValue >= 0 ? minValue / spaceMultiplier : minValue * spaceMultiplier
+  var upperBound = maxValue >= 0 ? maxValue * spaceMultiplier : maxValue / spaceMultiplier
+
+  yScale.domain([lowerBound, upperBound]);
+  xScale.domain(return_data.map(function(d){
+    return d.grp
+  }))
+
+  var xScalePool = return_data.map(function(d){
+    return xScale(d.grp)
+  })
+  config.xScaleIncrement = (d3.max(xScalePool) - d3.min(xScalePool)) / xScalePool.length
+  console.log(config.xScaleIncrement)
 
   return(return_data)
 }
@@ -435,10 +566,12 @@ if (typeof window.expressionChartData !== 'undefined' &&
   typeof window.variant !== 'undefined') {
   //----- Instantiation -----//
   var expressionChartConfig = {
-    w: 220,
-    h: 220,
+    w: 280,
+    h: 250,
     margin: {top: 10, right: 10, bottom: 10, left: 10},
-    padding: 10
+    padding: 10,
+    bar_width: 15,
+    labelColor: "#818181"
   };
 
   if (expressionChartData.length !== 0) {
