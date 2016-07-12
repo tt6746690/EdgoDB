@@ -4,16 +4,44 @@ import MySQLdb
 from scrapy.loader import ItemLoader
 from annotatePy.items import ExacItem
 from config import MYSQL_USER, MYSQL_HOST, MYSQL_PASSWD, MYSQL_DBNAME
-
+from ..utils import convertBP
 
 class ExacSpider(scrapy.Spider):
     name = "exac"
     allowed_domains = ["http://exac.broadinstitute.org/"]
 
-    start_urls = []
-    with open('exacVariantUrls.txt') as f:
-        for url in f:
-            start_urls.append(url.strip())
+
+    def getUrls():
+        """generate urls with pfam accessions"""
+        db = MySQLdb.connect(
+                    host = MYSQL_HOST,
+                    user = MYSQL_USER,
+                    db = MYSQL_DBNAME,
+                    passwd = MYSQL_PASSWD)
+        c = db.cursor()
+        try:
+            c.execute("""SELECT CHR_COORDINATE_HG19, MUT_HGVS_NT_ID
+                         FROM Variant WHERE CHR_COORDINATE_HG19 IS NOT NULL;""")
+            urls = []
+            # build url fitting both cDNA and mRNA
+            for i in c.fetchall():
+                urls.append('http://exac.broadinstitute.org/variant/' +
+                    i[0].split(':')[0].replace('chr', '') + '-' +
+                    i[0].split(':')[1] + '-' + i[1][-3:].replace('>', '-'))
+                urls.append('http://exac.broadinstitute.org/variant/' +
+                    i[0].split(':')[0].replace('chr', '') + '-' +
+                    i[0].split(':')[1] + '-' +
+                    convertBP(i[1][-3:].replace('>', '-')))
+            return urls
+            db.commit()
+        except MySQLdb.Error, e:
+            spider.log("Error %d: %s" % (e.args[0], e.args[1]))
+
+    start_urls = getUrls()
+
+    # for testing purposes
+    # start_urls = ['http://exac.broadinstitute.org/variant/5-148206885-C-T',
+    #                 'http://exac.broadinstitute.org/variant/4-72618334-A-C']
 
     def parse(self, response):
 

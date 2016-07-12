@@ -39,13 +39,11 @@ var routes = require('./routes/index');
 var users = require('./routes/users');
 var gene = require('./routes/gene')
 var variant = require('./routes/variant')
-var interaction = require('./routes/interaction')
 var search = require('./routes/search')
 app.use('/', routes);
 app.use('/users', users);
 app.use('/gene', gene)
 app.use('/variant', variant)
-app.use('/interaction', interaction)
 app.use('/search', search)
 
 // catch 404 and forward to error handler
@@ -72,6 +70,7 @@ if (conf.get('env') === 'development') {
 // production error handler
 // no stacktraces leaked to user
 app.use(function(err, req, res, next) {
+    console.err(err)
     res.status(err.status || 500);
     res.render('error', {
         message: err.message,
