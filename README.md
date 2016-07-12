@@ -89,7 +89,10 @@
 [_LiftOver Tutorial_](http://genome.sph.umich.edu/wiki/LiftOver)   
 [_pyliftover_](https://pypi.python.org/pypi/pyliftover)  
 [_Mutation needle plot_](https://github.com/bbglab/muts-needle-plot)  
+[_Docker Hub_](https://hub.docker.com/explore/) [_some nice example_](https://docs.docker.com/engine/tutorials/) [_DockerFile explained_](https://www.digitalocean.com/community/tutorials/docker-explained-using-dockerfiles-to-automate-building-of-images)  
+[_Go by example_](https://gobyexample.com/)
 [_WebGL protein view_](https://github.com/biasmv/pv)  and [_doc_](https://pv.readthedocs.io/en/v1.8.1/intro.html#getting-the-pv-source-code)  
+
 
 
 -----
@@ -143,7 +146,9 @@
 [_Use scrapy itemloader in a loop_](http://stackoverflow.com/questions/37658950/using-scrapy-itemloader-in-a-loop)   
 [_A good xpath cheatsheet_](http://ricostacruz.com/cheatsheets/xpath.html)   
 [_d3 boxplot_](http://bl.ocks.org/mattbrehmer/12ea86353bc807df2187)    
-[_comprehensive tutorial to webpack_](http://www.theodo.fr/blog/2016/07/a-comprehensive-introduction-to-webpack-the-module-bundler/)
+[_comprehensive tutorial to webpack_](http://www.theodo.fr/blog/2016/07/a-comprehensive-introduction-to-webpack-the-module-bundler/)  
+[_D3 radar graph_](http://bl.ocks.org/nbremer/6506614)  
+
 
 ---
 This is under an [__ODbL license__](http://opendatacommons.org/licenses/odbl/1.0/)
