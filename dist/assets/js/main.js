@@ -1,489 +1,5 @@
 
 
-// reference: http://bl.ocks.org/mattbrehmer/12ea86353bc807df2187
-
-var expressionChart = function(target_dom, raw_data, config) {
-  this.config = config
-  this.target_dom = target_dom
-  this.config.width = this.config.w - this.config.margin.left -  this.config.margin.right
-  this.config.height = this.config.h - this.config.margin.top -  this.config.margin.bottom
-  this.config.color = d3.scale.category20()
-
-
-  this.yScale = d3.scale.linear()
-    .range([this.config.height - this.config.padding, this.config.padding])
-
-  this.xScale = d3.scale.ordinal()
-    .rangeBands([this.config.padding, this.config.width - this.config.padding])
-
-  this.data = this.processData(raw_data)
-  var numberOfBox = this.data.length
-
-  this.draw()
-
-
-};
-
-
-expressionChart.prototype.draw = function(){
-  var config = this.config
-  var yScale = this.yScale
-  var xScale = this.xScale
-  var data = this.data
-  var target_dom = this.target_dom
-
-  var svg = d3.select(target_dom)
-              .append("svg")
-              .attr("width", config.w)
-              .attr("height", config.h);
-
-  var yAxis = d3.svg.axis()
-    .scale(yScale)
-    .tickSize(1)
-    .ticks(5)
-    .tickFormat(d3.format('.01f'))
-    .orient("left");
-
-  var xAxis = d3.svg.axis()
-    .tickSize((-config.height + 2 * config.padding))
-    .scale(xScale)
-    .orient("bottom")
-
-  var y_axis = svg.append("g")
-     .attr("class", "y-axis")
-     .attr("transform", "translate(" + 2 * config.padding + ", 0)")
-     .style("fill", "#fbfbfb")
-     .call(yAxis);
-
-  var x_axis = svg.append("g")
-    .attr("class", "x-axis")
-    .attr("transform", "translate(" + 1*config.padding + ", " + (config.height - config.padding) + ")")
-    .style("fill", config.gridColor)
-    .call(xAxis);
-
-
-  d3.select(".y-axis")
-    .selectAll("text")
-    .style("font-size","9px")
-    .style("fill", config.labelColor)
-
-  d3.select(".x-axis")
-    .selectAll("text")
-    .style("font-size","9px")
-    .style("fill", config.labelColor)
-
-  var boxGroup = svg.append('g')
-     .attr("transform", "translate(" + (1*config.padding + config.xScaleIncrement/2 + config.padding)+ ",0)")
-     .attr("class", "boxGroup")
-
-  var box = d3.select('.boxGroup').selectAll()
-    .data(data).enter()
-    .append("g")
-    .attr("class", "box")
-// return xScale(d.grp) - (config.bar_width / 2)
-  box.append("line")
-    .attr("class", "lowerWhisker")
-    .attr("x1", function(d, i){
-      return xScale(d.grp) - (config.bar_width / 2)
-    })
-    .attr("x2", function(d, i){ return xScale(d.grp) + (config.bar_width / 2)})
-    .attr("stroke", "black")
-    .attr("y1", function(d){ return yScale(d.lowerWhisker)})
-    .attr("y2", function(d){ return yScale(d.lowerWhisker)})
-    .style("stroke", function(i){
-      return "lightgrey"
-    })
-
-  box.append("line")
-    .attr("class", "upperWhisker")
-    .attr("x1", function(d){ return xScale(d.grp) - (config.bar_width / 2)})
-    .attr("x2", function(d){ return xScale(d.grp) + (config.bar_width / 2)})
-    .attr("y1", function(d){ return yScale(d.upperWhisker)})
-    .attr("y2", function(d){ return yScale(d.upperWhisker)})
-    .style("stroke", "lightgrey")
-
-  box.append("line")
-     .attr("class", "whiskerDash")
-     .attr("y1",  function(d){return yScale(d.lowerWhisker)})
-     .attr("y2",  function(d){return yScale(d.upperWhisker)})
-     .attr("stroke", "black")
-     .attr("x1", function(d){ return xScale(d.grp)})
-     .attr("x2", function(d){ return xScale(d.grp)})
-     .style("stroke", "lightgrey")
-
-  box.append("rect")
-    .attr("class", "boxRect")
-    .attr("stroke", "lightgrey")
-    .attr("fill", "lightgrey")
-    .attr("x", function(d, i){
-      return xScale(d.grp)- (config.bar_width / 2)
-    })
-    .attr("y", function(d){
-      return yScale(d.q3Val)
-    })
-    .attr("width", config.bar_width)
-    .attr("height", function(d){
-      return yScale(d.q1Val) - yScale(d.q3Val)
-    });
-
-  box.append("line")
-    .attr("class", "median")
-    .attr("stroke", "black")
-    .attr("x1", function(d, i){ return xScale(d.grp) - (config.bar_width / 2)})
-    .attr("x2", function(d, i){ return xScale(d.grp) + (config.bar_width / 2)})
-    .attr("y1", function(d){ return yScale(d.medianVal)})
-    .attr("y2", function(d){ return yScale(d.medianVal)})
-    .style("stroke", "#838383")
-
-  var dataPoint = box.selectAll('circle')
-    .data(function(d){ return d.values}).enter()
-    .append("circle")
-    .attr("r", config.dotRadius)
-    .attr("class", function(d, i){
-      var lowerWhisker = d3.select(this.parentNode).datum().lowerWhisker
-      var upperWhisker = d3.select(this.parentNode).datum().upperWhisker
-      if (d < lowerWhisker || d > upperWhisker){
-        return "outlier_point";
-      } else {
-        return "inlier_point";
-      }})
-    .attr("cx", function() {
-        var parentIndex =  box.data().indexOf(d3.select(this.parentNode).datum())
-        var parentData = d3.select(this.parentNode).datum()
-        return random_jitter(parentData, parentIndex);
-     })
-    .attr("cy", function(d) {
-      return yScale(d);
-    })
-    .style("fill", function() {
-      var index =  box.data().indexOf(d3.select(this.parentNode).datum())
-      return config.color(index)
-    })
-
-  function random_jitter(d, i) {
-    if (Math.round(Math.random() * 1) == 0){
-      var seed = - (config.bar_width / 2);
-    } else {
-      var seed = (config.bar_width / 2);
-    }
-    return xScale(d.grp) + Math.floor((Math.random() * seed) + 1)*0.3;
-  }
-
-
-
-}
-
-expressionChart.prototype.processData = function(data){
-  var config = this.config
-  var xScale = this.xScale
-  var yScale = this.yScale
-
-  new_data = {}
-  data.forEach(function(d){
-    if(!(d.grp in new_data)){
-      new_data[d.grp] = {}
-      new_data[d.grp].values = []
-      new_data[d.grp].grp = d.grp
-    }
-    new_data[d.grp].values.push(d.expression)
-  })
-
-  Object.keys(new_data).forEach(function(k){
-    var col = new_data[k]
-    grpVal = col.values.sort(d3.ascending)
-
-    col.minVal = grpVal[0]
-    col.q1Val = d3.quantile(grpVal, .25)
-    col.medianVal = d3.quantile(grpVal, .5)
-    col.q3Val = d3.quantile(grpVal, .75)
-    col.iqr = col.q3Val - col.q1Val
-    col.maxVal = grpVal[grpVal.length - 1];
-    col.lowerWhisker = d3.max([col.minVal, col.q1Val - col.iqr])
-    col.upperWhisker = d3.min([col.maxVal, col.q3Val + col.iqr]);
-    col.outliers = []
-
-    var index = 0;
-    //search for the lower whisker, the mininmum value within q1Val - 1.5*iqr
-    while (index < grpVal.length && col.lowerWhisker == Infinity) {
-      if (grpVal[index] >= (col.q1Val - 1.5*col.iqr)){
-        col.lowerWhisker = grpVal[index];
-      } else {
-        col.outliers.push(grqVal[index]);
-      }
-      index++;
-    }
-    index = grpVal.length-1; // reset index to end of array
-
-    //search for the upper whisker, the maximum value within q1Val + 1.5*iqr
-    while (index >= 0 && col.upperWhisker == -Infinity) {
-      if (grpVal[index] <= (col.q3Val + 1.5*col.iqr)){
-          col.upperWhisker = grpVal[index];
-      } else {
-        col.outliers.push(grpVal[index]);
-      }
-      index--;
-    }
-  })
-
-  // convert object to array
-  return_data = Object.keys(new_data).map(function(k){
-    return new_data[k]
-  })
-  // sort variant based on mutation position ascending
-  return_data.sort(function(a, b){
-    var aInt = parseInt(a.grp.match(/\d+/))
-    var bInt = parseInt(b.grp.match(/\d+/))
-    console.log(aInt, bInt, aInt > bInt)
-    if(aInt < bInt){
-      return -1
-    }
-    if(aInt > bInt){
-      return 1
-    }
-    return 0
-  })
-
-  // setting x and y scale domain
-  var mmax = Object.keys(new_data).map(function(k){
-    return new_data[k].maxVal
-  })
-  var mmin = Object.keys(new_data).map(function(k){
-    return new_data[k].minVal
-  })
-
-  var spaceMultiplier = 1.10
-  var minValue = d3.min(mmin)
-  var maxValue = d3.max(mmax)
-  var lowerBound = minValue >= 0 ? minValue / spaceMultiplier : minValue * spaceMultiplier
-  var upperBound = maxValue >= 0 ? maxValue * spaceMultiplier : maxValue / spaceMultiplier
-
-  yScale.domain([lowerBound, upperBound]);
-  xScale.domain(return_data.map(function(d){
-    return d.grp
-  }))
-
-  var xScalePool = return_data.map(function(d){
-    return xScale(d.grp)
-  })
-  config.xScaleIncrement = (d3.max(xScalePool) - d3.min(xScalePool)) / xScalePool.length
-  config.bar_width = config.xScaleIncrement * 0.8
-
-
-  return(return_data)
-}
-
-if (typeof window.expressionChartData !== 'undefined' &&
-  typeof window.gene !== 'undefined' &&
-  typeof window.variant !== 'undefined') {
-  //----- Instantiation -----//
-  var expressionChartConfig = {
-    w: 280,
-    h: 250,
-    margin: {top: 10, right: 10, bottom: 10, left: 10},
-    padding: 10,
-    bar_width: 15,
-    labelColor: "#818181",
-    gridColor: '#f4f4f4',
-    dotRadius: 2.5
-  };
-
-  if (expressionChartData.length !== 0) {
-    var expressionChart = new expressionChart("#elisa-expression", expressionChartData, expressionChartConfig);
-  }
-}
-
-
-
-// force directed graph
-//- var y2hInteractionConfig = {
-//-   "height": 333,
-//-   "width": 333,
-//-   "targetDOM": "#y2h-interaction",
-//-   "nodeRadius": 5,
-//-   "textSize": 12
-//- }
-//- var y2hInteractionData =!{JSON.stringify(forceGraphData)}
-//- if(y2hInteractionData.links.length !== 0 && y2hInteractionData.nodes.length !== 0){
-//-   var y2hForceGraph = new forceGraph(y2hInteractionData, y2hInteractionConfig)
-//- }
-//--- protein Domain chart ----//
-//- var proteinDomainConfig = {
-//-   "height": 125,
-//-   "width": 460,
-//-   "targetDOM": "#protein-domain-graph",
-//-   "xoffset": 10,
-//-   "yoffset": 90,
-//-   "regionHeight": 15,
-//-   "regionBGHeight": 10,
-//-   "stickHeight": 20,
-//-   "headRadius": 5,
-//-   "regionFontSize": "10px",
-//-   "headFontSize": "10px"
-//- }
-//- var proteinDomainData =!{JSON.stringify(proteinDomainData)}
-//- if(proteinDomainData.region.length !== 0 && proteinDomainData.mutation.length !== 0){
-//-   var pg = new proteinDomainGraph(proteinDomainData, proteinDomainConfig)
-//- }
-
-var forceGraph = function(data, config){
-  this.config = config
-  this.data = data
-  this.edges = this.getEdges()    // edges data
-  this.nodes = this.getNodes()    // nodes data
-  this.createElements()           // creates this.svg, this.force, and marker
-  color = d3.scale.category20()
-
-  var link = this.svg.selectAll('.link')
-      .data(this.edges)
-      .enter().append('line')
-      .attr('class', 'link')
-      .attr("marker-end", "url(#end)")
-      .style("stroke-width", 1)
-      .style("stroke-dasharray", function(d){ if (d.score === 0){ return "5,5"} else {return undefined}})
-      .style("stroke", function(d){ if (d.score === 0){ return '#ff6300'} else {return '#96e6ff'}})
-
-
-  var nodeGroup = this.svg.selectAll('.node')
-      .data(this.nodes)
-      .enter().append('g')
-      .attr('class', 'nodeGroup')
-      .on("mouseover", function(d){
-        d3.select(this).select("text").style("visibility","visible")
-      })
-      .on("mouseout", function(d){
-        d3.select(this).select("text").style("visibility","hidden")
-      })
-
-
-  var node = nodeGroup.append('a')
-      .attr('href', function(d){if (/^NM_[0-9]{5,}/i.test(d.Name)){ return "/variant/"+d.Name} else {return "/gene/" + d.Name}})
-      .append('circle')
-      .attr('class', 'node')
-      .attr("r", this.config.nodeRadius)
-      // .style('fill', function(d){ return color(d.Name)})
-      .style("fill", function(d) { if (/^NM_[0-9]{5,}/i.test(d.Name)){ return '#7ec1ff'} else {return '#ff7eb2'}})
-      .call(this.force.drag)
-
-  var nodeText = nodeGroup.append('text')
-      .attr('class', 'nodeText')
-      .attr('dx', 7)
-      .attr('dy', 10)
-      .style("font-size", "10px")
-      .style("visibility", "hidden")
-      .text(function(d) { return d.Name; })
-
-
-  this.force.on("tick", function() {
-    link.attr("x1", function(d) { return d.source.x; })
-        .attr("y1", function(d) { return d.source.y; })
-        .attr("x2", function(d) { return d.target.x; })
-        .attr("y2", function(d) { return d.target.y; });
-
-    nodeGroup.attr("transform", function(d) {
-            return 'translate(' + [d.x, d.y] + ')';
-        });
-
-  });
-
-}
-
-forceGraph.prototype.getData = function(data){
-  data.links = data.links.filter(function(l){
-    return l.score ===1
-  })
-  return data
-}
-
-
-
-forceGraph.prototype.getEdges = function(){
-  var nodes = this.data.nodes
-  var links = this.data.links
-
-  var edges = []
-  links.forEach(function(e) {
-      var sourceNode = nodes.filter(function(n) {
-          return n.ID === e.source;
-      })[0],
-          targetNode = nodes.filter(function(n) {
-              return n.ID === e.target;
-          })[0];
-
-      edges.push({
-          source: sourceNode,
-          target: targetNode,
-          score: e.score
-      });
-  });
-  return edges
-}
-
-forceGraph.prototype.getNodes = function(){
-  return this.data.nodes
-}
-
-
-forceGraph.prototype.createElements = function(){
-  var width = this.config.width || 1000
-      height = this.config.height || 800
-  var color = d3.scale.category20();
-
-  this.svg = d3.select(this.config.targetDOM).append("svg")
-      .attr("width", width)
-      .attr("height", height);
-
-  this.force = d3.layout.force()
-      .size([width, height])
-      .nodes(this.nodes)
-      .links(this.edges)
-      .linkStrength(0.1)
-      .friction(0.9)
-      .linkDistance(function(d){ if(d.score === 1){return 150} else {return 250}})
-      .charge(-150)
-      .charge(-30)
-      .gravity(0.1)
-      .theta(0.8)
-      .alpha(0.1)
-      .start();
-
-  this.svg.append("svg:defs").selectAll("marker")
-     .data(["end"])      // Different link/path types can be defined here
-   .enter().append("svg:marker")    // This section adds in the arrows
-     .attr("id", String)
-     .attr("viewBox", "0 -5 10 10")
-     .attr("refX", 20)
-     .attr("refY", 0)
-     .attr("markerWidth", 6)
-     .attr("markerHeight", 6)
-     .attr("orient", "auto")
-   .append("svg:path")
-     .attr("d", "M0,-5L10,0L0,5");
-}
-
-//
-//
-// nodeID = []
-// this.data.nodes.forEach(function (n){
-//   nodeID.push(n.ID)
-// })
-// console.log(nodeID.length)
-//
-// linkID = new Set()
-// `data`.links.forEach(function (l){
-//   linkID.add(l.source)
-//   linkID.add(l.target)
-//
-// })
-//
-// linkID.forEach(function (id){
-//   if (nodeID.indexOf(id) == -1){
-//     console.log(id)
-//   }
-// })
-//
-
-
-
 
 var proteinDomainGraph = function(data, config){
   this.config = config
@@ -580,15 +96,23 @@ proteinDomainGraph.prototype.markMutations = function(){
               var active   = d3.select(this).classed("active") ? false : true,
 	                newOpacity = active ? 1 : 0,
                   activeMouseOut = active ? null: needleHeadMouseOut,
-                  newTextFontSize = active ? config.headFontSize * 2: config.headFontSize;
-              d3.select("#" + d.name + '_radarWrapper').style("opacity", newOpacity)
+                  newTextFontSize = active ? config.headFontSize * 2: config.headFontSize
+                  newRadiusFactor = active ? 2 : 0.5
+              // domainChart
               d3.select(this).classed("active", active)
-
               d3.select(this).on("mouseout", activeMouseOut);
               d3.select("#" + d.name + "_needleText")
                 .transition()
                 .duration(200)
                 .attr("font-size", newTextFontSize)
+              // radarChart
+              d3.select("#" + d.name + '_radarWrapper').style("opacity", newOpacity)
+
+              // expressionChart
+              d3.selectAll('.' + d.name + '_expressionDot').attr("r", function(){
+                return d3.select(this).attr("r") * newRadiusFactor
+              })
+
             })
 
   function needleHeadMouseOut(){
@@ -731,35 +255,299 @@ if (typeof window.domainChartData !== 'undefined') {
 }
 
 
-if(typeof window.pv !== 'undefined'){
-  // override the default options with something less restrictive.
-  var options = {
-    width: 600,
-    height: 600,
-    antialias: true,
-    quality : 'medium'
-  };
-  var viewer = pv.Viewer(document.getElementById('pv'), options);
-  function loadMethylTransferase() {
-    // asynchronously load the PDB file for the dengue methyl transferase
-    // from the server and display it in the viewer.
-    pv.io.fetchPdb('http://files.rcsb.org/download/5CEA.pdb', function(structure) {
-        // display the protein as cartoon, coloring the secondary structure
-        // elements in a rainbow gradient.
-        viewer.cartoon('protein', structure, { color : color.ssSuccession() });
-        // there are two ligands in the structure, the co-factor S-adenosyl
-        // homocysteine and the inhibitor ribavirin-5' triphosphate. They have
-        // the three-letter codes SAH and RVP, respectively. Let's display them
-        // with balls and sticks.
-        var ligands = structure.select({ rnames : ['SAH', 'RVP'] });
-        viewer.ballsAndSticks('ligands', ligands);
-        viewer.centerOn(structure);
-    });
-  }
-  // load the methyl transferase once the DOM has finished loading. That's
-  // the earliest point the WebGL context is available.
-  document.addEventListener('DOMContentLoaded', loadMethylTransferase);
 
+// reference: http://bl.ocks.org/mattbrehmer/12ea86353bc807df2187
+
+var ExpressionChart = function(target_dom, raw_data, config) {
+  this.config = config
+  this.target_dom = target_dom
+  this.config.width = this.config.w - this.config.margin.left -  this.config.margin.right
+  this.config.height = this.config.h - this.config.margin.top -  this.config.margin.bottom
+  this.config.color = d3.scale.category20()
+
+
+  this.yScale = d3.scale.linear()
+    .range([this.config.height - this.config.padding, this.config.padding])
+
+  this.xScale = d3.scale.ordinal()
+    .rangeBands([this.config.padding, this.config.width - this.config.padding])
+
+  this.data = this.processData(raw_data)
+  var numberOfBox = this.data.length
+
+  this.draw()
+
+
+};
+
+
+ExpressionChart.prototype.draw = function(){
+  var config = this.config
+  var yScale = this.yScale
+  var xScale = this.xScale
+  var data = this.data
+  var target_dom = this.target_dom
+
+  var svg = d3.select(target_dom)
+              .append("svg")
+              .attr("width", config.w)
+              .attr("height", config.h);
+
+  var yAxis = d3.svg.axis()
+    .scale(yScale)
+    .tickSize(1)
+    .ticks(5)
+    .tickFormat(d3.format('.01f'))
+    .orient("left");
+
+  var xAxis = d3.svg.axis()
+    .tickSize((-config.height + 2 * config.padding))
+    .scale(xScale)
+    .orient("bottom")
+
+  var y_axis = svg.append("g")
+     .attr("class", "y-axis")
+     .attr("transform", "translate(" + 2 * config.padding + ", 0)")
+     .style("fill", "#fbfbfb")
+     .call(yAxis);
+
+  var x_axis = svg.append("g")
+    .attr("class", "x-axis")
+    .attr("transform", "translate(" + 1*config.padding + ", " + (config.height - config.padding) + ")")
+    .style("fill", config.gridColor)
+    .call(xAxis);
+
+
+  d3.select(".y-axis")
+    .selectAll("text")
+    .style("font-size","9px")
+    .style("fill", config.labelColor)
+
+  d3.select(".x-axis")
+    .selectAll("text")
+    .style("font-size","9px")
+    .style("fill", config.labelColor)
+
+  var boxGroup = svg.append('g')
+     .attr("transform", "translate(" + (1*config.padding + config.xScaleIncrement/2 + config.padding)+ ",0)")
+     .attr("class", "boxGroup")
+
+  var box = d3.select('.boxGroup').selectAll()
+    .data(data).enter()
+    .append("g")
+    .attr("class", "box")
+// return xScale(d.grp) - (config.bar_width / 2)
+  box.append("line")
+    .attr("class", "lowerWhisker")
+    .attr("x1", function(d, i){
+      return xScale(d.grp) - (config.bar_width / 2)
+    })
+    .attr("x2", function(d, i){ return xScale(d.grp) + (config.bar_width / 2)})
+    .attr("stroke", "black")
+    .attr("y1", function(d){ return yScale(d.lowerWhisker)})
+    .attr("y2", function(d){ return yScale(d.lowerWhisker)})
+    .style("stroke", function(i){
+      return "lightgrey"
+    })
+
+  box.append("line")
+    .attr("class", "upperWhisker")
+    .attr("x1", function(d){ return xScale(d.grp) - (config.bar_width / 2)})
+    .attr("x2", function(d){ return xScale(d.grp) + (config.bar_width / 2)})
+    .attr("y1", function(d){ return yScale(d.upperWhisker)})
+    .attr("y2", function(d){ return yScale(d.upperWhisker)})
+    .style("stroke", "lightgrey")
+
+  box.append("line")
+     .attr("class", "whiskerDash")
+     .attr("y1",  function(d){return yScale(d.lowerWhisker)})
+     .attr("y2",  function(d){return yScale(d.upperWhisker)})
+     .attr("stroke", "black")
+     .attr("x1", function(d){ return xScale(d.grp)})
+     .attr("x2", function(d){ return xScale(d.grp)})
+     .style("stroke", "lightgrey")
+
+  box.append("rect")
+    .attr("class", "boxRect")
+    .attr("stroke", "lightgrey")
+    .attr("fill", "lightgrey")
+    .attr("x", function(d, i){
+      return xScale(d.grp)- (config.bar_width / 2)
+    })
+    .attr("y", function(d){
+      return yScale(d.q3Val)
+    })
+    .attr("width", config.bar_width)
+    .attr("height", function(d){
+      return yScale(d.q1Val) - yScale(d.q3Val)
+    });
+
+  box.append("line")
+    .attr("class", "median")
+    .attr("stroke", "black")
+    .attr("x1", function(d, i){ return xScale(d.grp) - (config.bar_width / 2)})
+    .attr("x2", function(d, i){ return xScale(d.grp) + (config.bar_width / 2)})
+    .attr("y1", function(d){ return yScale(d.medianVal)})
+    .attr("y2", function(d){ return yScale(d.medianVal)})
+    .style("stroke", "#838383")
+
+  var dataPoint = box.selectAll('circle')
+    .data(function(d){ return d.values}).enter()
+    .append("circle")
+    .attr("r", config.dotRadius)
+    .attr("class", function(d, i){
+      var lowerWhisker = d3.select(this.parentNode).datum().lowerWhisker
+      var upperWhisker = d3.select(this.parentNode).datum().upperWhisker
+      if (d < lowerWhisker || d > upperWhisker){
+        return "outlier_point";
+      } else {
+        return "inlier_point";
+      }})
+    .attr("class", function(d){
+      return (d3.select(this.parentNode).datum().grp + '_expressionDot')
+    })
+    .attr("cx", function() {
+        var parentIndex =  box.data().indexOf(d3.select(this.parentNode).datum())
+        var parentData = d3.select(this.parentNode).datum()
+        return random_jitter(parentData, parentIndex);
+     })
+    .attr("cy", function(d) {
+      return yScale(d);
+    })
+    .style("fill", function() {
+      var index =  box.data().indexOf(d3.select(this.parentNode).datum())
+      return config.color(index)
+    })
+
+  function random_jitter(d, i) {
+    if (Math.round(Math.random() * 1) == 0){
+      var seed = - (config.bar_width / 2);
+    } else {
+      var seed = (config.bar_width / 2);
+    }
+    return xScale(d.grp) + Math.floor((Math.random() * seed) + 1)*0.3;
+  }
+
+
+
+}
+
+ExpressionChart.prototype.processData = function(data){
+  var config = this.config
+  var xScale = this.xScale
+  var yScale = this.yScale
+
+  new_data = {}
+  data.forEach(function(d){
+    if(!(d.grp in new_data)){
+      new_data[d.grp] = {}
+      new_data[d.grp].values = []
+      new_data[d.grp].grp = d.grp
+    }
+    new_data[d.grp].values.push(d.expression)
+  })
+
+  Object.keys(new_data).forEach(function(k){
+    var col = new_data[k]
+    grpVal = col.values.sort(d3.ascending)
+
+    col.minVal = grpVal[0]
+    col.q1Val = d3.quantile(grpVal, .25)
+    col.medianVal = d3.quantile(grpVal, .5)
+    col.q3Val = d3.quantile(grpVal, .75)
+    col.iqr = col.q3Val - col.q1Val
+    col.maxVal = grpVal[grpVal.length - 1];
+    col.lowerWhisker = d3.max([col.minVal, col.q1Val - col.iqr])
+    col.upperWhisker = d3.min([col.maxVal, col.q3Val + col.iqr]);
+    col.outliers = []
+
+    var index = 0;
+    //search for the lower whisker, the mininmum value within q1Val - 1.5*iqr
+    while (index < grpVal.length && col.lowerWhisker == Infinity) {
+      if (grpVal[index] >= (col.q1Val - 1.5*col.iqr)){
+        col.lowerWhisker = grpVal[index];
+      } else {
+        col.outliers.push(grqVal[index]);
+      }
+      index++;
+    }
+    index = grpVal.length-1; // reset index to end of array
+
+    //search for the upper whisker, the maximum value within q1Val + 1.5*iqr
+    while (index >= 0 && col.upperWhisker == -Infinity) {
+      if (grpVal[index] <= (col.q3Val + 1.5*col.iqr)){
+          col.upperWhisker = grpVal[index];
+      } else {
+        col.outliers.push(grpVal[index]);
+      }
+      index--;
+    }
+  })
+
+  // convert object to array
+  return_data = Object.keys(new_data).map(function(k){
+    return new_data[k]
+  })
+  // sort variant based on mutation position ascending
+  return_data.sort(function(a, b){
+    var aInt = parseInt(a.grp.match(/\d+/))
+    var bInt = parseInt(b.grp.match(/\d+/))
+    if(aInt < bInt){
+      return -1
+    }
+    if(aInt > bInt){
+      return 1
+    }
+    return 0
+  })
+
+  // setting x and y scale domain
+  var mmax = Object.keys(new_data).map(function(k){
+    return new_data[k].maxVal
+  })
+  var mmin = Object.keys(new_data).map(function(k){
+    return new_data[k].minVal
+  })
+
+  var spaceMultiplier = 1.10
+  var minValue = d3.min(mmin)
+  var maxValue = d3.max(mmax)
+  var lowerBound = minValue >= 0 ? minValue / spaceMultiplier : minValue * spaceMultiplier
+  var upperBound = maxValue >= 0 ? maxValue * spaceMultiplier : maxValue / spaceMultiplier
+
+  yScale.domain([lowerBound, upperBound]);
+  xScale.domain(return_data.map(function(d){
+    return d.grp
+  }))
+
+  var xScalePool = return_data.map(function(d){
+    return xScale(d.grp)
+  })
+  config.xScaleIncrement = (d3.max(xScalePool) - d3.min(xScalePool)) / xScalePool.length
+  config.bar_width = config.xScaleIncrement * 0.8
+
+
+  return(return_data)
+}
+
+if (typeof window.expressionChartData !== 'undefined' &&
+  typeof window.gene !== 'undefined' &&
+  typeof window.variant !== 'undefined') {
+  //----- Instantiation -----//
+  var expressionChartConfig = {
+    w: 280,
+    h: 250,
+    margin: {top: 10, right: 10, bottom: 10, left: 10},
+    padding: 10,
+    bar_width: 15,
+    labelColor: "#818181",
+    gridColor: '#f4f4f4',
+    dotRadius: 2.5
+  };
+
+  if (expressionChartData.length !== 0) {
+    var expressionChart = new ExpressionChart("#elisa-expression", expressionChartData, expressionChartConfig);
+  }
 }
 
 // taken from web thanks for the code...
@@ -1068,7 +856,6 @@ var selectRadarChartData = function(rcdata, grpArray){
   modData.sort(function(a, b){
     var aInt = parseInt(a[0].grp.match(/\d+/))
     var bInt = parseInt(b[0].grp.match(/\d+/))
-    console.log(aInt, bInt, aInt > bInt)
     if(aInt < bInt){
       return -1
     }
@@ -1077,8 +864,6 @@ var selectRadarChartData = function(rcdata, grpArray){
     }
     return 0
   })
-
-  console.log(modData)
   return modData
 }
 
@@ -1101,6 +886,185 @@ if (typeof window.variant !== 'undefined' && typeof window.gene !== 'undefined' 
     var wtRadarData = selectRadarChartData(radarChartData, garray)
     var radarChart = new RadarChart("#lumier-interaction", wtRadarData, radarChartConfig);
   }
+}
+
+
+var Y2hChart = function(target_dom, data, config){
+  this.config = config
+  config.target_dom = target_dom
+  this.data = data
+  this.edges = this.getEdges()    // edges data
+  this.nodes = this.getNodes()    // nodes data
+  this.draw()           // creates this.svg, this.force, and marker
+}
+
+Y2hChart.prototype.getData = function(data){
+  data.links = data.links.filter(function(l){
+    return l.score ===1
+  })
+  return data
+}
+
+Y2hChart.prototype.getEdges = function(){
+  var nodes = this.data.nodes
+  var links = this.data.links
+
+  var edges = []
+  links.forEach(function(e) {
+      var sourceNode = nodes.filter(function(n) {
+          return n.ID === e.source;
+      })[0],
+          targetNode = nodes.filter(function(n) {
+              return n.ID === e.target;
+          })[0];
+
+      edges.push({
+          source: sourceNode,
+          target: targetNode,
+          score: e.score
+      });
+  });
+  return edges
+}
+
+Y2hChart.prototype.getNodes = function(){
+  return this.data.nodes
+}
+
+
+Y2hChart.prototype.draw = function(){
+  config = this.config
+
+  this.svg = d3.select(config.target_dom).append("svg")
+      .attr("width", config.width)
+      .attr("height", config.height);
+
+  this.force = d3.layout.force()
+      .size([config.width, config.height])
+      .nodes(this.nodes)
+      .links(this.edges)
+      .linkStrength(0.1)
+      .friction(0.9)
+      .linkDistance(function(d){ if(d.score === 1){return 150} else {return 250}})
+      .charge(-150)
+      .charge(-30)
+      .gravity(0.1)
+      .theta(0.8)
+      .alpha(0.1)
+      .start();
+
+  this.svg.append("svg:defs").selectAll("marker")
+     .data(["end"])      // Different link/path types can be defined here
+   .enter().append("svg:marker")    // This section adds in the arrows
+     .attr("id", String)
+     .attr("viewBox", "0 -5 10 10")
+     .attr("refX", 20)
+     .attr("refY", 0)
+     .attr("markerWidth", 6)
+     .attr("markerHeight", 6)
+     .attr("orient", "auto")
+   .append("svg:path")
+     .attr("d", "M0,-5L10,0L0,5");
+
+
+  var link = this.svg.selectAll('.link')
+     .data(this.edges)
+     .enter().append('line')
+     .attr('class', 'link')
+     .attr("marker-end", "url(#end)")
+     .style("stroke-width", 1)
+     .style("stroke-dasharray", function(d){ if (d.score === 0){ return "5,5"} else {return undefined}})
+     .style("stroke", function(d){ if (d.score === 0){ return '#ff6300'} else {return '#96e6ff'}})
+
+
+  var nodeGroup = this.svg.selectAll('.node')
+     .data(this.nodes)
+     .enter().append('g')
+     .attr('class', 'nodeGroup')
+     .on("mouseover", function(d){
+       d3.select(this).select("text").style("visibility","visible")
+     })
+     .on("mouseout", function(d){
+       d3.select(this).select("text").style("visibility","hidden")
+     })
+
+
+  var node = nodeGroup.append('a')
+     .attr('href', function(d){if (/^NM_[0-9]{5,}/i.test(d.Name)){ return "/variant/"+d.Name} else {return "/gene/" + d.Name}})
+     .append('circle')
+     .attr('class', 'node')
+     .attr("r", this.config.nodeRadius)
+     // .style('fill', function(d){ return color(d.Name)})
+     .style("fill", function(d) { if (/^NM_[0-9]{5,}/i.test(d.Name)){ return '#7ec1ff'} else {return '#ff7eb2'}})
+     .call(this.force.drag)
+
+  var nodeText = nodeGroup.append('text')
+     .attr('class', 'nodeText')
+     .attr('dx', 7)
+     .attr('dy', 10)
+     .style("font-size", "10px")
+     .style("visibility", "hidden")
+     .text(function(d) { return d.Name; })
+
+
+  this.force.on("tick", function() {
+   link.attr("x1", function(d) { return d.source.x; })
+       .attr("y1", function(d) { return d.source.y; })
+       .attr("x2", function(d) { return d.target.x; })
+       .attr("y2", function(d) { return d.target.y; });
+
+   nodeGroup.attr("transform", function(d) {
+           return 'translate(' + [d.x, d.y] + ')';
+       });
+
+  });
+}
+
+if (typeof window.y2hChartData !== 'undefined'){
+  //----- Instantiation -----//
+  var y2hChartConfig = {
+    "height": 333,
+    "width": 333,
+    "nodeRadius": 5,
+    "textSize": 12,
+    "color": d3.scale.category20()
+  }
+
+  if (y2hChartData.nodes.length !== 0 && y2hChartData.links.length) {
+    var y2hy2hChart = new Y2hChart("#y2h-interaction", y2hChartData, y2hChartConfig)
+  }
+}
+
+
+if(typeof window.pv !== 'undefined'){
+  // override the default options with something less restrictive.
+  var options = {
+    width: 600,
+    height: 600,
+    antialias: true,
+    quality : 'medium'
+  };
+  var viewer = pv.Viewer(document.getElementById('pv'), options);
+  function loadMethylTransferase() {
+    // asynchronously load the PDB file for the dengue methyl transferase
+    // from the server and display it in the viewer.
+    pv.io.fetchPdb('http://files.rcsb.org/download/5CEA.pdb', function(structure) {
+        // display the protein as cartoon, coloring the secondary structure
+        // elements in a rainbow gradient.
+        viewer.cartoon('protein', structure, { color : color.ssSuccession() });
+        // there are two ligands in the structure, the co-factor S-adenosyl
+        // homocysteine and the inhibitor ribavirin-5' triphosphate. They have
+        // the three-letter codes SAH and RVP, respectively. Let's display them
+        // with balls and sticks.
+        var ligands = structure.select({ rnames : ['SAH', 'RVP'] });
+        viewer.ballsAndSticks('ligands', ligands);
+        viewer.centerOn(structure);
+    });
+  }
+  // load the methyl transferase once the DOM has finished loading. That's
+  // the earliest point the WebGL context is available.
+  document.addEventListener('DOMContentLoaded', loadMethylTransferase);
+
 }
 
 'use strict';

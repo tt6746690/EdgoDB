@@ -2,7 +2,7 @@
 
 // reference: http://bl.ocks.org/mattbrehmer/12ea86353bc807df2187
 
-var expressionChart = function(target_dom, raw_data, config) {
+var ExpressionChart = function(target_dom, raw_data, config) {
   this.config = config
   this.target_dom = target_dom
   this.config.width = this.config.w - this.config.margin.left -  this.config.margin.right
@@ -25,7 +25,7 @@ var expressionChart = function(target_dom, raw_data, config) {
 };
 
 
-expressionChart.prototype.draw = function(){
+ExpressionChart.prototype.draw = function(){
   var config = this.config
   var yScale = this.yScale
   var xScale = this.xScale
@@ -147,6 +147,9 @@ expressionChart.prototype.draw = function(){
       } else {
         return "inlier_point";
       }})
+    .attr("class", function(d){
+      return (d3.select(this.parentNode).datum().grp + '_expressionDot')
+    })
     .attr("cx", function() {
         var parentIndex =  box.data().indexOf(d3.select(this.parentNode).datum())
         var parentData = d3.select(this.parentNode).datum()
@@ -173,7 +176,7 @@ expressionChart.prototype.draw = function(){
 
 }
 
-expressionChart.prototype.processData = function(data){
+ExpressionChart.prototype.processData = function(data){
   var config = this.config
   var xScale = this.xScale
   var yScale = this.yScale
@@ -233,7 +236,6 @@ expressionChart.prototype.processData = function(data){
   return_data.sort(function(a, b){
     var aInt = parseInt(a.grp.match(/\d+/))
     var bInt = parseInt(b.grp.match(/\d+/))
-    console.log(aInt, bInt, aInt > bInt)
     if(aInt < bInt){
       return -1
     }
@@ -288,6 +290,6 @@ if (typeof window.expressionChartData !== 'undefined' &&
   };
 
   if (expressionChartData.length !== 0) {
-    var expressionChart = new expressionChart("#elisa-expression", expressionChartData, expressionChartConfig);
+    var expressionChart = new ExpressionChart("#elisa-expression", expressionChartData, expressionChartConfig);
   }
 }

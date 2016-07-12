@@ -33,7 +33,7 @@ block content
                     dd
                       a(href = gene.links[l].link)= gene.links[l].display 
               div.col-md-8(id='protein-domain-graph')
-            div.row(id="GeneInteraction")
+            div.row(id="experimentalData")
               div#stuffing
               div.col-md-4
                 - if (radarChartData.length !== 0){
@@ -51,14 +51,14 @@ block content
                 - } else {
                   div(id='elisa-expression')
                 - }
-              //- div.col-md-4
-              //-   - if (y2hChartData.length !== 0){
-              //-     div.panel.panel-default
-              //-       h5 Y2H Interactors
-              //-       div(id='y2h-interaction')
-              //-   - } else {
-              //-     div(id='y2h-interaction')
-              //-   - }
+              div.col-md-4
+                - if (y2hChartData.nodes.length !== 0){
+                  div.panel.panel-default
+                    h5 Y2H Interactors
+                    div(id='y2h-interaction')
+                - } else {
+                  div(id='y2h-interaction')
+                - }
           div.tab-pane.fade(id='pv')
         div.row(id='variantListing')
           - for item in variant 
@@ -68,7 +68,7 @@ block content
           +nav_item("#" + gene.symbol) Gene
             ul.nav.nav-stacked(id="sidebar")
               +nav_item("#GeneDescription") Info
-              +nav_item("#GeneInteraction") Interaction
+              +nav_item("#experimentalData") Experimental Data
           +nav_item("#VariantListing") Variants 
             ul.nav.nav-stacked(id="sidebar")
               - for item in variant
@@ -81,10 +81,13 @@ prepend script
     var domainChartData =!{JSON.stringify(domainChartData)}
     var radarChartData =!{JSON.stringify(radarChartData)}
     var expressionChartData =!{JSON.stringify(expressionChartData)}
+    var y2hChartData = !{JSON.stringify(y2hChartData)}
     
     
 prepend script         
   script(src='/bio-pv.min.js', type="text/javascript")
+  
+  
 //-       
 //- append script
 //-   script(type="text/babel"). 

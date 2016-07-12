@@ -304,7 +304,6 @@ var selectRadarChartData = function(rcdata, grpArray){
   modData.sort(function(a, b){
     var aInt = parseInt(a[0].grp.match(/\d+/))
     var bInt = parseInt(b[0].grp.match(/\d+/))
-    console.log(aInt, bInt, aInt > bInt)
     if(aInt < bInt){
       return -1
     }
@@ -313,8 +312,6 @@ var selectRadarChartData = function(rcdata, grpArray){
     }
     return 0
   })
-
-  console.log(modData)
   return modData
 }
 

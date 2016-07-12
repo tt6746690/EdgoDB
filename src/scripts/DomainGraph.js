@@ -96,15 +96,23 @@ proteinDomainGraph.prototype.markMutations = function(){
               var active   = d3.select(this).classed("active") ? false : true,
 	                newOpacity = active ? 1 : 0,
                   activeMouseOut = active ? null: needleHeadMouseOut,
-                  newTextFontSize = active ? config.headFontSize * 2: config.headFontSize;
-              d3.select("#" + d.name + '_radarWrapper').style("opacity", newOpacity)
+                  newTextFontSize = active ? config.headFontSize * 2: config.headFontSize
+                  newRadiusFactor = active ? 2 : 0.5
+              // domainChart
               d3.select(this).classed("active", active)
-
               d3.select(this).on("mouseout", activeMouseOut);
               d3.select("#" + d.name + "_needleText")
                 .transition()
                 .duration(200)
                 .attr("font-size", newTextFontSize)
+              // radarChart
+              d3.select("#" + d.name + '_radarWrapper').style("opacity", newOpacity)
+
+              // expressionChart
+              d3.selectAll('.' + d.name + '_expressionDot').attr("r", function(){
+                return d3.select(this).attr("r") * newRadiusFactor
+              })
+
             })
 
   function needleHeadMouseOut(){

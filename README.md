@@ -142,7 +142,8 @@
 [_How to use spider specific pipeline and item_](http://stackoverflow.com/questions/10543997/scrapy-how-to-change-spider-settings-after-start-crawling)    
 [_Use scrapy itemloader in a loop_](http://stackoverflow.com/questions/37658950/using-scrapy-itemloader-in-a-loop)   
 [_A good xpath cheatsheet_](http://ricostacruz.com/cheatsheets/xpath.html)   
-[_d3 boxplot_](http://bl.ocks.org/mattbrehmer/12ea86353bc807df2187)  
+[_d3 boxplot_](http://bl.ocks.org/mattbrehmer/12ea86353bc807df2187)    
+[_comprehensive tutorial to webpack_](http://www.theodo.fr/blog/2016/07/a-comprehensive-introduction-to-webpack-the-module-bundler/)
 
 ---
 This is under an [__ODbL license__](http://opendatacommons.org/licenses/odbl/1.0/)
