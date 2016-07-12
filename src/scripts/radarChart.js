@@ -14,7 +14,7 @@ var RadarChart = function(id, data, options) {
 	 opacityCircles: 0.1, 	//The opacity of the circles of each blob
 	 strokeWidth: 1, 		//The width of the stroke around each blob
 	 roundStrokes: true,	//If true the area and stroke will follow a round path (cardinal-closed)
-	 color: d3.scale.category10()	//Color function
+	 color: d3.scale.category20()	//Color function
 	};
 
 	//Put all of the options into a variable called cfg
@@ -299,6 +299,22 @@ var selectRadarChartData = function(rcdata, grpArray){
   modData = Object.keys(modData).map(function(key){
       return modData[key]
   })
+
+  // sort variant based on mutation position ascending
+  modData.sort(function(a, b){
+    var aInt = parseInt(a[0].grp.match(/\d+/))
+    var bInt = parseInt(b[0].grp.match(/\d+/))
+    console.log(aInt, bInt, aInt > bInt)
+    if(aInt < bInt){
+      return -1
+    }
+    if(aInt > bInt){
+      return 1
+    }
+    return 0
+  })
+
+  console.log(modData)
   return modData
 }
 
@@ -319,6 +335,6 @@ if (typeof window.variant !== 'undefined' && typeof window.gene !== 'undefined' 
     var garray = variant.map(function(d){return d.MUT_HGVS_AA})
     garray.push(gene.symbol)
     var wtRadarData = selectRadarChartData(radarChartData, garray)
-    RadarChart("#lumier-interaction", wtRadarData, radarChartConfig);
+    var radarChart = new RadarChart("#lumier-interaction", wtRadarData, radarChartConfig);
   }
 }

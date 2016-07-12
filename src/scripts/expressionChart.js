@@ -7,7 +7,7 @@ var expressionChart = function(target_dom, raw_data, config) {
   this.target_dom = target_dom
   this.config.width = this.config.w - this.config.margin.left -  this.config.margin.right
   this.config.height = this.config.h - this.config.margin.top -  this.config.margin.bottom
-  this.config.color = d3.scale.category20c()
+  this.config.color = d3.scale.category20()
 
 
   this.yScale = d3.scale.linear()
@@ -18,7 +18,6 @@ var expressionChart = function(target_dom, raw_data, config) {
 
   this.data = this.processData(raw_data)
   var numberOfBox = this.data.length
-  this.config.midLineMultiplier = (this.config.width - this.config.padding) / numberOfBox
 
   this.draw()
 
@@ -59,7 +58,7 @@ expressionChart.prototype.draw = function(){
   var x_axis = svg.append("g")
     .attr("class", "x-axis")
     .attr("transform", "translate(" + 1*config.padding + ", " + (config.height - config.padding) + ")")
-    .style("fill", "#fbfbfb")
+    .style("fill", config.gridColor)
     .call(xAxis);
 
 
@@ -139,7 +138,7 @@ expressionChart.prototype.draw = function(){
   var dataPoint = box.selectAll('circle')
     .data(function(d){ return d.values}).enter()
     .append("circle")
-    .attr("r", 1.5)
+    .attr("r", config.dotRadius)
     .attr("class", function(d, i){
       var lowerWhisker = d3.select(this.parentNode).datum().lowerWhisker
       var upperWhisker = d3.select(this.parentNode).datum().upperWhisker
@@ -167,7 +166,7 @@ expressionChart.prototype.draw = function(){
     } else {
       var seed = (config.bar_width / 2);
     }
-    return xScale(d.grp) + Math.floor((Math.random() * seed) + 1);
+    return xScale(d.grp) + Math.floor((Math.random() * seed) + 1)*0.3;
   }
 
 
@@ -230,6 +229,19 @@ expressionChart.prototype.processData = function(data){
   return_data = Object.keys(new_data).map(function(k){
     return new_data[k]
   })
+  // sort variant based on mutation position ascending
+  return_data.sort(function(a, b){
+    var aInt = parseInt(a.grp.match(/\d+/))
+    var bInt = parseInt(b.grp.match(/\d+/))
+    console.log(aInt, bInt, aInt > bInt)
+    if(aInt < bInt){
+      return -1
+    }
+    if(aInt > bInt){
+      return 1
+    }
+    return 0
+  })
 
   // setting x and y scale domain
   var mmax = Object.keys(new_data).map(function(k){
@@ -254,7 +266,8 @@ expressionChart.prototype.processData = function(data){
     return xScale(d.grp)
   })
   config.xScaleIncrement = (d3.max(xScalePool) - d3.min(xScalePool)) / xScalePool.length
-  console.log(config.xScaleIncrement)
+  config.bar_width = config.xScaleIncrement * 0.8
+
 
   return(return_data)
 }
@@ -269,10 +282,12 @@ if (typeof window.expressionChartData !== 'undefined' &&
     margin: {top: 10, right: 10, bottom: 10, left: 10},
     padding: 10,
     bar_width: 15,
-    labelColor: "#818181"
+    labelColor: "#818181",
+    gridColor: '#f4f4f4',
+    dotRadius: 2.5
   };
 
   if (expressionChartData.length !== 0) {
-    ex = new expressionChart("#elisa-expression", expressionChartData, expressionChartConfig);
+    var expressionChart = new expressionChart("#elisa-expression", expressionChartData, expressionChartConfig);
   }
 }

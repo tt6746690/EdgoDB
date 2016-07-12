@@ -38,7 +38,7 @@ block content
               div.col-md-4
                 - if (radarChartData.length !== 0){
                   div.panel.panel-default
-                    h5 Chaperone interaction
+                    h5 Chaperone interactions
                     div(id='lumier-interaction')
                 - } else {
                   div(id='lumier-interaction')
@@ -51,11 +51,18 @@ block content
                 - } else {
                   div(id='elisa-expression')
                 - }
-              div.col-md-4(id='y2h-interaction')
+              //- div.col-md-4
+              //-   - if (y2hChartData.length !== 0){
+              //-     div.panel.panel-default
+              //-       h5 Y2H Interactors
+              //-       div(id='y2h-interaction')
+              //-   - } else {
+              //-     div(id='y2h-interaction')
+              //-   - }
           div.tab-pane.fade(id='pv')
         div.row(id='variantListing')
           - for item in variant 
-            div.col-md-12.collapse(id=item.MUT_HGVS_AA + '_cardbox')
+            div.col-md-12.collapse.in(id=item.MUT_HGVS_AA + '_cardbox')
       nav.col-md-2.bs-docs-sidebar.hidden-print(id='target_nav')
         ul.nav.nav-stacked.bs-docs-sidenav.fixed(id="sidebar")
           +nav_item("#" + gene.symbol) Gene
@@ -71,60 +78,60 @@ prepend script
   script(type='text/javascript').
     var gene =!{JSON.stringify(gene)}
     var variant =!{JSON.stringify(variant)}
+    var domainChartData =!{JSON.stringify(domainChartData)}
     var radarChartData =!{JSON.stringify(radarChartData)}
     var expressionChartData =!{JSON.stringify(expressionChartData)}
     
     
 prepend script         
   script(src='/bio-pv.min.js', type="text/javascript")
-  script(src='https://d3js.org/d3-axis.v1.min.js', type="text/javascript")
-  script(src='https://cdn.plot.ly/plotly-latest.min.js', type='text/javascript')
-      
-append script
-  script(type="text/babel"). 
-    var proteinDomainConfig = {
-      "height": 200,
-      "width": 540,
-      "targetDOM": "#protein-domain-graph",
-      "xoffset": 10,
-      "yoffset": 110,
-      "regionHeight": 15,
-      "regionBGHeight": 10,
-      "stickHeight": 20,
-      "headRadius": 8,
-      "regionFontSize": "10px",
-      "headFontSize": "10px",
-      "axisHeight": 105
-    }  
-    var DomainGraph = React.createClass({
-      getInitialState: function() {
-        return {data: {}};
-      },
-      componentDidMount: function() {
-        $.ajax({
-          method: 'GET',
-          url: document.location.protocol +"//"+ document.location.hostname + ':' + document.location.port + document.location.pathname + '/domainGraph',
-          dataType: 'json',
-          cache: false,
-          success: function(data) {
-            this.setState({data: data.proteinDomainData});
-            var pg = new proteinDomainGraph(this.state.data, proteinDomainConfig)
-          }.bind(this),
-          error: function(xhr, status, err) {
-            console.error('ajax domain graph failed', status, err.toString());
-          }.bind(this)
-        });
-      },
-      render: function() { 
-        return (
-          <div></div>
-        );
-      }
-    });
-    ReactDOM.render(
-      <DomainGraph />,
-      document.getElementById('protein-domain-graph')
-    );
-    
-    
+//-       
+//- append script
+//-   script(type="text/babel"). 
+//-     var proteinDomainConfig = {
+//-       "height": 200,
+//-       "width": 540,
+//-       "targetDOM": "#protein-domain-graph",
+//-       "xoffset": 10,
+//-       "yoffset": 110,
+//-       "regionHeight": 15,
+//-       "regionBGHeight": 10,
+//-       "stickHeight": 20,
+//-       "headRadius": 8,
+//-       "regionFontSize": "10px",
+//-       "headFontSize": "10px",
+//-       "axisHeight": 105,
+//-       "color": d3.scale.category20()
+//-     }  
+//-     var DomainGraph = React.createClass({
+//-       getInitialState: function() {
+//-         return {data: {}};
+//-       },
+//-       componentDidMount: function() {
+//-         $.ajax({
+//-           method: 'GET',
+//-           url: document.location.protocol +"//"+ document.location.hostname + ':' + document.location.port + document.location.pathname + '/domainGraph',
+//-           dataType: 'json',
+//-           cache: false,
+//-           success: function(data) {
+//-             this.setState({data: data.proteinDomainData});
+//-             var pg = new proteinDomainGraph(this.state.data, proteinDomainConfig)
+//-           }.bind(this),
+//-           error: function(xhr, status, err) {
+//-             console.error('ajax domain graph failed', status, err.toString());
+//-           }.bind(this)
+//-         });
+//-       },
+//-       render: function() { 
+//-         return (
+//-           <div></div>
+//-         );
+//-       }
+//-     });
+//-     ReactDOM.render(
+//-       <DomainGraph />,
+//-       document.getElementById('protein-domain-graph')
+//-     );
+//-     
+//-     
     

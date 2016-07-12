@@ -8,6 +8,10 @@ var proteinDomainGraph = function(data, config){
   this.x = d3.scale.linear()
             .domain([0, this.data.proteinLength])
             .range([0, this.config.width - 3*this.config.xoffset])
+  // waste the first color
+  var wastedColor = this.config.color('NothingCouldNeverHaveThisName')
+
+
   this.createSVG()
   this.markMutations()
   this.drawRegions()
@@ -37,12 +41,23 @@ proteinDomainGraph.prototype.getMutationData = function(){
   this.data.mutation.forEach(function(m){
     m.ranHeight = Math.random()*config.yoffset*0.5 + 0.1*config.yoffset
   })
+  // sort variant based on mutation position ascending
+  this.data.mutation.sort(function(a, b){
+    var aInt = parseInt(a.name.match(/\d+/))
+    var bInt = parseInt(b.name.match(/\d+/))
+    if(aInt < bInt){
+      return -1
+    }
+    if(aInt > bInt){
+      return 1
+    }
+    return 0
+  })
   return this.data.mutation
 }
 
 proteinDomainGraph.prototype.markMutations = function(){
   var x = this.x
-  var color = d3.scale.category20c()
   var config = this.config
 
   var needles = d3.select(".pdgraph").selectAll()
@@ -68,7 +83,7 @@ proteinDomainGraph.prototype.markMutations = function(){
             .style("stroke-width", 1)
             .style("stroke", 'lightgrey')
             .style("fill", function(d) {
-              return color(d.name)
+              return config.color(d.name)
             })
             .on("mouseover", function(){
               d3.select(this)
@@ -118,7 +133,7 @@ proteinDomainGraph.prototype.markMutations = function(){
 
 proteinDomainGraph.prototype.drawRegions = function(){
     var x = this.x
-    var color = d3.scale.category20();
+    var color = d3.scale.category20b();
     var xoffset = this.config.xoffset
     var config = this.config
 
@@ -199,9 +214,34 @@ function propagateUpdates(activeElement){
     maxValue: 0.5,
     levels: 5,
     roundStrokes: true,
-    color: d3.scale.category20()
+    color: d3.scale.category20c()
   };
   visibleElement.push(activeElement)
   var wtRadarData = selectRadarChartData(radarChartData, visibleElement)
   RadarChart("#lumier-interaction", wtRadarData, radarChartConfig);
+}
+
+
+
+if (typeof window.domainChartData !== 'undefined') {
+  //----- Instantiation -----//
+  var domainChartConfig = {
+    "height": 200,
+    "width": 540,
+    "targetDOM": "#protein-domain-graph",
+    "xoffset": 10,
+    "yoffset": 110,
+    "regionHeight": 15,
+    "regionBGHeight": 10,
+    "stickHeight": 20,
+    "headRadius": 8,
+    "regionFontSize": "10px",
+    "headFontSize": "10px",
+    "axisHeight": 105,
+    "color": d3.scale.category20()
+  }
+
+  if (domainChartData !== 0){
+    var domainChart = new proteinDomainGraph(domainChartData, domainChartConfig)
+  }
 }

@@ -165,6 +165,21 @@ router.get('/:geneid', function(req, res, next){
           for (var i = 0; i < rows.length; i++){
             variant.push(JSON.parse(JSON.stringify(rows))[i])
           }
+
+          // sort variant based on mutation position ascending
+          variant.sort(function(a, b){
+            var aInt = parseInt(a.MUT_HGVS_AA.match(/\d+/))
+            var bInt = parseInt(b.MUT_HGVS_AA.match(/\d+/))
+            console.log(aInt, bInt, aInt > bInt)
+            if(aInt < bInt){
+              return -1
+            }
+            if(aInt > bInt){
+              return 1
+            }
+            return 0
+          })
+
           callback(null, variant)
         });
       },
@@ -213,33 +228,7 @@ router.get('/:geneid', function(req, res, next){
           }
           callback(null, expressionChart)
         })
-
-      }
-    }, function(err, results){
-      if (err) {return next(err)}
-      connection.release()
-      console.log(results)
-
-      res.render('gene', {
-        gene: results.gene,
-        variant: results.variant,   // variant ID that falls under this gene
-        // forceGraphData: {
-        //   links: results.links,
-        //   nodes: results.nodes
-        // },
-        radarChartData: results.radarChart, // needs post processing to [[{axis, value, grp}, ...], ...]
-        expressionChartData: results.expressionChart
-      })
-    });
-
-
-  })
-})
-
-
-router.get('/:geneid/domainGraph', function(req, res, next){
-  pool.getConnection(function(err, connection){
-    async.parallel({
+      },
       domainRegion: function(callback){
         var sqlstr = "SELECT PFAM_ID AS name, SEQ_START AS start, SEQ_END AS end, PROTEIN_LENGTH AS proteinLength \
                        FROM PfamDomain \
@@ -247,7 +236,7 @@ router.get('/:geneid/domainGraph', function(req, res, next){
                        WHERE HUGO_GENE_SYMBOL = ?;"
         connection.query(sqlstr, [req.params.geneid], function(err, rows) {
           if (err) {return next(err)}
-          if (rows.length == 0) {return next(new Error('Entry unavailable in database'))}
+          // if (rows.length == 0) {return next(new Error('Entry unavailable in database'))}
 
           var domainRegion = []
           for (var i = 0; i < rows.length; i++){
@@ -276,19 +265,29 @@ router.get('/:geneid/domainGraph', function(req, res, next){
     }, function(err, results){
       if (err) {return next(err)}
       connection.release()
-      // console.log(results)
+      console.log(results)
+
       var proteinL = typeof results.domainRegion === 'undefined' ? 500: results.domainRegion[0].proteinLength
-      res.send({
-        proteinDomainData:{         // data for proteinDomain Graph
+      res.render('gene', {
+        gene: results.gene,
+        variant: results.variant,   // variant ID that falls under this gene
+        domainChartData:{         // data for proteinDomain Graph
           proteinLength: proteinL,
           region: results.domainRegion,
           mutation: results.mutationPosition // later be filled with info from variant client side
-        }
+        },
+        // forceGraphData: {
+        //   links: results.links,
+        //   nodes: results.nodes
+        // },
+        radarChartData: results.radarChart, // needs post processing to [[{axis, value, grp}, ...], ...]
+        expressionChartData: results.expressionChart
       })
-    })
+    });
+
+
   })
 })
-
 
 
 router.get('/:geneid/variantBoxAjax', function(req, res, next){
@@ -375,6 +374,62 @@ router.get('/:geneid/variantBoxAjax', function(req, res, next){
   })
 })
 
+
+
+//
+//
+// router.get('/:geneid/domainGraph', function(req, res, next){
+//   pool.getConnection(function(err, connection){
+//     async.parallel({
+//       domainRegion: function(callback){
+//         var sqlstr = "SELECT PFAM_ID AS name, SEQ_START AS start, SEQ_END AS end, PROTEIN_LENGTH AS proteinLength \
+//                        FROM PfamDomain \
+//                           LEFT JOIN Gene USING (UNIPROT_PROTEIN_NAME) \
+//                        WHERE HUGO_GENE_SYMBOL = ?;"
+//         connection.query(sqlstr, [req.params.geneid], function(err, rows) {
+//           if (err) {return next(err)}
+//           // if (rows.length == 0) {return next(new Error('Entry unavailable in database'))}
+//
+//           var domainRegion = []
+//           for (var i = 0; i < rows.length; i++){
+//             domainRegion.push(JSON.parse(JSON.stringify(rows))[i])
+//           }
+//           callback(null, domainRegion)
+//         });
+//       },
+//       mutationPosition: function(callback){
+//         var sqlstr = "SELECT MUT_HGVS_AA AS name \
+//                        FROM Gene \
+//                          LEFT JOIN Variant USING (ENTREZ_GENE_ID) \
+//                          LEFT JOIN VariantProperty USING (VARIANT_ID) \
+//                        WHERE HUGO_GENE_SYMBOL = ?;"
+//         connection.query(sqlstr, [req.params.geneid], function(err, rows) {
+//           if (err) {return next(err)}
+//           if (rows.length == 0) {return next(new Error('Entry unavailable in database'))}
+//
+//           var domainRegion = []
+//           for (var i = 0; i < rows.length; i++){
+//             domainRegion.push(JSON.parse(JSON.stringify(rows))[i])
+//           }
+//           callback(null, domainRegion)
+//         });
+//       }
+//     }, function(err, results){
+//       if (err) {return next(err)}
+//       connection.release()
+//       // console.log(results)
+//       var proteinL = typeof results.domainRegion === 'undefined' ? 500: results.domainRegion[0].proteinLength
+//       res.send({
+//         proteinDomainData:{         // data for proteinDomain Graph
+//           proteinLength: proteinL,
+//           region: results.domainRegion,
+//           mutation: results.mutationPosition // later be filled with info from variant client side
+//         }
+//       })
+//     })
+//   })
+// })
+//
 
 
 
