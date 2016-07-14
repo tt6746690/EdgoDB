@@ -1,7 +1,7 @@
 
 
 
-var proteinDomainGraph = function(data, config){
+var DomainChart = function(data, config){
   this.config = config
   this.data = data
   this.mutation = this.getMutationData()
@@ -18,14 +18,14 @@ var proteinDomainGraph = function(data, config){
 }
 
 
-proteinDomainGraph.prototype.createSVG = function(){
+DomainChart.prototype.createSVG = function(){
   var width = this.config.width || 1000
       height = this.config.height || 200
 
   config = this.config
   x = this.x
 
-  this.svg = d3.select(this.config.targetDOM).append("svg")
+  this.svg = d3.select(this.config.target_dom).append("svg")
       .attr("width", width)
       .attr("height", height);
 
@@ -36,7 +36,7 @@ proteinDomainGraph.prototype.createSVG = function(){
 }
 
 
-proteinDomainGraph.prototype.getMutationData = function(){
+DomainChart.prototype.getMutationData = function(){
   config = this.config
   this.data.mutation.forEach(function(m){
     m.ranHeight = Math.random()*config.yoffset*0.5 + 0.1*config.yoffset
@@ -56,7 +56,7 @@ proteinDomainGraph.prototype.getMutationData = function(){
   return this.data.mutation
 }
 
-proteinDomainGraph.prototype.markMutations = function(){
+DomainChart.prototype.markMutations = function(){
   var x = this.x
   var config = this.config
 
@@ -113,6 +113,13 @@ proteinDomainGraph.prototype.markMutations = function(){
                 return d3.select(this).attr("r") * newRadiusFactor
               })
 
+              // y2hChart
+              if (y2hChartData.nodes.length !== 0 && y2hChartData.links.length) {
+                var y2hDataChoice = active ? subsetY2hData(y2hChartData, d.name): subsetY2hData(y2hChartData, '0')
+                removeSVG('#y2h-interaction')
+                new Y2hChart("#y2h-interaction", y2hDataChoice, y2hChartConfig)
+              }
+
             })
 
   function needleHeadMouseOut(){
@@ -139,7 +146,7 @@ proteinDomainGraph.prototype.markMutations = function(){
 }
 
 
-proteinDomainGraph.prototype.drawRegions = function(){
+DomainChart.prototype.drawRegions = function(){
     var x = this.x
     var color = d3.scale.category20b();
     var xoffset = this.config.xoffset
@@ -207,6 +214,7 @@ proteinDomainGraph.prototype.drawRegions = function(){
           .attr("dx", "2px")
           .style("font-size", this.config.regionFontSize)
           .style("text-decoration", "bold")
+          .style("fill", "lightgrey")
           .text(function (d) {
               return d.name
           });
@@ -236,7 +244,7 @@ if (typeof window.domainChartData !== 'undefined') {
   var domainChartConfig = {
     "height": 200,
     "width": 540,
-    "targetDOM": "#protein-domain-graph",
+    "target_dom": "#protein-domain-graph",
     "xoffset": 10,
     "yoffset": 110,
     "regionHeight": 15,
@@ -250,6 +258,6 @@ if (typeof window.domainChartData !== 'undefined') {
   }
 
   if (domainChartData !== 0){
-    var domainChart = new proteinDomainGraph(domainChartData, domainChartConfig)
+    var domainChart = new DomainChart(domainChartData, domainChartConfig)
   }
 }

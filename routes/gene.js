@@ -32,7 +32,7 @@ router.get('/:geneid', function(req, res, next){
                           JOIN Y2HWTInteractor USING (ENTREZ_GENE_ID) \
                        WHERE HUGO_GENE_SYMBOL = ? \
                        UNION \
-                       SELECT CONCAT(ENTREZ_GENE_ID, '_', CCSB_MUTATION_ID) AS source, \
+                       SELECT CONCAT(ENTREZ_GENE_ID, '_', MUT_HGVS_AA) AS source, \
                        CONCAT(INTERACTOR_ENTREZ_GENE_ID, '_0') AS target, \
                        Y2H_SCORE AS score \
                        FROM Gene \
@@ -65,7 +65,7 @@ router.get('/:geneid', function(req, res, next){
                       JOIN Y2HWTInteractor USING(ENTREZ_GENE_ID) \
                   WHERE HUGO_GENE_SYMBOL = ? \
                   UNION \
-                  SELECT DISTINCT CONCAT(ENTREZ_GENE_ID, '_', CCSB_MUTATION_ID) AS ID, \
+                  SELECT DISTINCT CONCAT(ENTREZ_GENE_ID, '_', MUT_HGVS_AA) AS ID, \
                       MUT_HGVS_AA AS Name \
                   FROM Gene \
                       JOIN Variant USING(ENTREZ_GENE_ID) \

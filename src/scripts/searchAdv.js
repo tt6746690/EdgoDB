@@ -84,10 +84,3 @@ $(document).ready(function(){
   });
 
 });
-
-//
-// $(document).ready(function(){
-//   $('input.typeahead').bind('typeahead:select', function(ev, suggestion) {
-//
-//   });
-// });

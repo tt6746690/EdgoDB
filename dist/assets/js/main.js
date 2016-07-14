@@ -1,7 +1,7 @@
 
 
 
-var proteinDomainGraph = function(data, config){
+var DomainChart = function(data, config){
   this.config = config
   this.data = data
   this.mutation = this.getMutationData()
@@ -18,14 +18,14 @@ var proteinDomainGraph = function(data, config){
 }
 
 
-proteinDomainGraph.prototype.createSVG = function(){
+DomainChart.prototype.createSVG = function(){
   var width = this.config.width || 1000
       height = this.config.height || 200
 
   config = this.config
   x = this.x
 
-  this.svg = d3.select(this.config.targetDOM).append("svg")
+  this.svg = d3.select(this.config.target_dom).append("svg")
       .attr("width", width)
       .attr("height", height);
 
@@ -36,7 +36,7 @@ proteinDomainGraph.prototype.createSVG = function(){
 }
 
 
-proteinDomainGraph.prototype.getMutationData = function(){
+DomainChart.prototype.getMutationData = function(){
   config = this.config
   this.data.mutation.forEach(function(m){
     m.ranHeight = Math.random()*config.yoffset*0.5 + 0.1*config.yoffset
@@ -56,7 +56,7 @@ proteinDomainGraph.prototype.getMutationData = function(){
   return this.data.mutation
 }
 
-proteinDomainGraph.prototype.markMutations = function(){
+DomainChart.prototype.markMutations = function(){
   var x = this.x
   var config = this.config
 
@@ -113,6 +113,13 @@ proteinDomainGraph.prototype.markMutations = function(){
                 return d3.select(this).attr("r") * newRadiusFactor
               })
 
+              // y2hChart
+              if (y2hChartData.nodes.length !== 0 && y2hChartData.links.length) {
+                var y2hDataChoice = active ? subsetY2hData(y2hChartData, d.name): subsetY2hData(y2hChartData, '0')
+                removeSVG('#y2h-interaction')
+                new Y2hChart("#y2h-interaction", y2hDataChoice, y2hChartConfig)
+              }
+
             })
 
   function needleHeadMouseOut(){
@@ -139,7 +146,7 @@ proteinDomainGraph.prototype.markMutations = function(){
 }
 
 
-proteinDomainGraph.prototype.drawRegions = function(){
+DomainChart.prototype.drawRegions = function(){
     var x = this.x
     var color = d3.scale.category20b();
     var xoffset = this.config.xoffset
@@ -207,6 +214,7 @@ proteinDomainGraph.prototype.drawRegions = function(){
           .attr("dx", "2px")
           .style("font-size", this.config.regionFontSize)
           .style("text-decoration", "bold")
+          .style("fill", "lightgrey")
           .text(function (d) {
               return d.name
           });
@@ -236,7 +244,7 @@ if (typeof window.domainChartData !== 'undefined') {
   var domainChartConfig = {
     "height": 200,
     "width": 540,
-    "targetDOM": "#protein-domain-graph",
+    "target_dom": "#protein-domain-graph",
     "xoffset": 10,
     "yoffset": 110,
     "regionHeight": 15,
@@ -250,7 +258,7 @@ if (typeof window.domainChartData !== 'undefined') {
   }
 
   if (domainChartData !== 0){
-    var domainChart = new proteinDomainGraph(domainChartData, domainChartConfig)
+    var domainChart = new DomainChart(domainChartData, domainChartConfig)
   }
 }
 
@@ -320,12 +328,12 @@ ExpressionChart.prototype.draw = function(){
 
   d3.select(".y-axis")
     .selectAll("text")
-    .style("font-size","9px")
+    .style("font-size","10px")
     .style("fill", config.labelColor)
 
   d3.select(".x-axis")
     .selectAll("text")
-    .style("font-size","9px")
+    .style("font-size","12px")
     .style("fill", config.labelColor)
 
   var boxGroup = svg.append('g')
@@ -399,13 +407,10 @@ ExpressionChart.prototype.draw = function(){
       var lowerWhisker = d3.select(this.parentNode).datum().lowerWhisker
       var upperWhisker = d3.select(this.parentNode).datum().upperWhisker
       if (d < lowerWhisker || d > upperWhisker){
-        return "outlier_point";
+        return "outlier_point " + (d3.select(this.parentNode).datum().grp + '_expressionDot');
       } else {
-        return "inlier_point";
+        return "inlier_point " + (d3.select(this.parentNode).datum().grp + '_expressionDot');
       }})
-    .attr("class", function(d){
-      return (d3.select(this.parentNode).datum().grp + '_expressionDot')
-    })
     .attr("cx", function() {
         var parentIndex =  box.data().indexOf(d3.select(this.parentNode).datum())
         var parentData = d3.select(this.parentNode).datum()
@@ -414,6 +419,15 @@ ExpressionChart.prototype.draw = function(){
     .attr("cy", function(d) {
       return yScale(d);
     })
+    .style("stroke", function() {
+      var index =  box.data().indexOf(d3.select(this.parentNode).datum())
+      return config.color(index)
+    })
+    .style("stroke-width", 1)
+    .style("fill", "none")
+
+
+  box.selectAll('.outlier_point')
     .style("fill", function() {
       var index =  box.data().indexOf(d3.select(this.parentNode).datum())
       return config.color(index)
@@ -530,9 +544,7 @@ ExpressionChart.prototype.processData = function(data){
   return(return_data)
 }
 
-if (typeof window.expressionChartData !== 'undefined' &&
-  typeof window.gene !== 'undefined' &&
-  typeof window.variant !== 'undefined') {
+if (typeof window.expressionChartData !== 'undefined') {
   //----- Instantiation -----//
   var expressionChartConfig = {
     w: 280,
@@ -540,8 +552,8 @@ if (typeof window.expressionChartData !== 'undefined' &&
     margin: {top: 10, right: 10, bottom: 10, left: 10},
     padding: 10,
     bar_width: 15,
-    labelColor: "#818181",
-    gridColor: '#f4f4f4',
+    labelColor: "lightgrey",
+    gridColor: '#f1f1f1',
     dotRadius: 2.5
   };
 
@@ -648,7 +660,7 @@ var RadarChart = function(id, data, options) {
 	   .attr("y", function(d){return -d*radius/cfg.levels;})
 	   .attr("dy", "0.4em")
 	   .style("font-size", "10px")
-	   .attr("fill", "#737373")
+	   .attr("fill", "lightgrey")
 	   .text(function(d,i) { return Format(differenceValue * d/cfg.levels + minValue); });
 
 	/////////////////////////////////////////////////////////
@@ -675,6 +687,7 @@ var RadarChart = function(id, data, options) {
 	axis.append("text")
 		.attr("class", "legend")
 		.style("font-size", "11px")
+    .style("fill", "lightgrey")
 		.attr("text-anchor", "middle")
 		.attr("dy", "0.35em")
 		.attr("x", function(d, i){ return rScale(maxValue * cfg.labelFactor) * Math.cos(angleSlice*i - Math.PI/2); })
@@ -876,7 +889,7 @@ if (typeof window.variant !== 'undefined' && typeof window.gene !== 'undefined' 
     margin: {top: 40, right: 50, bottom: 40, left: 50},
     maxValue: 28,   // greatest number expression z score can get for lumier data in db
     levels: 5,
-    roundStrokes: true,
+    roundStrokes: false,
     color: d3.scale.category20()
   };
 
@@ -889,6 +902,12 @@ if (typeof window.variant !== 'undefined' && typeof window.gene !== 'undefined' 
 }
 
 
+
+
+var removeSVG = function(target_dom){
+  $(target_dom).html("");
+}
+
 var Y2hChart = function(target_dom, data, config){
   this.config = config
   config.target_dom = target_dom
@@ -898,16 +917,20 @@ var Y2hChart = function(target_dom, data, config){
   this.draw()           // creates this.svg, this.force, and marker
 }
 
-Y2hChart.prototype.getData = function(data){
-  data.links = data.links.filter(function(l){
-    return l.score ===1
+
+subsetY2hData = function(data, selector){
+  // clone object
+  var dataClone = JSON.parse(JSON.stringify(data))
+  dataClone.links = dataClone.links.filter(function(l){
+    return l.source.split('_')[1] === selector
   })
-  return data
+  return dataClone
 }
 
 Y2hChart.prototype.getEdges = function(){
   var nodes = this.data.nodes
   var links = this.data.links
+  var config = this.config
 
   var edges = []
   links.forEach(function(e) {
@@ -918,40 +941,62 @@ Y2hChart.prototype.getEdges = function(){
               return n.ID === e.target;
           })[0];
 
+      sourceNode.category = 'source'
+      targetNode.category = 'target'
+
+      if(e.score === 0){
+        targetNode.category = 'lost'
+      }
+
       edges.push({
           source: sourceNode,
           target: targetNode,
           score: e.score
       });
   });
+
   return edges
 }
 
 Y2hChart.prototype.getNodes = function(){
-  return this.data.nodes
+  var nodes = this.data.nodes
+  var links = this.data.links
+  var config = this.config
+
+  var nodes_in_links = []
+  links.forEach(function(l){
+    nodes_in_links.push(l.source)
+    nodes_in_links.push(l.target)
+  })
+
+  var new_nodes = nodes.filter(function(n){
+    return nodes_in_links.indexOf(n.ID) > -1
+  })
+
+  return new_nodes
 }
 
 
 Y2hChart.prototype.draw = function(){
   config = this.config
+  nodes = this.nodes
+  edges = this.edges
+
 
   this.svg = d3.select(config.target_dom).append("svg")
       .attr("width", config.width)
       .attr("height", config.height);
 
+
   this.force = d3.layout.force()
       .size([config.width, config.height])
-      .nodes(this.nodes)
-      .links(this.edges)
-      .linkStrength(0.1)
-      .friction(0.9)
-      .linkDistance(function(d){ if(d.score === 1){return 150} else {return 250}})
-      .charge(-150)
-      .charge(-30)
-      .gravity(0.1)
-      .theta(0.8)
-      .alpha(0.1)
-      .start();
+      .nodes(nodes)
+      .links(edges)
+      .linkStrength(0.8)
+      .friction(0.6)
+      .charge(-250)
+      .gravity(0.3)
+      .linkDistance(config.height / 3)
 
   this.svg.append("svg:defs").selectAll("marker")
      .data(["end"])      // Different link/path types can be defined here
@@ -968,43 +1013,77 @@ Y2hChart.prototype.draw = function(){
 
 
   var link = this.svg.selectAll('.link')
-     .data(this.edges)
+     .data(edges)
      .enter().append('line')
      .attr('class', 'link')
      .attr("marker-end", "url(#end)")
      .style("stroke-width", 1)
-     .style("stroke-dasharray", function(d){ if (d.score === 0){ return "5,5"} else {return undefined}})
-     .style("stroke", function(d){ if (d.score === 0){ return '#ff6300'} else {return '#96e6ff'}})
+     .style("stroke-dasharray", function(d){ if (d.score === 0){ return "5,5"} else {return 'undefined'}})
+     .style("stroke", function(d){
+       if(d.score === 1){
+         return 'lightgrey'
+       } else {
+         return '#ff4d00'
+       }
+     })
 
 
   var nodeGroup = this.svg.selectAll('.node')
-     .data(this.nodes)
+     .data(nodes)
      .enter().append('g')
      .attr('class', 'nodeGroup')
      .on("mouseover", function(d){
-       d3.select(this).select("text").style("visibility","visible")
+      //  d3.select(this).select("text").style("visibility","visible")
      })
      .on("mouseout", function(d){
-       d3.select(this).select("text").style("visibility","hidden")
+      //  d3.select(this).select("text").style("visibility","hidden")
      })
 
+    //  .append('a')
+        // .attr('href', function(d){if (/^NM_[0-9]{5,}/i.test(d.Name)){ return "/variant/"+d.Name} else {return "/gene/" + d.Name}})
 
-  var node = nodeGroup.append('a')
-     .attr('href', function(d){if (/^NM_[0-9]{5,}/i.test(d.Name)){ return "/variant/"+d.Name} else {return "/gene/" + d.Name}})
-     .append('circle')
+  var node = nodeGroup.append('circle')
      .attr('class', 'node')
-     .attr("r", this.config.nodeRadius)
-     // .style('fill', function(d){ return color(d.Name)})
-     .style("fill", function(d) { if (/^NM_[0-9]{5,}/i.test(d.Name)){ return '#7ec1ff'} else {return '#ff7eb2'}})
+     .attr("r", function(d){
+       if(d.category === 'source'){
+         return config.nodeRadius * 1.4
+       } else if(d.category === 'target') {
+         return config.nodeRadius
+       } else {
+         return config.nodeRadius / 1.4
+       }
+     })
+     .style('fill', function(d){
+      //  if(d.ID)
+     })
+     .style("fill", function(d){
+       if(d.category === 'source'){
+         return config.sourceNodeColor
+       } else if (d.category === 'target'){
+         return config.targetNodeColor
+       } else {
+         return config.lostNodeColor
+       }
+     })
      .call(this.force.drag)
 
   var nodeText = nodeGroup.append('text')
      .attr('class', 'nodeText')
-     .attr('dx', 7)
-     .attr('dy', 10)
-     .style("font-size", "10px")
-     .style("visibility", "hidden")
+     .attr('text-anchor', 'middle')
+     .attr('dy', 2)
+     .style("font-size", config.textSize)
+     .style("visibility", "visible")
      .text(function(d) { return d.Name; })
+
+  this.force.start()
+
+  var safety = 0
+  while(this.force.alpha() > 0.05) { // You'll want to try out different, "small" values for this
+    this.force.tick();
+    if(safety++ > 500) {
+      break;// Avoids infinite looping in case this solution was a bad idea
+    }
+  }
 
 
   this.force.on("tick", function() {
@@ -1018,22 +1097,59 @@ Y2hChart.prototype.draw = function(){
        });
 
   });
+
+
 }
 
 if (typeof window.y2hChartData !== 'undefined'){
   //----- Instantiation -----//
   var y2hChartConfig = {
-    "height": 333,
-    "width": 333,
-    "nodeRadius": 5,
-    "textSize": 12,
-    "color": d3.scale.category20()
+    "height": 250,
+    "width": 250,
+    "nodeRadius": 16,
+    "textSize": 9,
+    "color": d3.scale.category20(),
+    "sourceNodeColor": 'lightgrey',
+    "targetNodeColor": '#e8e8e8',
+    "lostNodeColor": "orange"
   }
 
   if (y2hChartData.nodes.length !== 0 && y2hChartData.links.length) {
-    var y2hy2hChart = new Y2hChart("#y2h-interaction", y2hChartData, y2hChartConfig)
+    wt_y2hChartData = subsetY2hData(y2hChartData, '0')
+    var y2hChart = new Y2hChart("#y2h-interaction", wt_y2hChartData, y2hChartConfig)
   }
 }
+
+
+$(document).ready(function(){
+
+  // scrollspy behaviour
+  $("body").scrollspy({
+      target: "#target_nav",
+      offset: 50
+  })
+
+
+  if (typeof window.variant !== 'undefined'){
+    // ajax call to fetch variant box
+    variant.forEach(function(v){
+      var variant_aa_id = v.MUT_HGVS_AA
+      $.ajax({
+          url: document.location.protocol +"//"+ document.location.hostname + ':' + document.location.port + document.location.pathname + '/variantBoxAjax',
+          type: 'GET',
+          data : {
+            'variant_aa_id': variant_aa_id
+          },
+          success: function(data) {
+            // console.log(data)
+            $('#' + variant_aa_id + '_cardbox').html(data);
+          }
+      });
+    })
+  }
+
+
+})
 
 
 if(typeof window.pv !== 'undefined'){
@@ -1203,40 +1319,3 @@ $(document).ready(function(){
   });
 
 });
-
-//
-// $(document).ready(function(){
-//   $('input.typeahead').bind('typeahead:select', function(ev, suggestion) {
-//
-//   });
-// });
-
-$(document).ready(function(){
-    $("body").scrollspy({
-        target: "#target_nav",
-        offset: 50
-    })
-});
-
-
-$(document).ready(function(){
-  // $(c).one('click', function (e) {
-    // e.preventDefault();
-    // $.trim($('a#variantBoxAjax').text())
-    variant.forEach(function(v){
-      var variant_aa_id = v.MUT_HGVS_AA
-      $.ajax({
-          url: document.location.protocol +"//"+ document.location.hostname + ':' + document.location.port + document.location.pathname + '/variantBoxAjax',
-          type: 'GET',
-          data : {
-            'variant_aa_id': variant_aa_id
-          },
-          success: function(data) {
-            // console.log(data)
-            $('#' + variant_aa_id + '_cardbox').html(data);
-          }
-      });
-    })
-
-  // });
-})

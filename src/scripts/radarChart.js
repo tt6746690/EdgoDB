@@ -96,7 +96,7 @@ var RadarChart = function(id, data, options) {
 	   .attr("y", function(d){return -d*radius/cfg.levels;})
 	   .attr("dy", "0.4em")
 	   .style("font-size", "10px")
-	   .attr("fill", "#737373")
+	   .attr("fill", "lightgrey")
 	   .text(function(d,i) { return Format(differenceValue * d/cfg.levels + minValue); });
 
 	/////////////////////////////////////////////////////////
@@ -123,6 +123,7 @@ var RadarChart = function(id, data, options) {
 	axis.append("text")
 		.attr("class", "legend")
 		.style("font-size", "11px")
+    .style("fill", "lightgrey")
 		.attr("text-anchor", "middle")
 		.attr("dy", "0.35em")
 		.attr("x", function(d, i){ return rScale(maxValue * cfg.labelFactor) * Math.cos(angleSlice*i - Math.PI/2); })
@@ -324,7 +325,7 @@ if (typeof window.variant !== 'undefined' && typeof window.gene !== 'undefined' 
     margin: {top: 40, right: 50, bottom: 40, left: 50},
     maxValue: 28,   // greatest number expression z score can get for lumier data in db
     levels: 5,
-    roundStrokes: true,
+    roundStrokes: false,
     color: d3.scale.category20()
   };
 

@@ -64,12 +64,12 @@ ExpressionChart.prototype.draw = function(){
 
   d3.select(".y-axis")
     .selectAll("text")
-    .style("font-size","9px")
+    .style("font-size","10px")
     .style("fill", config.labelColor)
 
   d3.select(".x-axis")
     .selectAll("text")
-    .style("font-size","9px")
+    .style("font-size","12px")
     .style("fill", config.labelColor)
 
   var boxGroup = svg.append('g')
@@ -143,13 +143,10 @@ ExpressionChart.prototype.draw = function(){
       var lowerWhisker = d3.select(this.parentNode).datum().lowerWhisker
       var upperWhisker = d3.select(this.parentNode).datum().upperWhisker
       if (d < lowerWhisker || d > upperWhisker){
-        return "outlier_point";
+        return "outlier_point " + (d3.select(this.parentNode).datum().grp + '_expressionDot');
       } else {
-        return "inlier_point";
+        return "inlier_point " + (d3.select(this.parentNode).datum().grp + '_expressionDot');
       }})
-    .attr("class", function(d){
-      return (d3.select(this.parentNode).datum().grp + '_expressionDot')
-    })
     .attr("cx", function() {
         var parentIndex =  box.data().indexOf(d3.select(this.parentNode).datum())
         var parentData = d3.select(this.parentNode).datum()
@@ -158,6 +155,15 @@ ExpressionChart.prototype.draw = function(){
     .attr("cy", function(d) {
       return yScale(d);
     })
+    .style("stroke", function() {
+      var index =  box.data().indexOf(d3.select(this.parentNode).datum())
+      return config.color(index)
+    })
+    .style("stroke-width", 1)
+    .style("fill", "none")
+
+
+  box.selectAll('.outlier_point')
     .style("fill", function() {
       var index =  box.data().indexOf(d3.select(this.parentNode).datum())
       return config.color(index)
@@ -274,9 +280,7 @@ ExpressionChart.prototype.processData = function(data){
   return(return_data)
 }
 
-if (typeof window.expressionChartData !== 'undefined' &&
-  typeof window.gene !== 'undefined' &&
-  typeof window.variant !== 'undefined') {
+if (typeof window.expressionChartData !== 'undefined') {
   //----- Instantiation -----//
   var expressionChartConfig = {
     w: 280,
@@ -284,8 +288,8 @@ if (typeof window.expressionChartData !== 'undefined' &&
     margin: {top: 10, right: 10, bottom: 10, left: 10},
     padding: 10,
     bar_width: 15,
-    labelColor: "#818181",
-    gridColor: '#f4f4f4',
+    labelColor: "lightgrey",
+    gridColor: '#f1f1f1',
     dotRadius: 2.5
   };
 

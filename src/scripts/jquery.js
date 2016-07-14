@@ -1,8 +1,15 @@
 
 $(document).ready(function(){
-  // $(c).one('click', function (e) {
-    // e.preventDefault();
-    // $.trim($('a#variantBoxAjax').text())
+
+  // scrollspy behaviour
+  $("body").scrollspy({
+      target: "#target_nav",
+      offset: 50
+  })
+
+
+  if (typeof window.variant !== 'undefined'){
+    // ajax call to fetch variant box
     variant.forEach(function(v){
       var variant_aa_id = v.MUT_HGVS_AA
       $.ajax({
@@ -17,6 +24,7 @@ $(document).ready(function(){
           }
       });
     })
+  }
 
-  // });
+
 })
