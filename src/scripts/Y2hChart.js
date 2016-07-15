@@ -93,20 +93,22 @@ Y2hChart.prototype.draw = function(){
       .friction(0.6)
       .charge(-250)
       .gravity(0.3)
-      .linkDistance(config.height / 3)
+      .linkDistance(config.height / 2.5)
 
   this.svg.append("svg:defs").selectAll("marker")
      .data(["end"])      // Different link/path types can be defined here
    .enter().append("svg:marker")    // This section adds in the arrows
      .attr("id", String)
      .attr("viewBox", "0 -5 10 10")
-     .attr("refX", 20)
+     .attr("refX", 26)
      .attr("refY", 0)
-     .attr("markerWidth", 6)
-     .attr("markerHeight", 6)
+     .attr("markerWidth", 10)
+     .attr("markerHeight", 10)
      .attr("orient", "auto")
+     .style("fill", "lightgrey")
    .append("svg:path")
-     .attr("d", "M0,-5L10,0L0,5");
+     .attr("d", "M0,-5L10,0L0,5")
+     .attr("fill", 'lightgrey')
 
 
   var link = this.svg.selectAll('.link')
@@ -136,8 +138,7 @@ Y2hChart.prototype.draw = function(){
       //  d3.select(this).select("text").style("visibility","hidden")
      })
 
-    //  .append('a')
-        // .attr('href', function(d){if (/^NM_[0-9]{5,}/i.test(d.Name)){ return "/variant/"+d.Name} else {return "/gene/" + d.Name}})
+
 
   var node = nodeGroup.append('circle')
      .attr('class', 'node')
@@ -147,7 +148,7 @@ Y2hChart.prototype.draw = function(){
        } else if(d.category === 'target') {
          return config.nodeRadius
        } else {
-         return config.nodeRadius / 1.4
+         return config.nodeRadius
        }
      })
      .style('fill', function(d){
@@ -164,7 +165,13 @@ Y2hChart.prototype.draw = function(){
      })
      .call(this.force.drag)
 
-  var nodeText = nodeGroup.append('text')
+  var nodeText = nodeGroup.append('a')
+     .attr('href', function(d){
+       if(d.category !== 'source'){
+         return '/gene/' + d.Name
+       }
+     })
+     .append('text')
      .attr('class', 'nodeText')
      .attr('text-anchor', 'middle')
      .attr('dy', 2)

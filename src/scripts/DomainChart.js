@@ -7,7 +7,7 @@ var DomainChart = function(data, config){
   this.mutation = this.getMutationData()
   this.x = d3.scale.linear()
             .domain([0, this.data.proteinLength])
-            .range([0, this.config.width - 3*this.config.xoffset])
+            .range([0, this.config.width - 5*this.config.xoffset])
   // waste the first color
   var wastedColor = this.config.color('NothingCouldNeverHaveThisName')
 
@@ -98,6 +98,7 @@ DomainChart.prototype.markMutations = function(){
                   activeMouseOut = active ? null: needleHeadMouseOut,
                   newTextFontSize = active ? config.headFontSize * 2: config.headFontSize
                   newRadiusFactor = active ? 2 : 0.5
+                  variantTabID = active ? '.nav-tabs a[href="#' + d.name + '_cardbox"]': '.nav-tabs a[href="#wildtype_cardbox"]'
               // domainChart
               d3.select(this).classed("active", active)
               d3.select(this).on("mouseout", activeMouseOut);
@@ -120,7 +121,10 @@ DomainChart.prototype.markMutations = function(){
                 new Y2hChart("#y2h-interaction", y2hDataChoice, y2hChartConfig)
               }
 
+               $(variantTabID).tab('show');
+
             })
+            .on("dblclick", 'undefined')
 
   function needleHeadMouseOut(){
       d3.select(this)
@@ -242,8 +246,8 @@ function propagateUpdates(activeElement){
 if (typeof window.domainChartData !== 'undefined') {
   //----- Instantiation -----//
   var domainChartConfig = {
-    "height": 200,
-    "width": 540,
+    "height": 240,
+    "width": 550,
     "target_dom": "#protein-domain-graph",
     "xoffset": 10,
     "yoffset": 110,

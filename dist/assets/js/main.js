@@ -7,7 +7,7 @@ var DomainChart = function(data, config){
   this.mutation = this.getMutationData()
   this.x = d3.scale.linear()
             .domain([0, this.data.proteinLength])
-            .range([0, this.config.width - 3*this.config.xoffset])
+            .range([0, this.config.width - 5*this.config.xoffset])
   // waste the first color
   var wastedColor = this.config.color('NothingCouldNeverHaveThisName')
 
@@ -98,6 +98,7 @@ DomainChart.prototype.markMutations = function(){
                   activeMouseOut = active ? null: needleHeadMouseOut,
                   newTextFontSize = active ? config.headFontSize * 2: config.headFontSize
                   newRadiusFactor = active ? 2 : 0.5
+                  variantTabID = active ? '.nav-tabs a[href="#' + d.name + '_cardbox"]': '.nav-tabs a[href="#wildtype_cardbox"]'
               // domainChart
               d3.select(this).classed("active", active)
               d3.select(this).on("mouseout", activeMouseOut);
@@ -120,7 +121,10 @@ DomainChart.prototype.markMutations = function(){
                 new Y2hChart("#y2h-interaction", y2hDataChoice, y2hChartConfig)
               }
 
+               $(variantTabID).tab('show');
+
             })
+            .on("dblclick", 'undefined')
 
   function needleHeadMouseOut(){
       d3.select(this)
@@ -242,8 +246,8 @@ function propagateUpdates(activeElement){
 if (typeof window.domainChartData !== 'undefined') {
   //----- Instantiation -----//
   var domainChartConfig = {
-    "height": 200,
-    "width": 540,
+    "height": 240,
+    "width": 550,
     "target_dom": "#protein-domain-graph",
     "xoffset": 10,
     "yoffset": 110,
@@ -996,20 +1000,22 @@ Y2hChart.prototype.draw = function(){
       .friction(0.6)
       .charge(-250)
       .gravity(0.3)
-      .linkDistance(config.height / 3)
+      .linkDistance(config.height / 2.5)
 
   this.svg.append("svg:defs").selectAll("marker")
      .data(["end"])      // Different link/path types can be defined here
    .enter().append("svg:marker")    // This section adds in the arrows
      .attr("id", String)
      .attr("viewBox", "0 -5 10 10")
-     .attr("refX", 20)
+     .attr("refX", 26)
      .attr("refY", 0)
-     .attr("markerWidth", 6)
-     .attr("markerHeight", 6)
+     .attr("markerWidth", 10)
+     .attr("markerHeight", 10)
      .attr("orient", "auto")
+     .style("fill", "lightgrey")
    .append("svg:path")
-     .attr("d", "M0,-5L10,0L0,5");
+     .attr("d", "M0,-5L10,0L0,5")
+     .attr("fill", 'lightgrey')
 
 
   var link = this.svg.selectAll('.link')
@@ -1039,8 +1045,7 @@ Y2hChart.prototype.draw = function(){
       //  d3.select(this).select("text").style("visibility","hidden")
      })
 
-    //  .append('a')
-        // .attr('href', function(d){if (/^NM_[0-9]{5,}/i.test(d.Name)){ return "/variant/"+d.Name} else {return "/gene/" + d.Name}})
+
 
   var node = nodeGroup.append('circle')
      .attr('class', 'node')
@@ -1050,7 +1055,7 @@ Y2hChart.prototype.draw = function(){
        } else if(d.category === 'target') {
          return config.nodeRadius
        } else {
-         return config.nodeRadius / 1.4
+         return config.nodeRadius
        }
      })
      .style('fill', function(d){
@@ -1067,7 +1072,13 @@ Y2hChart.prototype.draw = function(){
      })
      .call(this.force.drag)
 
-  var nodeText = nodeGroup.append('text')
+  var nodeText = nodeGroup.append('a')
+     .attr('href', function(d){
+       if(d.category !== 'source'){
+         return '/gene/' + d.Name
+       }
+     })
+     .append('text')
      .attr('class', 'nodeText')
      .attr('text-anchor', 'middle')
      .attr('dy', 2)
@@ -1130,23 +1141,66 @@ $(document).ready(function(){
   })
 
 
-  if (typeof window.variant !== 'undefined'){
-    // ajax call to fetch variant box
-    variant.forEach(function(v){
-      var variant_aa_id = v.MUT_HGVS_AA
-      $.ajax({
-          url: document.location.protocol +"//"+ document.location.hostname + ':' + document.location.port + document.location.pathname + '/variantBoxAjax',
-          type: 'GET',
-          data : {
-            'variant_aa_id': variant_aa_id
-          },
-          success: function(data) {
-            // console.log(data)
-            $('#' + variant_aa_id + '_cardbox').html(data);
-          }
-      });
+  $('[data-toggle="tooltip"]').tooltip()
+
+  $('#showToolTip').click(function(){
+    $('.showToolTip').tooltip('toggle')
+  })
+
+  //for each element that is classed as 'pull-down', set its margin-top to the difference between its own height and the height of its parent
+  $('.pull-down').each(function() {
+    var $this = $(this);
+    $this.css('margin-top', $this.parent().height() - $this.height())
+  });
+
+  // damn definitely use REACT/REDUX for this later. STATE!!!
+  // variant.forEach(function(v){
+  //   $('.nav-tabs a[href="#' + v.MUT_HGVS_AA + '_cardbox"]').click(function() {
+  //     $('#' + v.MUT_HGVS_AA + '_needleHead').d3Click();
+  //   });
+  // })
+
+
+  $('#downloadData').click(function(){
+    $.ajax({
+      url: document.location.protocol +"//"+ document.location.hostname + ':' + document.location.port + document.location.pathname + '/download',
+      type: 'GET',
+      success: function(data){
+        console.log(data)
+      }
     })
-  }
+  })
+
+
+
+  // not using ajax. bad practice
+  // if (typeof window.variant !== 'undefined'){
+  //   // ajax call to fetch variant box
+  //   variant.forEach(function(v){
+  //     var variant_aa_id = v.MUT_HGVS_AA
+  //     $.ajax({
+  //         url: document.location.protocol +"//"+ document.location.hostname + ':' + document.location.port + document.location.pathname + '/variantBoxAjax',
+  //         type: 'GET',
+  //         data : {
+  //           'variant_aa_id': variant_aa_id
+  //         },
+  //         success: function(data) {
+  //           // console.log(data)
+  //           $('#' + variant_aa_id + '_cardbox').html(data);
+  //         }
+  //     });
+  //   })
+  // }
+
+
+  jQuery.fn.d3Click = function () {
+    this.each(function (i, e) {
+      var evt = document.createEvent("MouseEvents");
+      evt.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+
+      e.dispatchEvent(evt);
+    });
+  };
 
 
 })

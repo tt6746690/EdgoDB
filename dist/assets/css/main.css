@@ -4,6 +4,10 @@
 @import "http://fonts.googleapis.com/css?family=Lato&subset=latin,latin-ext";
 @import "https://fonts.googleapis.com/css?family=Ubuntu";
 
+@import "https://fonts.googleapis.com/css?family=Tangerine";
+@import "https://fonts.googleapis.com/css?family=Open+Sans:300,400";
+@import "http://fonts.googleapis.com/css?family=Lato&subset=latin,latin-ext";
+@import "https://fonts.googleapis.com/css?family=Ubuntu";
 dl {
   margin-bottom: 0px;
 }
@@ -15,8 +19,13 @@ p {
 }
 #GeneTitle {
   text-align: left;
+  font-family: "Tangerine", serif;
 }
 
+@import "https://fonts.googleapis.com/css?family=Tangerine";
+@import "https://fonts.googleapis.com/css?family=Open+Sans:300,400";
+@import "http://fonts.googleapis.com/css?family=Lato&subset=latin,latin-ext";
+@import "https://fonts.googleapis.com/css?family=Ubuntu";
 #bs_overrides img,
 #bs_overrides video,
 #bs_overrides audio {
@@ -82,10 +91,11 @@ body {
   position: relative;
 }
 header {
-  font: 14px "Open Sans", sans-serif;
+  font: 14px "Ubuntu", sans-serif;
   color: #3e3e3e;
 }
 #bs_overrides > main {
+  font-family: "Lato", sans-serif;
   padding-top: 20px;
   padding-bottom: 30px;
   min-height: 100vh;

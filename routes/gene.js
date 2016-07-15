@@ -21,6 +21,33 @@ router.get('/', function(req, res, next){
 
 
 
+router.get('/:geneid/download', function(req, res, next){
+  pool.getConnection(function(err, connection) {
+    var sqlstr = "SELECT * \
+                  FROM Gene \
+                    JOIN Variant USING(ENTREZ_GENE_ID)\
+                  WHERE HUGO_GENE_SYMBOL = ?"
+    connection.query(sqlstr, [req.params.geneid], function(err, rows) {
+      if (err) throw err;
+
+      var result = []
+      for (var i = 0; i < rows.length; i++){
+        result.push(JSON.parse(JSON.stringify(rows))[i])
+      }
+
+      var text = {
+        "download.txt": result
+      }
+
+      res.set({'Content-Type': 'application/force-download', "Content-Disposition":"attachment; filename=\"download.txt\""});
+      res.send(text["download.txt"]);
+
+      connection.release();
+    });
+  });
+});
+
+
 router.get('/:geneid', function(req, res, next){
   pool.getConnection(function(err, connection) {
     async.parallel({
@@ -93,8 +120,10 @@ router.get('/:geneid', function(req, res, next){
       gene: function(callback){
         var sqlstr = "SELECT HUGO_GENE_SYMBOL, ENTREZ_GENE_ID, OMIM_ID, \
                        UNIPROT_SWISSPROT_ID, UNIPROT_PROTEIN_LENGTH, \
-                       ENSEMBL_GENE_ID, DESCRIPTION, CCSB_ORF_ID, ORF_LENGTH \
-                       FROM Gene JOIN ORFeome USING(ENTREZ_GENE_ID)\
+                       ENSEMBL_GENE_ID, DESCRIPTION, CCSB_ORF_ID, ORF_LENGTH, \
+                       UNIPROT_PROTEIN_LOCALIZATION, PROTEIN_ATLAS_LOCALIZATION\
+                       FROM Gene \
+                        JOIN ORFeome USING(ENTREZ_GENE_ID)\
                        WHERE HUGO_GENE_SYMBOL = ?;"
         connection.query(sqlstr, [req.params.geneid], function(err, rows) {
           if (err) {return next(err)}
@@ -106,6 +135,7 @@ router.get('/:geneid', function(req, res, next){
           }
 
           gene = gene[0]
+          console.log(gene)
           var composeGene = {
             symbol: gene.HUGO_GENE_SYMBOL,
             description: gene.DESCRIPTION,
@@ -145,9 +175,16 @@ router.get('/:geneid', function(req, res, next){
               ORFeome: {
                 link: 'http://horfdb.dfci.harvard.edu/index.php?page=showdetail&orf=' + gene.CCSB_ORF_ID,
                 display: gene.CCSB_ORF_ID + ' ('+ gene.ORF_LENGTH / 3+ 'AA)'
+              },
+              "Uniprot localization": {
+                display: gene.UNIPROT_PROTEIN_LOCALIZATION
+              },
+              "ProteinAtlas Localization": {
+                display: gene.PROTEIN_ATLAS_LOCALIZATION
               }
             }
           }
+
           callback(null, composeGene)
         });
       },
@@ -168,7 +205,6 @@ router.get('/:geneid', function(req, res, next){
           variant.sort(function(a, b){
             var aInt = parseInt(a.MUT_HGVS_AA.match(/\d+/))
             var bInt = parseInt(b.MUT_HGVS_AA.match(/\d+/))
-            console.log(aInt, bInt, aInt > bInt)
             if(aInt < bInt){
               return -1
             }
@@ -179,6 +215,76 @@ router.get('/:geneid', function(req, res, next){
           })
 
           callback(null, variant)
+        });
+      },
+      variantInfo: function(callback){
+        var sqlstr = "SELECT MUT_HGVS_AA, DISEASE_NAME, INHERITANCE_PATTERN, \
+                      CLINVAR_ID, CLINVAR_CLINICAL_SIGNIFICANCE, DBSNP_ID, HGMD_ACCESSION, \
+                      HGMD_VARIANT_CLASS, PMID, EXAC_ALLELE_FREQUENCY, POLYPHEN_SCORE, \
+                      POLYPHEN_CLASS, SOLVENT_ACCESSIBILITY, CONSERVATION_INDEX, Y2H_EDGOTYPE\
+                      FROM Variant \
+                        JOIN Gene USING(ENTREZ_GENE_ID) \
+                        JOIN VariantProperty USING(VARIANT_ID) \
+                      WHERE HUGO_GENE_SYMBOL = ?"
+
+        connection.query(sqlstr, [req.params.geneid], function(err, rows) {
+          if (err) {return next(err)}
+          var variantBox = []
+          for (var i = 0; i < rows.length; i++){
+            variantBox.push(JSON.parse(JSON.stringify(rows))[i])
+          }
+
+          composeVariant = []
+          variantBox.forEach(function(d){
+            composeVariant.push({
+               "symbol": d.MUT_HGVS_AA,
+               "links": {
+                 "Disease": {
+                   "display": d.DISEASE_NAME
+                 },
+                 "Inheritance": {
+                   display: d.INHERITANCE_PATTERN
+                 },
+                 "ClinVar Accession": {
+                   "display": d.CLINVAR_CLINICAL_SIGNIFICANCE,
+                   "link": 'http://www.ncbi.nlm.nih.gov/clinvar/variation/' + d.CLINVAR_ID
+                 },
+                 "dbSNP": {
+                   "display": d.DBSNP_ID,
+                   "link": 'http://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi?rs=' + d.DBSNP_ID
+                 },
+                 "HGMD Accession": {
+                   display: d.HGMD_ACCESSION
+                 },
+                 "HGMD mutation": {
+                   display: d.HGMD_VARIANT_CLASS
+                 },
+                 "Pubmed": {
+                   "display": d.PMID,
+                   "link": 'http://www.ncbi.nlm.nih.gov/pubmed/' + d.PMID
+                 },
+                 "Exac Frequency": {
+                   "display": d.EXAC_ALLELE_FREQUENCY
+                 },
+                 "Polyphen score": {
+                   "display": d.POLYPHEN_SCORE
+                 },
+                 "Polyphen class": {
+                   "display": d.POLYPHEN_CLASS
+                 },
+                 "Solvent accessibility": {
+                   "display": d.SOLVENT_ACCESSIBILITY
+                 },
+                 "Conservation index": {
+                   "display": d.CONSERVATION_INDEX
+                 },
+                 "Y2H Edgotype": {
+                   "display": d.Y2H_EDGOTYPE
+                 }
+               } // link
+             }) // push
+          }) // forEach
+          callback(null, composeVariant)
         });
       },
       radarChart: function(callback){
@@ -269,6 +375,7 @@ router.get('/:geneid', function(req, res, next){
       res.render('gene', {
         gene: results.gene,
         variant: results.variant,   // variant ID that falls under this gene
+        variantInfo: results.variantInfo,
         domainChartData:{         // data for proteinDomain Graph
           proteinLength: proteinL,
           region: results.domainRegion,
@@ -286,149 +393,6 @@ router.get('/:geneid', function(req, res, next){
 
   })
 })
-
-
-router.get('/:geneid/variantBoxAjax', function(req, res, next){
-  pool.getConnection(function(err, connection){
-    async.parallel({
-      variantInfo: function(callback){
-        var sqlstr = "SELECT MUT_HGVS_AA, DISEASE_NAME, INHERITANCE_PATTERN, \
-                      CLINVAR_ID, CLINVAR_CLINICAL_SIGNIFICANCE, DBSNP_ID, HGMD_ACCESSION, \
-                      HGMD_VARIANT_CLASS, PMID, EXAC_ALLELE_FREQUENCY, POLYPHEN_SCORE, \
-                      POLYPHEN_CLASS, SOLVENT_ACCESSIBILITY, CONSERVATION_INDEX, Y2H_EDGOTYPE\
-                      FROM Variant \
-                        JOIN Gene USING(ENTREZ_GENE_ID) \
-                        JOIN VariantProperty USING(VARIANT_ID) \
-                      WHERE HUGO_GENE_SYMBOL = ? AND \
-                        MUT_HGVS_AA = ?"
-
-        connection.query(sqlstr, [req.params.geneid, req.query.variant_aa_id], function(err, rows) {
-          if (err) {return next(err)}
-          var variantBox = []
-          for (var i = 0; i < rows.length; i++){
-            variantBox.push(JSON.parse(JSON.stringify(rows))[i])
-          }
-
-          variantBox = variantBox[0]
-          composeVariant = {
-            "symbol": variantBox.MUT_HGVS_AA,
-            "links": {
-              "Disease": {
-                "display": variantBox.DISEASE_NAME
-              },
-              "Inheritance": {
-                display: variantBox.INHERITANCE_PATTERN
-              },
-              "ClinVar Accession": {
-                "display": variantBox.CLINVAR_CLINICAL_SIGNIFICANCE,
-                "link": 'http://www.ncbi.nlm.nih.gov/clinvar/variation/' + variantBox.CILNVAR_ID
-              },
-              "dbSNP": {
-                "display": variantBox.DBSNP_ID,
-                "link": 'http://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi?rs=' + variantBox.DBSNP_ID
-              },
-              "HGMD Accession": {
-                display: variantBox.HGMD_ACCESSION
-              },
-              "HGMD mutation": {
-                display: variantBox.HGMD_VARIANT_CLASS
-              },
-              "Pubmed": {
-                "display": variantBox.PMID,
-                "link": 'http://www.ncbi.nlm.nih.gov/pubmed/' + variantBox.PMID
-              },
-              "Exac Frequency": {
-                "display": variantBox.EXAC_ALLELE_FREQUENCY
-              },
-              "Polyphen score": {
-                "display": variantBox.POLYPHEN_SCORE
-              },
-              "Polyphen class": {
-                "display": variantBox.POLYPHEN_CLASS
-              },
-              "Solvent accessibility": {
-                "display": variantBox.SOLVENT_ACCESSIBILITY
-              },
-              "Conservation index": {
-                "display": variantBox.CONSERVATION_INDEX
-              },
-              "Y2H Edgotype": {
-                "display": variantBox.Y2H_EDGOTYPE
-              }
-            }
-          }
-          callback(null, composeVariant) // only one will match... so take the first object
-        });
-      }
-    }, function(err, results){
-      if (err) {return next(err)}
-      connection.release()
-      // console.log(results)
-
-      res.render('variantBox', {
-        variantInfo: results.variantInfo
-      })
-    })
-  })
-})
-
-
-
-//
-//
-// router.get('/:geneid/domainGraph', function(req, res, next){
-//   pool.getConnection(function(err, connection){
-//     async.parallel({
-//       domainRegion: function(callback){
-//         var sqlstr = "SELECT PFAM_ID AS name, SEQ_START AS start, SEQ_END AS end, PROTEIN_LENGTH AS proteinLength \
-//                        FROM PfamDomain \
-//                           LEFT JOIN Gene USING (UNIPROT_PROTEIN_NAME) \
-//                        WHERE HUGO_GENE_SYMBOL = ?;"
-//         connection.query(sqlstr, [req.params.geneid], function(err, rows) {
-//           if (err) {return next(err)}
-//           // if (rows.length == 0) {return next(new Error('Entry unavailable in database'))}
-//
-//           var domainRegion = []
-//           for (var i = 0; i < rows.length; i++){
-//             domainRegion.push(JSON.parse(JSON.stringify(rows))[i])
-//           }
-//           callback(null, domainRegion)
-//         });
-//       },
-//       mutationPosition: function(callback){
-//         var sqlstr = "SELECT MUT_HGVS_AA AS name \
-//                        FROM Gene \
-//                          LEFT JOIN Variant USING (ENTREZ_GENE_ID) \
-//                          LEFT JOIN VariantProperty USING (VARIANT_ID) \
-//                        WHERE HUGO_GENE_SYMBOL = ?;"
-//         connection.query(sqlstr, [req.params.geneid], function(err, rows) {
-//           if (err) {return next(err)}
-//           if (rows.length == 0) {return next(new Error('Entry unavailable in database'))}
-//
-//           var domainRegion = []
-//           for (var i = 0; i < rows.length; i++){
-//             domainRegion.push(JSON.parse(JSON.stringify(rows))[i])
-//           }
-//           callback(null, domainRegion)
-//         });
-//       }
-//     }, function(err, results){
-//       if (err) {return next(err)}
-//       connection.release()
-//       // console.log(results)
-//       var proteinL = typeof results.domainRegion === 'undefined' ? 500: results.domainRegion[0].proteinLength
-//       res.send({
-//         proteinDomainData:{         // data for proteinDomain Graph
-//           proteinLength: proteinL,
-//           region: results.domainRegion,
-//           mutation: results.mutationPosition // later be filled with info from variant client side
-//         }
-//       })
-//     })
-//   })
-// })
-//
-
 
 
 module.exports = router;
