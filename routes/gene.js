@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var pool = require('../app.js')
 var async = require('async')
+var Excel = require('exceljs')
 
 router.get('/', function(req, res, next){
   pool.getConnection(function(err, connection) {
@@ -12,7 +13,6 @@ router.get('/', function(req, res, next){
       for (var i = 0; i < rows.length; i++){
         result.push(JSON.parse(JSON.stringify(rows))[i])
       }
-      // result => {[HUGO_GENE_SYMBOL, ENTREZ_GENE_ID], ...}
       res.render('geneList', { geneList: result});
       connection.release();
     });
@@ -26,23 +26,47 @@ router.get('/:geneid/download', function(req, res, next){
     var sqlstr = "SELECT * \
                   FROM Gene \
                     JOIN Variant USING(ENTREZ_GENE_ID)\
+                    JOIN VariantProperty USING(VARIANT_ID)\
                   WHERE HUGO_GENE_SYMBOL = ?"
     connection.query(sqlstr, [req.params.geneid], function(err, rows) {
       if (err) throw err;
+      connection.release();
 
       var result = []
       for (var i = 0; i < rows.length; i++){
         result.push(JSON.parse(JSON.stringify(rows))[i])
       }
 
-      var text = {
-        "download.txt": result
-      }
+      var workbook = new Excel.Workbook()
+      var worksheet = workbook.addWorksheet('sheet 1')
 
-      res.set({'Content-Type': 'application/force-download', "Content-Disposition":"attachment; filename=\"download.txt\""});
-      res.send(text["download.txt"]);
+      worksheet.columns = Object.keys(result[0]).map(function(d){
+        return {
+          header: d,
+          key: d
+        }
+      })
+      result.forEach(function(row){
+        worksheet.addRow(row)
+      })
 
-      connection.release();
+      res.set({'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', "Content-Disposition":"attachment; filename=\"download.xlsx\""});
+      workbook.xlsx.write(res).then(function(){
+        res.end()
+      })
+
+
+
+
+      // workbook.columns = {
+      //
+      // }
+      //
+      //
+      // res.set({'Content-Type': 'application/force-download', "Content-Disposition":"attachment; filename=\"download.xls\""});
+      // res.send(text["download.xls"]);
+      // res.send({'wtf': 'wtftf'})
+
     });
   });
 });

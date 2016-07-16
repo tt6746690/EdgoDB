@@ -1147,12 +1147,6 @@ $(document).ready(function(){
     $('.showToolTip').tooltip('toggle')
   })
 
-  //for each element that is classed as 'pull-down', set its margin-top to the difference between its own height and the height of its parent
-  $('.pull-down').each(function() {
-    var $this = $(this);
-    $this.css('margin-top', $this.parent().height() - $this.height())
-  });
-
   // damn definitely use REACT/REDUX for this later. STATE!!!
   // variant.forEach(function(v){
   //   $('.nav-tabs a[href="#' + v.MUT_HGVS_AA + '_cardbox"]').click(function() {
@@ -1160,16 +1154,10 @@ $(document).ready(function(){
   //   });
   // })
 
-
-  $('#downloadData').click(function(){
-    $.ajax({
-      url: document.location.protocol +"//"+ document.location.hostname + ':' + document.location.port + document.location.pathname + '/download',
-      type: 'GET',
-      success: function(data){
-        console.log(data)
-      }
-    })
-  })
+  //
+  // $('#downloadData').click(function(){
+  //   window.location = document.location.protocol +"//"+ document.location.hostname + ':' + document.location.port + document.location.pathname + '/download'
+  // })
 
 
 
