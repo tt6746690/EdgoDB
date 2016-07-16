@@ -268,6 +268,232 @@ if (typeof window.domainChartData !== 'undefined') {
 
 
 
+
+var removeSVG = function(target_dom){
+  $(target_dom).html("");
+}
+
+var Y2hChart = function(target_dom, data, config){
+  this.config = config
+  config.target_dom = target_dom
+  this.data = data
+  this.edges = this.getEdges()    // edges data
+  this.nodes = this.getNodes()    // nodes data
+  this.draw()           // creates this.svg, this.force, and marker
+}
+
+
+subsetY2hData = function(data, selector){
+  // clone object
+  var dataClone = JSON.parse(JSON.stringify(data))
+  dataClone.links = dataClone.links.filter(function(l){
+    return l.source.split('_')[1] === selector
+  })
+  return dataClone
+}
+
+Y2hChart.prototype.getEdges = function(){
+  var nodes = this.data.nodes
+  var links = this.data.links
+  var config = this.config
+
+  var edges = []
+  links.forEach(function(e) {
+      var sourceNode = nodes.filter(function(n) {
+          return n.ID === e.source;
+      })[0],
+          targetNode = nodes.filter(function(n) {
+              return n.ID === e.target;
+          })[0];
+
+      sourceNode.category = 'source'
+      targetNode.category = 'target'
+
+      if(e.score === 0){
+        targetNode.category = 'lost'
+      }
+
+      edges.push({
+          source: sourceNode,
+          target: targetNode,
+          score: e.score
+      });
+  });
+
+  return edges
+}
+
+Y2hChart.prototype.getNodes = function(){
+  var nodes = this.data.nodes
+  var links = this.data.links
+  var config = this.config
+
+  var nodes_in_links = []
+  links.forEach(function(l){
+    nodes_in_links.push(l.source)
+    nodes_in_links.push(l.target)
+  })
+
+  var new_nodes = nodes.filter(function(n){
+    return nodes_in_links.indexOf(n.ID) > -1
+  })
+
+  return new_nodes
+}
+
+
+Y2hChart.prototype.draw = function(){
+  config = this.config
+  nodes = this.nodes
+  edges = this.edges
+
+
+  this.svg = d3.select(config.target_dom).append("svg")
+      .attr("width", config.width)
+      .attr("height", config.height);
+
+
+  this.force = d3.layout.force()
+      .size([config.width, config.height])
+      .nodes(nodes)
+      .links(edges)
+      .linkStrength(0.8)
+      .friction(0.6)
+      .charge(-250)
+      .gravity(0.3)
+      .linkDistance(config.height / 2.5)
+
+  this.svg.append("svg:defs").selectAll("marker")
+     .data(["end"])      // Different link/path types can be defined here
+   .enter().append("svg:marker")    // This section adds in the arrows
+     .attr("id", String)
+     .attr("viewBox", "0 -5 10 10")
+     .attr("refX", 26)
+     .attr("refY", 0)
+     .attr("markerWidth", 10)
+     .attr("markerHeight", 10)
+     .attr("orient", "auto")
+     .style("fill", "lightgrey")
+   .append("svg:path")
+     .attr("d", "M0,-5L10,0L0,5")
+     .attr("fill", 'lightgrey')
+
+
+  var link = this.svg.selectAll('.link')
+     .data(edges)
+     .enter().append('line')
+     .attr('class', 'link')
+     .attr("marker-end", "url(#end)")
+     .style("stroke-width", 1)
+     .style("stroke-dasharray", function(d){ if (d.score === 0){ return "5,5"} else {return 'undefined'}})
+     .style("stroke", function(d){
+       if(d.score === 1){
+         return 'lightgrey'
+       } else {
+         return '#ff4d00'
+       }
+     })
+
+
+  var nodeGroup = this.svg.selectAll('.node')
+     .data(nodes)
+     .enter().append('g')
+     .attr('class', 'nodeGroup')
+     .on("mouseover", function(d){
+      //  d3.select(this).select("text").style("visibility","visible")
+     })
+     .on("mouseout", function(d){
+      //  d3.select(this).select("text").style("visibility","hidden")
+     })
+
+
+
+  var node = nodeGroup.append('circle')
+     .attr('class', 'node')
+     .attr("r", function(d){
+       if(d.category === 'source'){
+         return config.nodeRadius * 1.4
+       } else if(d.category === 'target') {
+         return config.nodeRadius
+       } else {
+         return config.nodeRadius
+       }
+     })
+     .style('fill', function(d){
+      //  if(d.ID)
+     })
+     .style("fill", function(d){
+       if(d.category === 'source'){
+         return config.sourceNodeColor
+       } else if (d.category === 'target'){
+         return config.targetNodeColor
+       } else {
+         return config.lostNodeColor
+       }
+     })
+     .call(this.force.drag)
+
+  var nodeText = nodeGroup.append('a')
+     .attr('href', function(d){
+       if(d.category !== 'source'){
+         return '/gene/' + d.Name
+       }
+     })
+     .append('text')
+     .attr('class', 'nodeText')
+     .attr('text-anchor', 'middle')
+     .attr('dy', 2)
+     .style("font-size", config.textSize)
+     .style("visibility", "visible")
+     .text(function(d) { return d.Name; })
+
+  this.force.start()
+
+  var safety = 0
+  while(this.force.alpha() > 0.05) { // You'll want to try out different, "small" values for this
+    this.force.tick();
+    if(safety++ > 500) {
+      break;// Avoids infinite looping in case this solution was a bad idea
+    }
+  }
+
+
+  this.force.on("tick", function() {
+   link.attr("x1", function(d) { return d.source.x; })
+       .attr("y1", function(d) { return d.source.y; })
+       .attr("x2", function(d) { return d.target.x; })
+       .attr("y2", function(d) { return d.target.y; });
+
+   nodeGroup.attr("transform", function(d) {
+           return 'translate(' + [d.x, d.y] + ')';
+       });
+
+  });
+
+
+}
+
+if (typeof window.y2hChartData !== 'undefined'){
+  //----- Instantiation -----//
+  var y2hChartConfig = {
+    "height": 250,
+    "width": 250,
+    "nodeRadius": 16,
+    "textSize": 9,
+    "color": d3.scale.category20(),
+    "sourceNodeColor": 'lightgrey',
+    "targetNodeColor": '#e8e8e8',
+    "lostNodeColor": "orange"
+  }
+
+  if (y2hChartData.nodes.length !== 0 && y2hChartData.links.length) {
+    wt_y2hChartData = subsetY2hData(y2hChartData, '0')
+    var y2hChart = new Y2hChart("#y2h-interaction", wt_y2hChartData, y2hChartConfig)
+  }
+}
+
+
+
 // reference: http://bl.ocks.org/mattbrehmer/12ea86353bc807df2187
 
 var ExpressionChart = function(target_dom, raw_data, config) {
@@ -565,6 +791,89 @@ if (typeof window.expressionChartData !== 'undefined') {
     var expressionChart = new ExpressionChart("#elisa-expression", expressionChartData, expressionChartConfig);
   }
 }
+
+
+$(document).ready(function(){
+
+  // scrollspy behaviour
+  $("body").scrollspy({
+      target: "#target_nav",
+      offset: 50
+  })
+
+
+  // tooltip handling
+  $('[data-toggle="tooltip"]').tooltip()
+
+  $('#showToolTip').click(function(){
+    $('.showToolTip').tooltip('toggle')
+  })
+
+
+
+  // pv viewer handling
+  if(typeof window.pv !== 'undefined' && window.pdbInfo.length !== 0){
+    var viewer = pv.Viewer(document.getElementById('pv'), {
+      width: 536,
+      height: 460,
+      antialias: true,
+      quality : 'high'
+    })
+    pv.io.fetchPdb('http://files.rcsb.org/download/' + pdbInfo[0].PDB_ID + '.pdb', function(structure){
+          viewer.cartoon('protein', structure, { color : color.ssSuccession()});
+          viewer.centerOn(structure);
+    });
+  }
+
+  $('a.pdb-ajax-link').click(function(e){
+    e.preventDefault()
+    pv.io.fetchPdb('http://files.rcsb.org/download/' + $(this).attr("id") + '.pdb', function(structure){
+          viewer.cartoon('protein', structure, { color : color.ssSuccession()});
+          viewer.centerOn(structure);
+    });
+  })
+
+
+
+  // damn definitely use REACT/REDUX for this later. STATE!!!
+  // variant.forEach(function(v){
+  //   $('.nav-tabs a[href="#' + v.MUT_HGVS_AA + '_cardbox"]').click(function() {
+  //     $('#' + v.MUT_HGVS_AA + '_needleHead').d3Click();
+  //   });
+  // })
+
+
+  // custom function to transfer click event handling from d3 to jquery
+  jQuery.fn.d3Click = function () {
+    this.each(function (i, e) {
+      var evt = document.createEvent("MouseEvents");
+      evt.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+
+      e.dispatchEvent(evt);
+    });
+  };
+
+
+  // // not using ajax. bad practice
+  // if (typeof window.pv !== 'undefined' && window.pdbInfo.length !== 0){
+  //   // ajax call to fetch variant box
+  //   variant.forEach(function(v){
+  //     var variant_aa_id = v.MUT_HGVS_AA
+  //     $.ajax({
+  //         url: document.location.protocol +"//"+ document.location.hostname + ':' + document.location.port + document.location.pathname + '/variantBoxAjax',
+  //         type: 'GET',
+  //         data : {
+  //           'variant_aa_id': variant_aa_id
+  //         },
+  //         success: function(data) {
+  //           // console.log(data)
+  //           $('#' + variant_aa_id + '_cardbox').html(data);
+  //         }
+  //     });
+  //   })
+  // }
+
+})
 
 // taken from web thanks for the code...
 var RadarChart = function(id, data, options) {
@@ -904,315 +1213,6 @@ if (typeof window.variant !== 'undefined' && typeof window.gene !== 'undefined' 
     var radarChart = new RadarChart("#lumier-interaction", wtRadarData, radarChartConfig);
   }
 }
-
-
-
-
-var removeSVG = function(target_dom){
-  $(target_dom).html("");
-}
-
-var Y2hChart = function(target_dom, data, config){
-  this.config = config
-  config.target_dom = target_dom
-  this.data = data
-  this.edges = this.getEdges()    // edges data
-  this.nodes = this.getNodes()    // nodes data
-  this.draw()           // creates this.svg, this.force, and marker
-}
-
-
-subsetY2hData = function(data, selector){
-  // clone object
-  var dataClone = JSON.parse(JSON.stringify(data))
-  dataClone.links = dataClone.links.filter(function(l){
-    return l.source.split('_')[1] === selector
-  })
-  return dataClone
-}
-
-Y2hChart.prototype.getEdges = function(){
-  var nodes = this.data.nodes
-  var links = this.data.links
-  var config = this.config
-
-  var edges = []
-  links.forEach(function(e) {
-      var sourceNode = nodes.filter(function(n) {
-          return n.ID === e.source;
-      })[0],
-          targetNode = nodes.filter(function(n) {
-              return n.ID === e.target;
-          })[0];
-
-      sourceNode.category = 'source'
-      targetNode.category = 'target'
-
-      if(e.score === 0){
-        targetNode.category = 'lost'
-      }
-
-      edges.push({
-          source: sourceNode,
-          target: targetNode,
-          score: e.score
-      });
-  });
-
-  return edges
-}
-
-Y2hChart.prototype.getNodes = function(){
-  var nodes = this.data.nodes
-  var links = this.data.links
-  var config = this.config
-
-  var nodes_in_links = []
-  links.forEach(function(l){
-    nodes_in_links.push(l.source)
-    nodes_in_links.push(l.target)
-  })
-
-  var new_nodes = nodes.filter(function(n){
-    return nodes_in_links.indexOf(n.ID) > -1
-  })
-
-  return new_nodes
-}
-
-
-Y2hChart.prototype.draw = function(){
-  config = this.config
-  nodes = this.nodes
-  edges = this.edges
-
-
-  this.svg = d3.select(config.target_dom).append("svg")
-      .attr("width", config.width)
-      .attr("height", config.height);
-
-
-  this.force = d3.layout.force()
-      .size([config.width, config.height])
-      .nodes(nodes)
-      .links(edges)
-      .linkStrength(0.8)
-      .friction(0.6)
-      .charge(-250)
-      .gravity(0.3)
-      .linkDistance(config.height / 2.5)
-
-  this.svg.append("svg:defs").selectAll("marker")
-     .data(["end"])      // Different link/path types can be defined here
-   .enter().append("svg:marker")    // This section adds in the arrows
-     .attr("id", String)
-     .attr("viewBox", "0 -5 10 10")
-     .attr("refX", 26)
-     .attr("refY", 0)
-     .attr("markerWidth", 10)
-     .attr("markerHeight", 10)
-     .attr("orient", "auto")
-     .style("fill", "lightgrey")
-   .append("svg:path")
-     .attr("d", "M0,-5L10,0L0,5")
-     .attr("fill", 'lightgrey')
-
-
-  var link = this.svg.selectAll('.link')
-     .data(edges)
-     .enter().append('line')
-     .attr('class', 'link')
-     .attr("marker-end", "url(#end)")
-     .style("stroke-width", 1)
-     .style("stroke-dasharray", function(d){ if (d.score === 0){ return "5,5"} else {return 'undefined'}})
-     .style("stroke", function(d){
-       if(d.score === 1){
-         return 'lightgrey'
-       } else {
-         return '#ff4d00'
-       }
-     })
-
-
-  var nodeGroup = this.svg.selectAll('.node')
-     .data(nodes)
-     .enter().append('g')
-     .attr('class', 'nodeGroup')
-     .on("mouseover", function(d){
-      //  d3.select(this).select("text").style("visibility","visible")
-     })
-     .on("mouseout", function(d){
-      //  d3.select(this).select("text").style("visibility","hidden")
-     })
-
-
-
-  var node = nodeGroup.append('circle')
-     .attr('class', 'node')
-     .attr("r", function(d){
-       if(d.category === 'source'){
-         return config.nodeRadius * 1.4
-       } else if(d.category === 'target') {
-         return config.nodeRadius
-       } else {
-         return config.nodeRadius
-       }
-     })
-     .style('fill', function(d){
-      //  if(d.ID)
-     })
-     .style("fill", function(d){
-       if(d.category === 'source'){
-         return config.sourceNodeColor
-       } else if (d.category === 'target'){
-         return config.targetNodeColor
-       } else {
-         return config.lostNodeColor
-       }
-     })
-     .call(this.force.drag)
-
-  var nodeText = nodeGroup.append('a')
-     .attr('href', function(d){
-       if(d.category !== 'source'){
-         return '/gene/' + d.Name
-       }
-     })
-     .append('text')
-     .attr('class', 'nodeText')
-     .attr('text-anchor', 'middle')
-     .attr('dy', 2)
-     .style("font-size", config.textSize)
-     .style("visibility", "visible")
-     .text(function(d) { return d.Name; })
-
-  this.force.start()
-
-  var safety = 0
-  while(this.force.alpha() > 0.05) { // You'll want to try out different, "small" values for this
-    this.force.tick();
-    if(safety++ > 500) {
-      break;// Avoids infinite looping in case this solution was a bad idea
-    }
-  }
-
-
-  this.force.on("tick", function() {
-   link.attr("x1", function(d) { return d.source.x; })
-       .attr("y1", function(d) { return d.source.y; })
-       .attr("x2", function(d) { return d.target.x; })
-       .attr("y2", function(d) { return d.target.y; });
-
-   nodeGroup.attr("transform", function(d) {
-           return 'translate(' + [d.x, d.y] + ')';
-       });
-
-  });
-
-
-}
-
-if (typeof window.y2hChartData !== 'undefined'){
-  //----- Instantiation -----//
-  var y2hChartConfig = {
-    "height": 250,
-    "width": 250,
-    "nodeRadius": 16,
-    "textSize": 9,
-    "color": d3.scale.category20(),
-    "sourceNodeColor": 'lightgrey',
-    "targetNodeColor": '#e8e8e8',
-    "lostNodeColor": "orange"
-  }
-
-  if (y2hChartData.nodes.length !== 0 && y2hChartData.links.length) {
-    wt_y2hChartData = subsetY2hData(y2hChartData, '0')
-    var y2hChart = new Y2hChart("#y2h-interaction", wt_y2hChartData, y2hChartConfig)
-  }
-}
-
-
-$(document).ready(function(){
-
-  // scrollspy behaviour
-  $("body").scrollspy({
-      target: "#target_nav",
-      offset: 50
-  })
-
-
-  // tooltip handling
-  $('[data-toggle="tooltip"]').tooltip()
-
-  $('#showToolTip').click(function(){
-    $('.showToolTip').tooltip('toggle')
-  })
-
-
-
-  // pv viewer handling
-  if(typeof window.pv !== 'undefined' && window.pdbInfo.length !== 0){
-    var viewer = pv.Viewer(document.getElementById('pv'), {
-      width: 536,
-      height: 460,
-      antialias: true,
-      quality : 'high'
-    })
-    pv.io.fetchPdb('http://files.rcsb.org/download/' + pdbInfo[0].PDB_ID + '.pdb', function(structure){
-          viewer.cartoon('protein', structure, { color : color.ssSuccession()});
-          viewer.centerOn(structure);
-    });
-  }
-
-  $('a.pdb-ajax-link').click(function(e){
-    e.preventDefault()
-    pv.io.fetchPdb('http://files.rcsb.org/download/' + $(this).attr("id") + '.pdb', function(structure){
-          viewer.cartoon('protein', structure, { color : color.ssSuccession()});
-          viewer.centerOn(structure);
-    });
-  })
-
-
-
-  // damn definitely use REACT/REDUX for this later. STATE!!!
-  // variant.forEach(function(v){
-  //   $('.nav-tabs a[href="#' + v.MUT_HGVS_AA + '_cardbox"]').click(function() {
-  //     $('#' + v.MUT_HGVS_AA + '_needleHead').d3Click();
-  //   });
-  // })
-
-
-  // custom function to transfer click event handling from d3 to jquery
-  jQuery.fn.d3Click = function () {
-    this.each(function (i, e) {
-      var evt = document.createEvent("MouseEvents");
-      evt.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
-
-      e.dispatchEvent(evt);
-    });
-  };
-
-
-  // // not using ajax. bad practice
-  // if (typeof window.pv !== 'undefined' && window.pdbInfo.length !== 0){
-  //   // ajax call to fetch variant box
-  //   variant.forEach(function(v){
-  //     var variant_aa_id = v.MUT_HGVS_AA
-  //     $.ajax({
-  //         url: document.location.protocol +"//"+ document.location.hostname + ':' + document.location.port + document.location.pathname + '/variantBoxAjax',
-  //         type: 'GET',
-  //         data : {
-  //           'variant_aa_id': variant_aa_id
-  //         },
-  //         success: function(data) {
-  //           // console.log(data)
-  //           $('#' + variant_aa_id + '_cardbox').html(data);
-  //         }
-  //     });
-  //   })
-  // }
-
-})
 
 'use strict';
 
