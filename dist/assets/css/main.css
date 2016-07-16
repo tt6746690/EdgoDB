@@ -21,6 +21,10 @@ p {
   text-align: left;
   font-family: "Tangerine", serif;
 }
+.dropdown-menu {
+  max-height: 500px;
+  overflow-y: auto;
+}
 
 @import "https://fonts.googleapis.com/css?family=Tangerine";
 @import "https://fonts.googleapis.com/css?family=Open+Sans:300,400";

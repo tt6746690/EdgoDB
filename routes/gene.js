@@ -21,6 +21,7 @@ router.get('/', function(req, res, next){
 
 
 
+
 router.get('/:geneid/download', function(req, res, next){
   pool.getConnection(function(err, connection) {
     var sqlstr = "SELECT * \
@@ -54,18 +55,6 @@ router.get('/:geneid/download', function(req, res, next){
       workbook.xlsx.write(res).then(function(){
         res.end()
       })
-
-
-
-
-      // workbook.columns = {
-      //
-      // }
-      //
-      //
-      // res.set({'Content-Type': 'application/force-download', "Content-Disposition":"attachment; filename=\"download.xls\""});
-      // res.send(text["download.xls"]);
-      // res.send({'wtf': 'wtftf'})
 
     });
   });
@@ -381,7 +370,7 @@ router.get('/:geneid', function(req, res, next){
                        WHERE HUGO_GENE_SYMBOL = ?;"
         connection.query(sqlstr, [req.params.geneid], function(err, rows) {
           if (err) {return next(err)}
-          if (rows.length == 0) {return next(new Error('Entry unavailable in database'))}
+          // if (rows.length == 0) {return next(new Error('Entry unavailable in database'))}
 
           var domainRegion = []
           for (var i = 0; i < rows.length; i++){
@@ -389,6 +378,20 @@ router.get('/:geneid', function(req, res, next){
           }
           callback(null, domainRegion)
         });
+      },
+      pdbInfo: function(callback){
+        var sqlstr = "SELECT DISTINCT PDB_ID \
+                      FROM Gene JOIN ProteinDataBank USING(UNIPROT_SWISSPROT_ID) \
+                      WHERE HUGO_GENE_SYMBOL = ?;"
+
+        connection.query(sqlstr, [req.params.geneid], function(err, rows){
+          if (err) {return next(err)}
+          var pdbInfo = []
+          for (var i = 0; i < rows.length; i++){
+            pdbInfo.push(JSON.parse(JSON.stringify(rows))[i])
+          }
+          callback(null, pdbInfo)
+        })
       }
     }, function(err, results){
       if (err) {return next(err)}
@@ -410,7 +413,8 @@ router.get('/:geneid', function(req, res, next){
           nodes: results.nodes
         },
         radarChartData: results.radarChart, // needs post processing to [[{axis, value, grp}, ...], ...]
-        expressionChartData: results.expressionChart
+        expressionChartData: results.expressionChart,
+        pdbInfo: results.pdbInfo
       })
     });
 

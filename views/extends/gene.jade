@@ -20,11 +20,32 @@ block content
           // General Tabs 
           ul.col-md-11.nav.nav-tabs(id="geneTab")
             li.nav-item.active(role='general')
-              a.nav-link(data-toggle='tab' href='#generalInfo') General Info 
-            li.nav-item(role='variantTab')
-              a.nav-link(data-toggle='collapse' href = '#variantTab' aria-expanded="false" aria-controls="variantTab" id="variantTabControl") Variants
-            li.nav-item(role='pview')
-              a.nav-link(data-toggle='tab' href='#pv') 3D viewer
+              a.nav-link(data-toggle='tab' href='#generalInfo') Main
+            if(variant,length !==0)
+              li.nav-item(role='variantTab')
+                a.nav-link(data-toggle='collapse' href = '#variantTab' aria-expanded="false" aria-controls="variantTab" id="variantTabControl") Variants
+            if(pdbInfo.length !== 0)
+              li.nav-item(role='pview')
+                a.nav-link(data-toggle='modal' data-target='#pviewer' href="#") 3D viewer
+                // pview modal 
+                div.modal.bd-example-modal-lg.fade(id='pviewer' role="dialog" tabindex="-1" aria-labelledby="pviewerLabel" aria-hidden='true')
+                  div.modal-dialog(role='document')
+                    div.modal-content
+                      div.modal-header 
+                        button.close(type='button' data-dismiss="modal" aria-label='Close')
+                          span(aria-hidden="true") &times
+                        h4.modal-title(id="pviewerLabel") 3D viewer 
+                      div.modal-body 
+                        div.panel.panel-default
+                          div.panel-body(id='pv')
+                      div.modal-footer 
+                        button.btn.btn-primary(type='button' data-dismiss="modal"  style="background-color: white") Close 
+                        div.dropup(style="float:left") 
+                          button.btn.btn-primary.dropdown-toggle(type="button", id="pdbDropdown" data-toggle="dropdown" aria-haspopup="true", aria-expanded="true" style="background-color: white") Structures
+                          ul.dropdown-menu(aria-labelledby="pdbDropdown")
+                            for pdb_id in pdbInfo
+                              li 
+                                a.pdb-ajax-link(id=pdb_id.PDB_ID href="#")=pdb_id.PDB_ID 
             // Variant tabs 
             ul.collapse.nav.nav-tabs(id="variantTab")
               li.nav-item
@@ -106,8 +127,8 @@ block content
                 - } else {
                   div(id='y2h-interaction')
                 - }
-          // 3D protein structure viewer
-          div.tab-pane.fade(id='pv')
+
+            
       // side bar 
       nav.col-md-2.bs-docs-sidebar.hidden-print(id='target_nav')
         ul.nav.nav-stacked.bs-docs-sidenav.fixed(id="sidebar")
@@ -129,6 +150,7 @@ prepend script
     var expressionChartData =!{JSON.stringify(expressionChartData)}
     var y2hChartData = !{JSON.stringify(y2hChartData)}
     var variantInfo =!{JSON.stringify(variantInfo)}
+    var pdbInfo =!{JSON.stringify(pdbInfo)}
 
     
     
@@ -136,3 +158,18 @@ prepend script
   script(src='/bio-pv.min.js', type="text/javascript")
   
   
+  
+  //- // 3D protein structure viewer
+  //- div.tab-pane.fade(id='pviewer')
+  //-   div.row 
+  //-     div.col-md-9(id='pv')
+  //-     div.col-md-3
+  //-       div.drop-down 
+  //-         button.btn.btn-default.dropdown-toggle(type="button", id="pdbDropdown" data-toggle="dropdown" aria-haspopup="true", aria-expanded="true") Structures
+  //-           span 
+  //-           span.caret 
+  //-         ul.dropdown-menu(aria-labelledby="pdbDropdown")
+  //-           for pdb_id in pdbInfo
+  //-             li 
+  //-               a.pdb-ajax-link(id=pdb_id.PDB_ID href="#")=pdb_id.PDB_ID 
+  // pview modal 
