@@ -94,6 +94,7 @@ Y2hChart.prototype.draw = function(){
       .charge(-250)
       .gravity(0.3)
       .linkDistance(config.height / 2.5)
+      .alpha(0)
 
   this.svg.append("svg:defs").selectAll("marker")
      .data(["end"])      // Different link/path types can be defined here
@@ -163,7 +164,7 @@ Y2hChart.prototype.draw = function(){
          return config.lostNodeColor
        }
      })
-     .call(this.force.drag)
+    //  .call(this.force.drag)
 
   var nodeText = nodeGroup.append('a')
      .attr('href', function(d){
@@ -171,6 +172,7 @@ Y2hChart.prototype.draw = function(){
          return '/gene/' + d.Name
        }
      })
+     .attr("target", "_blank")
      .append('text')
      .attr('class', 'nodeText')
      .attr('text-anchor', 'middle')
@@ -182,7 +184,7 @@ Y2hChart.prototype.draw = function(){
   this.force.start()
 
   var safety = 0
-  while(this.force.alpha() > 0.05) { // You'll want to try out different, "small" values for this
+  while(this.force.alpha() > 0.01) { // You'll want to try out different, "small" values for this
     this.force.tick();
     if(safety++ > 500) {
       break;// Avoids infinite looping in case this solution was a bad idea

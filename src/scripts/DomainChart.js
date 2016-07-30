@@ -93,32 +93,77 @@ DomainChart.prototype.markMutations = function(){
             })
             .on("mouseout", needleHeadMouseOut)
             .on("click", function(d){
+
               var active   = d3.select(this).classed("active") ? false : true,
 	                newOpacity = active ? 1 : 0,
                   activeMouseOut = active ? null: needleHeadMouseOut,
-                  newTextFontSize = active ? config.headFontSize * 2: config.headFontSize
-                  newRadiusFactor = active ? 2 : 0.5
+                  newTextFontSize = active ? config.headFontSize * 2: config.headFontSize,
+                  newRadiusFactor = active ? 2 : 0.5,
                   variantTabID = active ? '.nav-tabs a[href="#' + d.name + '_cardbox"]': '.nav-tabs a[href="#wildtype_cardbox"]'
               // domainChart
+
+                  // deselection
+              d3.select('.pdgraph').selectAll('circle')
+                .classed('active', false)
+                .attr("r", function(x){
+                  if(x.name !== d.name){
+                    return config.headRadius
+                  } else {
+                    return d3.select(this).attr("r")
+                  }
+                })
+              d3.select(".pdgraph").selectAll('text')
+                .transition()
+                .duration(200)
+                .attr("font-size", function(x){
+                  if(x.name !== d.name){
+                    return config.headFontSize
+                  } else {
+                    return d3.select(this).attr("font-size")
+                  }
+                })
+
+                  // on click behavior
               d3.select(this).classed("active", active)
-              d3.select(this).on("mouseout", activeMouseOut);
+              d3.select(this).on("mouseout", activeMouseOut)
               d3.select("#" + d.name + "_needleText")
                 .transition()
                 .duration(200)
                 .attr("font-size", newTextFontSize)
               // radarChart
+                  // deselection
+              d3.select("#radarGroup").selectAll("g.radarWrapper")
+                .style("opacity", function(x){
+                  if(x[0].grp === gene.symbol){
+                    return 1
+                  } else if(x.name !== d.name){
+                    return 0
+                  } else {
+                    return d3.select(this).style("opacity")
+                  }
+                })
+                  // on click behavior
               d3.select("#" + d.name + '_radarWrapper').style("opacity", newOpacity)
 
               // expressionChart
-              d3.selectAll('.' + d.name + '_expressionDot').attr("r", function(){
-                return d3.select(this).attr("r") * newRadiusFactor
-              })
+                  // de selection
+              d3.selectAll(".expression-dot").attr("r", 2.5) // hard coded 2.5 radius....
+                  // on click behavior
+              d3.selectAll('.' + d.name + '_expressionDot')
+                .attr("r", function(){
+                  return d3.select(this).attr("r") * newRadiusFactor
+                })
+                .transition()
+                .duration(200)
 
               // y2hChart
               if (y2hChartData.nodes.length !== 0 && y2hChartData.links.length) {
                 var y2hDataChoice = active ? subsetY2hData(y2hChartData, d.name): subsetY2hData(y2hChartData, '0')
-                removeSVG('#y2h-interaction')
-                new Y2hChart("#y2h-interaction", y2hDataChoice, y2hChartConfig)
+                removeSVG('#y2h-interaction-mut')
+                new Y2hChart("#y2h-interaction-mut", y2hDataChoice, y2hChartConfig)
+              }
+              if (!active){
+                removeSVG('#y2h-interaction-mut')
               }
 
                $(variantTabID).tab('show');
@@ -193,6 +238,7 @@ DomainChart.prototype.drawRegions = function(){
 
 
     regions.append("a")
+          .attr("target", "_blank")
           .attr("href", function(d){ return 'http://pfam.xfam.org/family/' + d.name})
           .append("rect")
           .attr("class", "region")

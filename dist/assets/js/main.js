@@ -93,32 +93,77 @@ DomainChart.prototype.markMutations = function(){
             })
             .on("mouseout", needleHeadMouseOut)
             .on("click", function(d){
+
               var active   = d3.select(this).classed("active") ? false : true,
 	                newOpacity = active ? 1 : 0,
                   activeMouseOut = active ? null: needleHeadMouseOut,
-                  newTextFontSize = active ? config.headFontSize * 2: config.headFontSize
-                  newRadiusFactor = active ? 2 : 0.5
+                  newTextFontSize = active ? config.headFontSize * 2: config.headFontSize,
+                  newRadiusFactor = active ? 2 : 0.5,
                   variantTabID = active ? '.nav-tabs a[href="#' + d.name + '_cardbox"]': '.nav-tabs a[href="#wildtype_cardbox"]'
               // domainChart
+
+                  // deselection
+              d3.select('.pdgraph').selectAll('circle')
+                .classed('active', false)
+                .attr("r", function(x){
+                  if(x.name !== d.name){
+                    return config.headRadius
+                  } else {
+                    return d3.select(this).attr("r")
+                  }
+                })
+              d3.select(".pdgraph").selectAll('text')
+                .transition()
+                .duration(200)
+                .attr("font-size", function(x){
+                  if(x.name !== d.name){
+                    return config.headFontSize
+                  } else {
+                    return d3.select(this).attr("font-size")
+                  }
+                })
+
+                  // on click behavior
               d3.select(this).classed("active", active)
-              d3.select(this).on("mouseout", activeMouseOut);
+              d3.select(this).on("mouseout", activeMouseOut)
               d3.select("#" + d.name + "_needleText")
                 .transition()
                 .duration(200)
                 .attr("font-size", newTextFontSize)
               // radarChart
+                  // deselection
+              d3.select("#radarGroup").selectAll("g.radarWrapper")
+                .style("opacity", function(x){
+                  if(x[0].grp === gene.symbol){
+                    return 1
+                  } else if(x.name !== d.name){
+                    return 0
+                  } else {
+                    return d3.select(this).style("opacity")
+                  }
+                })
+                  // on click behavior
               d3.select("#" + d.name + '_radarWrapper').style("opacity", newOpacity)
 
               // expressionChart
-              d3.selectAll('.' + d.name + '_expressionDot').attr("r", function(){
-                return d3.select(this).attr("r") * newRadiusFactor
-              })
+                  // de selection
+              d3.selectAll(".expression-dot").attr("r", 2.5) // hard coded 2.5 radius....
+                  // on click behavior
+              d3.selectAll('.' + d.name + '_expressionDot')
+                .attr("r", function(){
+                  return d3.select(this).attr("r") * newRadiusFactor
+                })
+                .transition()
+                .duration(200)
 
               // y2hChart
               if (y2hChartData.nodes.length !== 0 && y2hChartData.links.length) {
                 var y2hDataChoice = active ? subsetY2hData(y2hChartData, d.name): subsetY2hData(y2hChartData, '0')
-                removeSVG('#y2h-interaction')
-                new Y2hChart("#y2h-interaction", y2hDataChoice, y2hChartConfig)
+                removeSVG('#y2h-interaction-mut')
+                new Y2hChart("#y2h-interaction-mut", y2hDataChoice, y2hChartConfig)
+              }
+              if (!active){
+                removeSVG('#y2h-interaction-mut')
               }
 
                $(variantTabID).tab('show');
@@ -193,6 +238,7 @@ DomainChart.prototype.drawRegions = function(){
 
 
     regions.append("a")
+          .attr("target", "_blank")
           .attr("href", function(d){ return 'http://pfam.xfam.org/family/' + d.name})
           .append("rect")
           .attr("class", "region")
@@ -362,6 +408,7 @@ Y2hChart.prototype.draw = function(){
       .charge(-250)
       .gravity(0.3)
       .linkDistance(config.height / 2.5)
+      .alpha(0)
 
   this.svg.append("svg:defs").selectAll("marker")
      .data(["end"])      // Different link/path types can be defined here
@@ -431,7 +478,7 @@ Y2hChart.prototype.draw = function(){
          return config.lostNodeColor
        }
      })
-     .call(this.force.drag)
+    //  .call(this.force.drag)
 
   var nodeText = nodeGroup.append('a')
      .attr('href', function(d){
@@ -439,6 +486,7 @@ Y2hChart.prototype.draw = function(){
          return '/gene/' + d.Name
        }
      })
+     .attr("target", "_blank")
      .append('text')
      .attr('class', 'nodeText')
      .attr('text-anchor', 'middle')
@@ -450,7 +498,7 @@ Y2hChart.prototype.draw = function(){
   this.force.start()
 
   var safety = 0
-  while(this.force.alpha() > 0.05) { // You'll want to try out different, "small" values for this
+  while(this.force.alpha() > 0.01) { // You'll want to try out different, "small" values for this
     this.force.tick();
     if(safety++ > 500) {
       break;// Avoids infinite looping in case this solution was a bad idea
@@ -637,9 +685,9 @@ ExpressionChart.prototype.draw = function(){
       var lowerWhisker = d3.select(this.parentNode).datum().lowerWhisker
       var upperWhisker = d3.select(this.parentNode).datum().upperWhisker
       if (d < lowerWhisker || d > upperWhisker){
-        return "outlier_point " + (d3.select(this.parentNode).datum().grp + '_expressionDot');
+        return "outlier_point " + (d3.select(this.parentNode).datum().grp + '_expressionDot') + " expression-dot";
       } else {
-        return "inlier_point " + (d3.select(this.parentNode).datum().grp + '_expressionDot');
+        return "inlier_point " + (d3.select(this.parentNode).datum().grp + '_expressionDot') + " expression-dot";
       }})
     .attr("cx", function() {
         var parentIndex =  box.data().indexOf(d3.select(this.parentNode).datum())
@@ -931,6 +979,7 @@ var RadarChart = function(id, data, options) {
 			.attr("class", "radar"+id);
 	//Append a g element
 	var g = svg.append("g")
+      .attr("id", "radarGroup")
 			.attr("transform", "translate(" + (cfg.w/2 + cfg.margin.left) + "," + (cfg.h/2 + cfg.margin.top) + ")");
 
 	/////////////////////////////////////////////////////////

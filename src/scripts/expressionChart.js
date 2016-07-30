@@ -143,9 +143,9 @@ ExpressionChart.prototype.draw = function(){
       var lowerWhisker = d3.select(this.parentNode).datum().lowerWhisker
       var upperWhisker = d3.select(this.parentNode).datum().upperWhisker
       if (d < lowerWhisker || d > upperWhisker){
-        return "outlier_point " + (d3.select(this.parentNode).datum().grp + '_expressionDot');
+        return "outlier_point " + (d3.select(this.parentNode).datum().grp + '_expressionDot') + " expression-dot";
       } else {
-        return "inlier_point " + (d3.select(this.parentNode).datum().grp + '_expressionDot');
+        return "inlier_point " + (d3.select(this.parentNode).datum().grp + '_expressionDot') + " expression-dot";
       }})
     .attr("cx", function() {
         var parentIndex =  box.data().indexOf(d3.select(this.parentNode).datum())

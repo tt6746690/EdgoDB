@@ -54,6 +54,7 @@ var RadarChart = function(id, data, options) {
 			.attr("class", "radar"+id);
 	//Append a g element
 	var g = svg.append("g")
+      .attr("id", "radarGroup")
 			.attr("transform", "translate(" + (cfg.w/2 + cfg.margin.left) + "," + (cfg.h/2 + cfg.margin.top) + ")");
 
 	/////////////////////////////////////////////////////////

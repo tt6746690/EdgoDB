@@ -7,7 +7,7 @@ block content
   div.container
     div.row
       // left side of page 
-      div.col-md-10(id=gene.symbol)
+      div.col-md-12(id=gene.symbol)
         // Gene title block 
         div.row
           div.col-md-4
@@ -21,9 +21,9 @@ block content
           ul.col-md-11.nav.nav-tabs(id="geneTab")
             li.nav-item.active(role='general')
               a.nav-link(data-toggle='tab' href='#generalInfo') Main
-            if(variant,length !==0)
-              li.nav-item(role='variantTab')
-                a.nav-link(data-toggle='collapse' href = '#variantTab' aria-expanded="false" aria-controls="variantTab" id="variantTabControl") Variants
+            //- if(variant,length !==0)
+            //-   li.nav-item(role='variantTab')
+            //-     a.nav-link(data-toggle='collapse' href = '#variantTab' aria-expanded="false" aria-controls="variantTab" id="variantTabControl") Variants
             if(pdbInfo.length !== 0)
               li.nav-item(role='pview')
                 a.nav-link(data-toggle='modal' data-target='#pviewer' href="#") 3D viewer
@@ -47,14 +47,14 @@ block content
                               li 
                                 a.pdb-ajax-link(id=pdb_id.PDB_ID href="#")=pdb_id.PDB_ID 
             // Variant tabs 
-            ul.collapse.nav.nav-tabs(id="variantTab")
-              li.nav-item
-                a.nav-link(data-toggle='tab' href="#wildtype_cardbox") 
-                  small.text-muted #{gene.symbol}
-              - for item in variant
-                li.nav-item 
-                  a.nav-link(data-toggle='tab' href="#" + item.MUT_HGVS_AA + "_cardbox") 
-                    small.text-muted(style='font-size:11px') #{item.MUT_HGVS_AA}     
+            //- ul.collapse.nav.nav-tabs(id="variantTab")
+              //- li.nav-item
+              //-   a.nav-link(data-toggle='tab' href="#wildtype_cardbox") 
+              //-     small.text-muted #{gene.symbol}
+              //- - for item in variant
+              //-   li.nav-item 
+              //-     a.nav-link(data-toggle='tab' href="#" + item.MUT_HGVS_AA + "_cardbox") 
+              //-       small.text-muted(style='font-size:11px') #{item.MUT_HGVS_AA}     
           // download and help icons
           div.col-md-1 
             div(style='margin-top:20px')
@@ -70,38 +70,26 @@ block content
           div.tab-pane.active.in.fade(id="generalInfo")
             div.row.tab-content
               // wild type allele info 
-              dl.col-md-5.dl-horizontal.tab-pane.active.in.fade(id='wildtype_cardbox')
+              dl.col-md-4.dl-horizontal.tab-pane.active.in.fade(id='wildtype_cardbox')
                 div.showToolTip(data-toggle="tooltip" data-placement='right' title="Link outs and summary information") 
                 each l in Object.keys(gene.links)
                   if gene.links[l].display  
                     dt= l
                     dd
                       if "link" in gene.links[l]
-                        a(href = gene.links[l].link style="float:left")=gene.links[l].display  
+                        a(href = gene.links[l].link style="float:left" target="_blank")=gene.links[l].display  
                           i.fa.fa-external-link(style="font-size:12px" aria-hidden='true') 
                       else 
                         p(style="text-align:left")= gene.links[l].display
-              // variant info 
-              for d in variantInfo
-                div.col-md-5.tab-pane.fade(id=d.symbol + "_cardbox") 
-                  dl.dl-horizontal
-                    each l in Object.keys(d.links)
-                      if d.links[l].display  
-                        dt= l
-                        dd
-                          if "link" in d.links[l]
-                            a(href = d.links[l].link style="float:left")= d.links[l].display   
-                              i.fa.fa-external-link(style="font-size:12px" aria-hidden='true') 
-                          else 
-                            p(style="text-align:left")= d.links[l].display
+            
               // protein domain graph 
-              div.col-md-7(id='protein-domain-graph')
+              div.col-md-6(id='protein-domain-graph')
                 div.showToolTip(data-toggle="tooltip" title="Amino acid mutation mapped linearly to Pfam domains, try clicking on the needle heads") 
             // experimental data 
             div.row(id="experimentalData")
               div#stuffing
               // radar Chart for LUMIER chaperone intearctions  
-              div.col-md-4
+              div.col-md-3
                 - if (radarChartData.length !== 0){
                   div.panel.panel-default
                     h5.showToolTip(data-toggle="tooltip" title="LUMIER assay measuring variant-chaperone interaction, an indicator of protein instability") Chaperone interactions
@@ -110,7 +98,7 @@ block content
                   div(id='lumier-interaction')
                 - }
               // expression boxplot of variants in the LUMIER experiments 
-              div.col-md-4
+              div.col-md-3
                 - if (expressionChartData.length !== 0){
                   div.panel.panel-default
                     h5.showToolTip(data-toggle="tooltip" title="Expression level of variants in the context of LUMIER assay") Expression (ELISA) 
@@ -119,7 +107,7 @@ block content
                   div(id='elisa-expression')
                 - }
               // force directed graph of wild-type/variants interactors derived from Y2H
-              div.col-md-4
+              div.col-md-3
                 - if (y2hChartData.nodes.length !== 0){
                   div.panel.panel-default
                     h5.showToolTip(data-toggle="tooltip" title="Binary interaction profile: orange nodes/edges represent a loss of interaction with respect to wild-type allele") Y2H Interactors
@@ -127,19 +115,35 @@ block content
                 - } else {
                   div(id='y2h-interaction')
                 - }
-
+              div.col-md-3
+                div(id='y2h-interaction-mut')
+            div.row 
+              // variant info 
+              //- for d in variantInfo
+              //-   div.col-md-4.tab-pane.fade(id=d.symbol + "_cardbox") 
+              //-     dl.dl-horizontal
+              //-       each l in Object.keys(d.links)
+              //-         if d.links[l].display  
+              //-           dt= l
+              //-           dd
+              //-             if "link" in d.links[l]
+              //-               a(href = d.links[l].link style="float:left" target="_blank")= d.links[l].display   
+              //-                 i.fa.fa-external-link(style="font-size:12px" aria-hidden='true') 
+              //-             else 
+              //-               p(style="text-align:left")= d.links[l].display
+                
             
       // side bar 
-      nav.col-md-2.bs-docs-sidebar.hidden-print(id='target_nav')
-        ul.nav.nav-stacked.bs-docs-sidenav.fixed(id="sidebar")
-          +nav_item("#" + gene.symbol) Gene
-            ul.nav.nav-stacked(id="sidebar")
-              +nav_item("#GeneDescription") Info
-              +nav_item("#experimentalData") Experimental Data
-          +nav_item("#VariantListing") Variants 
-            ul.nav.nav-stacked(id="sidebar")
-              - for item in variant
-                +nav_item("#" + item.MUT_HGVS_AA + '_cardbox') #{item.MUT_HGVS_AA}
+      //- nav.col-md-2.bs-docs-sidebar.hidden-print(id='target_nav')
+      //-   ul.nav.nav-stacked.bs-docs-sidenav.fixed(id="sidebar")
+      //-     +nav_item("#" + gene.symbol) Gene
+      //-       ul.nav.nav-stacked(id="sidebar")
+      //-         +nav_item("#GeneDescription") Info
+      //-         +nav_item("#experimentalData") Experimental Data
+      //-     +nav_item("#VariantListing") Variants 
+      //-       ul.nav.nav-stacked(id="sidebar")
+      //-         - for item in variant
+      //-           +nav_item("#" + item.MUT_HGVS_AA + '_cardbox') #{item.MUT_HGVS_AA}
 
 prepend script 
   script(type='text/javascript').
