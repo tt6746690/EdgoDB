@@ -16,6 +16,14 @@ $(document).ready(function(){
   })
 
 
+  // data table
+  $('#variantTable').DataTable({
+    "paging": false,
+    lengthChange: false
+  });
+
+
+
 
   // pv viewer handling
   if(typeof window.pv !== 'undefined' && window.pdbInfo.length !== 0){

@@ -292,8 +292,8 @@ function propagateUpdates(activeElement){
 if (typeof window.domainChartData !== 'undefined') {
   //----- Instantiation -----//
   var domainChartConfig = {
-    "height": 240,
-    "width": 550,
+    "height": 220,
+    "width": 600,
     "target_dom": "#protein-domain-graph",
     "xoffset": 10,
     "yoffset": 110,

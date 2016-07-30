@@ -279,11 +279,8 @@ router.get('/:geneid', function(req, res, next){
                  "Exac Frequency": {
                    "display": d.EXAC_ALLELE_FREQUENCY
                  },
-                 "Polyphen score": {
-                   "display": d.POLYPHEN_SCORE
-                 },
-                 "Polyphen class": {
-                   "display": d.POLYPHEN_CLASS
+                 "Polyphen": {
+                   "display": d.POLYPHEN_SCORE + '(' + d.POLYPHEN_CLASS + ')'
                  },
                  "Solvent accessibility": {
                    "display": d.SOLVENT_ACCESSIBILITY

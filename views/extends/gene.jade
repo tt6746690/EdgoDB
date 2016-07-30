@@ -45,16 +45,9 @@ block content
                           ul.dropdown-menu(aria-labelledby="pdbDropdown")
                             for pdb_id in pdbInfo
                               li 
-                                a.pdb-ajax-link(id=pdb_id.PDB_ID href="#")=pdb_id.PDB_ID 
-            // Variant tabs 
-            //- ul.collapse.nav.nav-tabs(id="variantTab")
-              //- li.nav-item
-              //-   a.nav-link(data-toggle='tab' href="#wildtype_cardbox") 
-              //-     small.text-muted #{gene.symbol}
-              //- - for item in variant
-              //-   li.nav-item 
-              //-     a.nav-link(data-toggle='tab' href="#" + item.MUT_HGVS_AA + "_cardbox") 
-              //-       small.text-muted(style='font-size:11px') #{item.MUT_HGVS_AA}     
+                                a.pdb-ajax-link(id=pdb_id.PDB_ID href="#")=pdb_id.PDB_ID
+            li.nav-item 
+              a.nav-link(href="#variantTable") Variants
           // download and help icons
           div.col-md-1 
             div(style='margin-top:20px')
@@ -68,9 +61,9 @@ block content
         div.tab-content
           // main contents 
           div.tab-pane.active.in.fade(id="generalInfo")
-            div.row.tab-content
+            div.row
               // wild type allele info 
-              dl.col-md-4.dl-horizontal.tab-pane.active.in.fade(id='wildtype_cardbox')
+              dl.col-md-4.dl-horizontal(id='wildtype_cardbox')
                 div.showToolTip(data-toggle="tooltip" data-placement='right' title="Link outs and summary information") 
                 each l in Object.keys(gene.links)
                   if gene.links[l].display  
@@ -83,9 +76,10 @@ block content
                         p(style="text-align:left")= gene.links[l].display
             
               // protein domain graph 
-              div.col-md-6(id='protein-domain-graph')
+              div.col-md-7(id='protein-domain-graph')
                 div.showToolTip(data-toggle="tooltip" title="Amino acid mutation mapped linearly to Pfam domains, try clicking on the needle heads") 
             // experimental data 
+            hr
             div.row(id="experimentalData")
               div#stuffing
               // radar Chart for LUMIER chaperone intearctions  
@@ -117,7 +111,28 @@ block content
                 - }
               div.col-md-3
                 div(id='y2h-interaction-mut')
-            div.row 
+            hr
+            div.row.panel.panel-default
+              table.table.table-striped(id='variantTable' cellspacing="0" style="width:80%")
+                thead
+                  tr 
+                    th #
+                    for headings in Object.keys(variantInfo[0].links)
+                      th=headings
+                tbody
+                  for d in variantInfo
+                    tr 
+                      td= d.symbol
+                      each l in Object.keys(d.links)
+                        td 
+                          if "link" in d.links[l] 
+                            a(href = d.links[l].link style="float:left" target="_blank")= d.links[l].display   
+                          else 
+                            p= d.links[l].display
+                  
+                    
+                    
+            
               // variant info 
               //- for d in variantInfo
               //-   div.col-md-4.tab-pane.fade(id=d.symbol + "_cardbox") 
@@ -160,8 +175,9 @@ prepend script
     
 prepend script         
   script(src='/bio-pv.min.js', type="text/javascript")
-  
-  
+  script(src='https://cdn.datatables.net/r/bs-3.3.5/jqc-1.11.3,dt-1.10.8/datatables.min.js', type="text/javascript")
+  link(href='https://cdn.datatables.net/r/bs-3.3.5/jq-2.1.4,dt-1.10.8/datatables.min.css', rel='stylesheet')
+
   
   //- // 3D protein structure viewer
   //- div.tab-pane.fade(id='pviewer')

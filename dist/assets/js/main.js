@@ -292,8 +292,8 @@ function propagateUpdates(activeElement){
 if (typeof window.domainChartData !== 'undefined') {
   //----- Instantiation -----//
   var domainChartConfig = {
-    "height": 240,
-    "width": 550,
+    "height": 220,
+    "width": 600,
     "target_dom": "#protein-domain-graph",
     "xoffset": 10,
     "yoffset": 110,
@@ -856,6 +856,14 @@ $(document).ready(function(){
   $('#showToolTip').click(function(){
     $('.showToolTip').tooltip('toggle')
   })
+
+
+  // data table
+  $('#variantTable').DataTable({
+    "paging": false,
+    lengthChange: false
+  });
+
 
 
 
