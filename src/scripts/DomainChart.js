@@ -100,6 +100,12 @@ DomainChart.prototype.markMutations = function(){
                   newTextFontSize = active ? config.headFontSize * 2: config.headFontSize,
                   newRadiusFactor = active ? 2 : 0.5,
                   variantTabID = active ? '.nav-tabs a[href="#' + d.name + '_cardbox"]': '.nav-tabs a[href="#wildtype_cardbox"]'
+                  rowBackgroundColor = active ? "#ebebeb": "#f9f9f9"  // default color for bootstrap table-striped
+
+              // variantTable
+              $('.variantRow').css("background-color", '#ffffff')
+              $('#' + d.name + '_row').prependTo("#variantTable").css("background-color", rowBackgroundColor)
+
               // domainChart
 
                   // deselection

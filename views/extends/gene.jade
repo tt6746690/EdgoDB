@@ -113,7 +113,7 @@ block content
                 div(id='y2h-interaction-mut')
             hr
             div.row.panel.panel-default
-              table.table.table-striped.table-bordered.display.responsive.nowrap(id='variantTable' cellspacing="0" width: "100%")
+              table.table.table-bordered.display.responsive.nowrap(id='variantTable' cellspacing="0" width: "100%")
                 thead
                   tr 
                     th #
@@ -121,7 +121,7 @@ block content
                       th=headings
                 tbody
                   for d in variantInfo
-                    tr 
+                    tr.variantRow(id=d.symbol + '_row') 
                       td= d.symbol
                       each l in Object.keys(d.links)
                         td 
