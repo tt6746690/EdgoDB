@@ -17,12 +17,10 @@ $(document).ready(function(){
 
 
   // data table
-  $('#variantTable').DataTable({
-    "paging": false,
-    lengthChange: false
-  });
 
-
+  if(document.getElementById('#variantTable')){
+    $('#variantTable').DataTable()
+  }
 
 
   // pv viewer handling
