@@ -30,7 +30,7 @@ class UniprotItem(Item):
         output_processor = TakeFirst()
     )
     uniprotProteinLength = Field(
-        input_processor = MapCompose(remove_tags, lambda x: x.strip('()')),
+        input_processor = MapCompose(remove_tags, lambda x: x.strip('()').replace(',', '')),    # have to replace comma because uniprot protein length over 1k has format u'1,234'
         output_processor = TakeFirst()
     )
     uniprotLocalization = Field(
