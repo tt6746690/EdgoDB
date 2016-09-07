@@ -29,12 +29,14 @@ $(document).ready(function(){
       width: 536,
       height: 460,
       antialias: true,
-      quality : 'high'
+      quality : 'high',
+      style: "hemilight"
     })
     pv.io.fetchPdb('http://files.rcsb.org/download/' + pdbInfo[0].PDB_ID + '.pdb', function(structure){
           viewer.cartoon('protein', structure, { color : color.ssSuccession()});
           viewer.centerOn(structure);
     });
+
   }
 
   $('a.pdb-ajax-link').click(function(e){

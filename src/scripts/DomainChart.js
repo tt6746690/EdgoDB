@@ -150,7 +150,6 @@ DomainChart.prototype.markMutations = function(){
                 })
                   // on click behavior
               d3.select("#" + d.name + '_radarWrapper').style("opacity", newOpacity)
-
               // expressionChart
                   // de selection
               d3.selectAll(".expression-dot").attr("r", 2.5) // hard coded 2.5 radius....

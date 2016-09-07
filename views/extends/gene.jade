@@ -119,6 +119,7 @@ block content
                     th #
                     for headings in Object.keys(variantInfo[0].links)
                       th=headings
+                    th Elaspic
                 tbody
                   for d in variantInfo
                     tr.variantRow(id=d.symbol + '_row') 
@@ -126,17 +127,24 @@ block content
                       each l in Object.keys(d.links)
                         td 
                           if "link" in d.links[l] 
-                            -if(d.links[l].display !== "" && d.links[l].display !== null){
-                              a(href = d.links[l].link style="float:left" target="_blank")=d.links[l].display 
-                            -} else { 
-                              p N/A
-                            -}
+                            a(href = d.links[l].link style="float:left" target="_blank")=d.links[l].display  
                           else 
-                            -if(d.links[l].display !== "" && d.links[l].display !== null){
-                              p=d.links[l].display 
-                            -} else { 
-                              p N/A
-                            -}
+                            p=d.links[l].display  
+                            
+                      td 
+                        a(href = 'http://elaspic.kimlab.org/result/taipale/' + gene['uniprot_id'] + '.' + d.symbol style="float:left" target="_blank")=gene['uniprot_id'] + '.' + d.symbol
+                          //- if "link" in d.links[l] 
+                          //-   -if(d.links[l].display !== "" && d.links[l].display !== null){
+                          //-     a(href = d.links[l].link style="float:left" target="_blank")=d.links[l].display 
+                          //-   -} else { 
+                          //-     p N/A
+                          //-   -}
+                          //- else 
+                          //-   -if(d.links[l].display !== "" && d.links[l].display !== null){
+                          //-     p=d.links[l].display 
+                          //-   -} else { 
+                          //-     p N/A
+                          //-   -}
                   
                     
                     
@@ -176,17 +184,3 @@ prepend script
   link(href='https://cdn.datatables.net/responsive/2.1.0/css/responsive.bootstrap.min.css', ref='stylesheet')
 
   
-  //- // 3D protein structure viewer
-  //- div.tab-pane.fade(id='pviewer')
-  //-   div.row 
-  //-     div.col-md-9(id='pv')
-  //-     div.col-md-3
-  //-       div.drop-down 
-  //-         button.btn.btn-default.dropdown-toggle(type="button", id="pdbDropdown" data-toggle="dropdown" aria-haspopup="true", aria-expanded="true") Structures
-  //-           span 
-  //-           span.caret 
-  //-         ul.dropdown-menu(aria-labelledby="pdbDropdown")
-  //-           for pdb_id in pdbInfo
-  //-             li 
-  //-               a.pdb-ajax-link(id=pdb_id.PDB_ID href="#")=pdb_id.PDB_ID 
-  // pview modal 

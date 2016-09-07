@@ -152,6 +152,7 @@ router.get('/:geneid', function(req, res, next){
           var composeGene = {
             symbol: gene.HUGO_GENE_SYMBOL,
             description: gene.DESCRIPTION,
+            uniprot_id: gene.UNIPROT_SWISSPROT_ID,
             links: {
               Entrez: {
                 link: 'http://www.ncbi.nlm.nih.gov/gene/' + gene.ENTREZ_GENE_ID,

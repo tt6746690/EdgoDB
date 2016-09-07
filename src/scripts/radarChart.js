@@ -1,4 +1,6 @@
 // taken from web thanks for the code...
+
+
 var RadarChart = function(id, data, options) {
 	var cfg = {
 	 w: 600,				//Width of the circle
@@ -17,6 +19,8 @@ var RadarChart = function(id, data, options) {
 	 color: d3.scale.category20()	//Color function
 	};
 
+  var data = this.calculateSignificance(data)
+
 	//Put all of the options into a variable called cfg
 	if('undefined' !== typeof options){
 	  for(var i in options){
@@ -33,6 +37,7 @@ var RadarChart = function(id, data, options) {
 		total = allAxis.length,					//The number of different axes
 		radius = Math.min(cfg.w/2, cfg.h/2), 	//Radius of the outermost circle
 		Format = d3.format('.0f'),			 	//Percentage formatting
+    Format2 = d3.format('.1f'),			 	//Percentage formatting
 		angleSlice = Math.PI * 2 / total;		//The width in radians of each "slice"
 
 	//Scale for the radius
@@ -83,9 +88,15 @@ var RadarChart = function(id, data, options) {
 		.attr("class", "gridCircle")
 		.attr("r", function(d, i){return radius/cfg.levels*d;})
 		.style("fill", "#CDCDCD")
-		.style("stroke", "#CDCDCD")
+		.style("stroke", function(d){
+      if(d == 1){
+        return '#7d7d7d'
+      }
+      return "#CDCDCD"
+    })
 		.style("fill-opacity", cfg.opacityCircles)
 		.style("filter" , "url(#glow)");
+
 
 
 	//Text indicating at what % each level is
@@ -97,7 +108,7 @@ var RadarChart = function(id, data, options) {
 	   .attr("y", function(d){return -d*radius/cfg.levels;})
 	   .attr("dy", "0.4em")
 	   .style("font-size", "10px")
-	   .attr("fill", "lightgrey")
+	   .attr("fill", "#aaaaaa")
 	   .text(function(d,i) { return Format(differenceValue * d/cfg.levels + minValue); });
 
 	/////////////////////////////////////////////////////////
@@ -122,7 +133,7 @@ var RadarChart = function(id, data, options) {
 
 	//Append the labels at each axis
 	axis.append("text")
-		.attr("class", "legend")
+		.attr("class", "`legend`")
 		.style("font-size", "11px")
     .style("fill", "lightgrey")
 		.attr("text-anchor", "middle")
@@ -159,6 +170,7 @@ var RadarChart = function(id, data, options) {
       d3.select(this).style("opacity", 1)
     }
   })
+
 
 
 // .append("a")
@@ -204,7 +216,12 @@ var RadarChart = function(id, data, options) {
 		.attr("r", cfg.dotRadius)
 		.attr("cx", function(d,i){ return rScale(d.value) * Math.cos(angleSlice*i - Math.PI/2); })
 		.attr("cy", function(d,i){ return rScale(d.value) * Math.sin(angleSlice*i - Math.PI/2); })
-		.style("fill", function(d,i,j) { return cfg.color(j); })
+		.style("fill", function(d,i,j) {
+      if (d.significant === true){
+        return "#ff4949"
+      }
+      return cfg.color(j);
+    })
 		.style("fill-opacity", 0.8);
 
 	/////////////////////////////////////////////////////////
@@ -234,7 +251,7 @@ var RadarChart = function(id, data, options) {
 			tooltip
 				.attr('x', newX)
 				.attr('y', newY)
-				.text(Format(d.value))
+				.text(Format2(d.value))
 				.transition().duration(200)
 				.style('opacity', 1);
 		})
@@ -281,6 +298,30 @@ var RadarChart = function(id, data, options) {
 	}//wrap
 
 }//RadarChart
+
+
+
+//  calcualte lumier assay significance: true if difference between wt and mutant interaction score >= 3
+RadarChart.prototype.calculateSignificance = function(data){
+  var mutants = data.splice(1)
+  var wildtype = data[0]
+  var ref = {}
+  wildtype.forEach(function(w){
+    ref[w.axis] = w.value
+    w.difference = 0
+    w.significant = false
+  })
+  mutants.forEach(function(m){
+    m.forEach(function(d){
+      d.difference = Math.abs(d.value - ref[d.axis])
+      d.significant = Math.abs(d.value - ref[d.axis]) >= 3
+    })
+  })
+  mutants.unshift(wildtype)
+  console.log(mutants)
+  return mutants
+}
+
 
 
 var selectRadarChartData = function(rcdata, grpArray){
