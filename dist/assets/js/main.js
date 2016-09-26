@@ -1071,7 +1071,7 @@ var RadarChart = function(id, data, options) {
 
 	//Append the labels at each axis
 	axis.append("text")
-		.attr("class", "`legend`")
+		.attr("class", "legend")
 		.style("font-size", "11px")
     .style("fill", "lightgrey")
 		.attr("text-anchor", "middle")
