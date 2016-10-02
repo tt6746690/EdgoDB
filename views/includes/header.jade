@@ -2,10 +2,11 @@
 include mixins.jade 
 
 
+div
+  input.typeahead.form-control(text='text', placeholder='Search Gene or Variant' aria-label='...')
+
 +nav("EdgoDB", "dropdown_menu")
   +nav_item( "/") Home
   +nav_item_dropdown("#")( label="Listings")
     +nav_item( "/gene" ) Gene
     +nav_item( "/variant" ) Variant
-    +nav_divider 
-    +nav_item( "/measurement" ) Measurements

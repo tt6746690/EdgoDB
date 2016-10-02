@@ -425,10 +425,10 @@ Y2hChart.prototype.draw = function(){
      .attr("markerWidth", 10)
      .attr("markerHeight", 10)
      .attr("orient", "auto")
-     .style("fill", "lightgrey")
+     .style("fill", "#ffebad")
    .append("svg:path")
      .attr("d", "M0,-5L10,0L0,5")
-     .attr("fill", 'lightgrey')
+     .attr("fill", '#ffebad')
 
 
   var link = this.svg.selectAll('.link')
@@ -440,9 +440,9 @@ Y2hChart.prototype.draw = function(){
      .style("stroke-dasharray", function(d){ if (d.score === 0){ return "5,5"} else {return 'undefined'}})
      .style("stroke", function(d){
        if(d.score === 1){
-         return 'lightgrey'
+         return config.targetNodeColor
        } else {
-         return '#ff4d00'
+         return config.lostNodeColor
        }
      })
 
@@ -534,9 +534,9 @@ if (typeof window.y2hChartData !== 'undefined'){
     "nodeRadius": 16,
     "textSize": 9,
     "color": d3.scale.category20(),
-    "sourceNodeColor": 'lightgrey',
-    "targetNodeColor": '#e8e8e8',
-    "lostNodeColor": "orange"
+    "sourceNodeColor": '#ffd861',
+    "targetNodeColor": '#ffebad',
+    "lostNodeColor": "#cbcbcb"
   }
 
   if (y2hChartData.nodes.length !== 0 && y2hChartData.links.length) {
@@ -937,16 +937,14 @@ $(document).ready(function(){
 })
 
 // taken from web thanks for the code...
-
-
 var RadarChart = function(id, data, options) {
 	var cfg = {
 	 w: 600,				//Width of the circle
 	 h: 600,				//Height of the circle
 	 margin: {top: 20, right: 20, bottom: 20, left: 20}, //The margins of the SVG
 	 levels: 3,				//How many levels or inner circles should there be drawn
-   minValue: -7,
-	 maxValue: 27, 			//What is the value that the biggest circle will represent
+   minValue: -7,  // -7
+	 maxValue: 27, 			// 27  What is the value that the biggest circle will represent
 	 labelFactor: 1.25, 	//How much farther than the radius of the outer circle should the labels be placed
 	 wrapWidth: 60, 		//The number of pixels after which a label needs to be given a new line
 	 opacityArea: 0.35, 	//The opacity of the area of the blob
@@ -1256,7 +1254,6 @@ RadarChart.prototype.calculateSignificance = function(data){
     })
   })
   mutants.unshift(wildtype)
-  console.log(mutants)
   return mutants
 }
 
@@ -1296,14 +1293,13 @@ var selectRadarChartData = function(rcdata, grpArray){
   return modData
 }
 
-
-if (typeof window.variant !== 'undefined' && typeof window.gene !== 'undefined' && typeof window.radarChartData !== 'undefined'){
+if (window.variant && window.gene && window.radarChartData) {
   //----- Instantiation -----//
   var radarChartConfig = {
     w: 170,
     h: 170,
     margin: {top: 40, right: 50, bottom: 40, left: 50},
-    maxValue: 28,   // greatest number expression z score can get for lumier data in db
+    maxValue: 0,   // greatest number expression z score can get for lumier data in db-- which is 28
     levels: 5,
     roundStrokes: false,
     color: d3.scale.category20()

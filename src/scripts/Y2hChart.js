@@ -106,10 +106,10 @@ Y2hChart.prototype.draw = function(){
      .attr("markerWidth", 10)
      .attr("markerHeight", 10)
      .attr("orient", "auto")
-     .style("fill", "lightgrey")
+     .style("fill", "#ffebad")
    .append("svg:path")
      .attr("d", "M0,-5L10,0L0,5")
-     .attr("fill", 'lightgrey')
+     .attr("fill", '#ffebad')
 
 
   var link = this.svg.selectAll('.link')
@@ -121,9 +121,9 @@ Y2hChart.prototype.draw = function(){
      .style("stroke-dasharray", function(d){ if (d.score === 0){ return "5,5"} else {return 'undefined'}})
      .style("stroke", function(d){
        if(d.score === 1){
-         return 'lightgrey'
+         return config.targetNodeColor
        } else {
-         return '#ff4d00'
+         return config.lostNodeColor
        }
      })
 
@@ -215,9 +215,9 @@ if (typeof window.y2hChartData !== 'undefined'){
     "nodeRadius": 16,
     "textSize": 9,
     "color": d3.scale.category20(),
-    "sourceNodeColor": 'lightgrey',
-    "targetNodeColor": '#e8e8e8',
-    "lostNodeColor": "orange"
+    "sourceNodeColor": '#ffd861',
+    "targetNodeColor": '#ffebad',
+    "lostNodeColor": "#cbcbcb"
   }
 
   if (y2hChartData.nodes.length !== 0 && y2hChartData.links.length) {

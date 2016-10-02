@@ -1,42 +1,11 @@
 
-#### DATABASE
+EdgoDB stores and presents experimentally derived interaction and localization data for rare disease variants delineated in [_this_](https://www.ncbi.nlm.nih.gov/pubmed/27267344) paper, created as a side-project for the [_Taipale Lab_](http://taipalelab.org/).
 
-- [x] construction of relational database
-  - [x] set up of mysql server and initial design and creation of schemas  
-  - [x] importing of initial data from excel to the database
-  - [x] optimize by eliminating anomalies and reinforce constraints
-  - [x] set up .my.cnf for db access
-- [x] update attributes from [ExAC Browser](http://exac.broadinstitute.org/) to identify rare alleles  
-  - [ ] only 682 map chrLocation-mutation directly. There seem to be quite much confusion regarding dbsnp mapping to multiple HGVS ID, take [_this_](http://exac.broadinstitute.org/variant/10-82034395-A-C) as an example  
-- [x] update attributes using biomaRt (For future annotation, use python scrapy instead!!)
-- [ ] update variant chromosome location using VEP.
+EdgoDB is powered by [Nodejs](https://nodejs.org/en/)/[Expressjs](https://expressjs.com/) as backend framework, [MySQL](https://www.mysql.com/) for data storage/query, [Pug](https://pugjs.org/api/getting-started.html) as the templating engine. Additional data from external sources were either obtained from a public API, or via [web scraping](https://scrapy.org/).
 
----
 
-#### BACKEND
 
-- [x] deploy using [nginx](http://nginx.org/en/)
-  - [ ] set up CA-SSL and nginx configs as well as server to allow for https using [lets encrypt](https://letsencrypt.org/)
-  - [x] allow for static file serving for compressed data files
-  - [x] use [PM2](http://pm2.keymetrics.io/) for persisting node processes (used forever instead)
-- [ ] use async sequence to check for presence of y2h interaction... or use ajax to grab interaction data.
 
----
-
-#### FRONTEND
-
-- [x] implement typeahead bloodhound search bar
-- [ ] implement external links to OMIM(gene + disease?), ENTREZ, DBSNP, MUT_HGVS_NT (gene + variant), PMID (variant), exacbrowser (variant)
-
------
-
-#### EXPLORE and NON-MINIMAL GOALS
-
-- [ ] Explore [GEMINI](http://gemini.readthedocs.io/en/latest/) in pulling data from [OMIM](http://www.omim.org/) [dbSNP](http://www.ncbi.nlm.nih.gov/SNP/) and [ExAC Browser](http://exac.broadinstitute.org/). possible follow up include:   
-  - [ ] extraction of relevant attributes and update/replace existing data
-- [ ] Explore the use of [GATK](https://www.broadinstitute.org/gatk/)
-- [ ] Try to implement server load balancing...
-- [ ] perhaps use [bioDBnet](https://biodbnet-abcc.ncifcrf.gov/db/db2db.php) to convert IDs.
 
 
 ----
@@ -148,7 +117,3 @@
 [_d3 boxplot_](http://bl.ocks.org/mattbrehmer/12ea86353bc807df2187)    
 [_comprehensive tutorial to webpack_](http://www.theodo.fr/blog/2016/07/a-comprehensive-introduction-to-webpack-the-module-bundler/)  
 [_D3 radar graph_](http://bl.ocks.org/nbremer/6506614)  
-
-
----
-This is under an [__ODbL license__](http://opendatacommons.org/licenses/odbl/1.0/)
