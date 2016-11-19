@@ -86,12 +86,7 @@ var RadarChart = function(id, data, options) {
 		.attr("class", "gridCircle")
 		.attr("r", function(d, i){return radius/cfg.levels*d;})
 		.style("fill", "#CDCDCD")
-		.style("stroke", function(d){
-      if(d == 1){
-        return '#7d7d7d'
-      }
-      return "#CDCDCD"
-    })
+		.style("stroke", "#CDCDCD")
 		.style("fill-opacity", cfg.opacityCircles)
 		.style("filter" , "url(#glow)");
 
